@@ -11,13 +11,15 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addElement('header', 'general', get_string('general', 'form'));
         
 //        $mform->addElement('static', 'statictype', get_string('assignmenttype', 'assignment'), get_string('type'.$type,'assignment'));
-        $raw_assignments = get_coursemodules_in_course('assignment',$COURSE->id);
+        
         // get_records("assignment",'course',$COURSE->id);
         $assignments = array();
         $assignments[0] = get_string('noassignment','peerassessment');
         //print_r($raw_assignments);
-        foreach($raw_assignments as $a) {
-          $assignments[$a->id] = $a->name;
+        if ($raw_assignments = get_coursemodules_in_course('assignment',$COURSE->id)) {
+          foreach($raw_assignments as $a) {
+            $assignments[$a->id] = $a->name;
+          }
         }
         /*
         array();
