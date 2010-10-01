@@ -5,6 +5,13 @@ define('PA_FREQ_WEEKLY',1);
 define('PA_FREQ_UNLIMITED',2);
 define('PA_COMPLETED',1);
 define('PA_COMPLETED_THIS_WEEK',2);
+define('PA_UPPER_THRESHOLD',3.5);
+define('PA_LOWER_THRESHOLD',2.5);
+/**
+ *  One week in seconds!
+ **/ 
+//define('PA_ONE_WEEK',604800);//000);
+define('PA_ONE_WEEK',5); // 5 seconds (for testing only!)
 
 function peerassessment_add_instance($pa) {
   global $USER;
@@ -25,4 +32,296 @@ function peerassessment_update_instance($pa) {
   }
   
   return $returnid;
+}
+
+function get_week_start_from_time($start_date){
+  return mktime(0, 0, 0, date('m', $start_date), date('d', $start_date), date('Y', $start_date)) - ((date("w", $start_date) ==0) ? 0 : (86400 * date("w", $start_date)));
+}
+
+
+/**
+ * Returns a table displaying the results for SINGLE frequency Peerassessment
+ */ 
+function peerassessment_get_table_single_frequency($peerassessment,$members) {
+  global $CFG;
+  $table=new stdClass;
+  $table->head = array();
+  //$table->head[] ="";
+  $table->head[] ="Student\Recipient &gt;";
+  foreach($members as $m2) {
+      $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
+  }
+  $recieved_totals = array();
+  $recieved_counts = array();
+  
+  foreach($members as $m) {
+    $a = array();
+    $name = "{$m->lastname}, {$m->firstname} ({$m->id})";
+    $a[] = $name;
+    $t1 = 0;
+    $c=0;
+    //$recieved_counts[$m2->id] = 0;
+    //$recieved_totals[$m2->id] = 0;             
+  
+    foreach($members as $m2) {
+      $sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$m->id} AND userid={$m2->id}";
+      //echo $sql;
+      $rating = get_record_sql($sql);
+      //print_object($rating);
+      if ($rating) {
+        //we have a ratiing fo r this user
+        //$rating = $ratings[0];
+        $a[] = $rating->rating;
+        $t1 = $t1+$rating->rating;
+        $c++;
+        if (!isset( $recieved_totals[$m2->id]) ) {
+          $recieved_totals[$m2->id] =0;      
+        }
+        $recieved_totals[$m2->id] = $recieved_totals[$m2->id]+$rating->rating;
+        if (!isset( $recieved_counts[$m2->id]) ) {
+           $recieved_counts[$m2->id] = 0;
+        }
+        $recieved_counts[$m2->id] = $recieved_counts[$m2->id]+1;
+      }
+      else {
+        $a[] ='-';
+      }
+    }
+    //now display the average mark that m GAVE
+    $a[] = get_average_rating_by_student($peerassessment,$m->id);
+    /*
+    if ($c>0) {
+      $a[] = $t1/$c;
+    }
+    else {$a[] ='';}
+    */
+    $table->data[] = $a;
+  }
+  //output the average grade received by top of column
+  $a = array();
+  $a[] = '';
+  foreach($members as $m) {
+    $a[] = get_average_rating_for_student($peerassessment,$m->id);
+    /*
+    $recieved_ave=''; 
+    if (isset($recieved_counts[$m->id]) && $recieved_counts[$m->id] > 0 ) {
+      $recieved_ave = $recieved_totals[$m->id] / $recieved_counts[$m->id];
+    }
+    else {
+      $recieved_ave ='&nbsp;';
+    }
+    $a[] = $recieved_ave;        //NOTE THIS IS ALSO THE RESULT THAT SHOULD GO TO GRADEBOOK!
+    */
+  }
+  $a[] = '&nbsp;';
+  $table->data[] = $a;
+  return $table;
+}
+
+function peerassessment_get_table_weekly_frequency($peerassessment,$members,$showdetails=true) {
+  global $CFG;
+  $table=new stdClass;
+  $table->head = array();
+  //$table->head[] ="";
+  
+  foreach($members as $m2) {
+     // $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
+  }
+  $recieved_totals = array();
+  $recieved_counts = array();
+
+  $heading = array();
+  $heading[]='';
+  $heading[]='';
+  //get earliest recorded entry
+  $earliest_sql = "SELECT min(timemodified) AS timemodifed FROM {$CFG->prefix}peerassessment_ratings WHERE  peerassessment ={$peerassessment->id} ";
+  $earliest_rs = get_record_sql($earliest_sql);
+  $earliest_date=strtotime("last monday", $earliest_rs->timemodifed);
+  //echo "Start of week: ".date('r',$earliest_date). ':'.$earliest_date;
+  $last_sql ="SELECT max(timemodified) AS timemodifed FROM {$CFG->prefix}peerassessment_ratings WHERE  peerassessment ={$peerassessment->id}"; 
+  $last_rs = get_record_sql($last_sql);
+  $last_date =strtotime("next sunday", $last_rs->timemodifed); 
+  //echo "Last day of entries: ".date('r',$last_date).":".$last_date;
+  
+  $duration_secs = $last_date -$earliest_date; //gives number of seconds entries have been made over
+  $duration_weeks = ceil(((($duration_secs/60)/60)/24)/7);
+  //echo "Duration of entries: ".$duration_weeks.' weeks ';
+  //get_week_start_from_time($start_date
+  $startDate = $earliest_date;
+  $entries_for_week = array();
+  for($i = 0 ;$i < $duration_weeks; $i++) {
+    //get all of the entries for the given week and each member
+    $endDate = strtotime("next monday",$startDate); //this is the sunday/monday midnight
+    $entries_for_week_sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND timemodified >= $startDate and timemodified<=$endDate";
+    $entries = get_records_sql($entries_for_week_sql);
+//print_object($entries);    
+    $entries_for_week[$startDate] = array();//
+    if ($entries) {
+      foreach($entries as $e) {
+        if (!isset($entries_for_week[$startDate][$e->ratedby])) {
+          $entries_for_week[$startDate][$e->ratedby]= array();      
+        }
+        $entries_for_week[$startDate][$e->ratedby][$e->userid]= $e;
+      }
+    }
+    $startDate = $endDate; 
+  }
+  /*we should now have an array of "mondays", containing an array of 
+  userids (representing the user who MADE the rating), with each value 
+  containing an array of the ratings they actually made.
+  */
+  $doneheadings = false;
+  $userheadings = array();
+  $done_user_headings =false;
+  foreach($members as $m1) 
+  {
+  
+    $t1 = 0;
+    $c = 0;
+    //echo $m1->id .":".$m1->lastname .', '.$m1->firstname;
+    $row=array();
+    $row[] = $m1->lastname .', '.$m1->firstname;   
+    $userheadings[] = 'Student';
+    $userheadings[] = 'Average Rating Given';  //we merged the average to the first column 
+    foreach($entries_for_week as $week => $value) {
+      //echo 'Week Starting ' .date('d-M-Y',$week);
+      if (!$doneheadings && $showdetails) {
+        $heading[]='Week Starting ' .date('d-M-Y',$week);
+        for($j= 0 ;$j<count($members)-1;$j++) {
+          $heading[] ='';
+        }
+      //$row[] ='';
+      }
+      else {
+        $heading[] ='';
+      }
+      $user_entries = $value;//$entries_for_week[$m1->id];
+      foreach($members as $m2) 
+      {
+        //echo 'Looking at '.$m2->id;
+        if (!$doneheadings) {
+          //$heading[]='';//Week Starting ' .date('d-M-Y',$week);
+      //$row[] ='';
+        }
+        if ($done_user_headings) {
+          //$row[]='';
+        } 
+        else {
+          if ($showdetails) {
+            $userheadings[] = $m2->lastname .', '.$m2->firstname;
+          }
+        }
+        //$row[] ='';
+        if (isset($user_entries[$m1->id][$m2->id])) {
+          $entry = $user_entries[$m1->id][$m2->id];
+          if ($showdetails) {
+            $row[]  = $entry->rating;
+          }
+          $t1 = $t1+$entry->rating;
+          $c++;
+          if (!isset( $recieved_totals[$m2->id]) ) {
+            $recieved_totals[$m2->id] =0;      
+          }
+          $recieved_totals[$m2->id] = $recieved_totals[$m2->id]+$entry->rating;
+          if (!isset( $recieved_counts[$m2->id]) ) {
+           $recieved_counts[$m2->id] = 0;
+          }
+          $recieved_counts[$m2->id] = $recieved_counts[$m2->id]+1;
+        }
+        else {
+          if ($showdetails) {
+            $row[]='-';
+          }
+        }
+        //}
+         
+      }
+
+          
+      //$table->data[] = array('Week Starting ' .date('r',$week));//date('r',$week);
+    }
+    
+    if (!$doneheadings) {
+        $heading[] = ''; 
+        if ($showdetails) {
+          $table->data[] = $heading;
+        }
+        else {
+        
+        }
+        $doneheadings = true;
+    }     
+    if (!$done_user_headings) {
+        //$userheadings[] = 'Average Rating Given';
+        if ($showdetails) {
+        $table->data[] = $userheadings;
+        }
+        else {
+          $table->head = $userheadings;        
+        }
+        $done_user_headings = true;
+      }
+    $name = array_slice($row,0,1);
+    $values = array_slice($row,1);
+    $ave = array(get_average_rating_by_student($peerassessment,$m1->id));
+    $row = array_merge($name,$ave,$values);
+    //if ($c>0) {
+      //$row[] = $t1/$c;
+    //}
+    //else {$row[] ='';}
+    $table->data[$m1->id] = $row; 
+    
+  }  
+  //$table->head=$heading; 
+  
+  $a = array();
+  //$a[] = '';
+  $a[]='';
+  $a[] ='Average rating recieved';
+  foreach($members as $m1) {
+    $a[] = get_average_rating_for_student($peerassessment,$m1->id);
+  }  
+  $table->data[] = $a;//rray('Average rating recieved'); 
+  
+  return $table;
+}
+
+function peerassessment_get_table_unlimited_frequency($peerassessment,$members) {
+  $table=new stdClass;
+  $table->head = array();
+  //$table->head[] ="";
+  $table->head[] ="Student\Recipient &gt;";
+  foreach($members as $m2) {
+      $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
+  }
+  $recieved_totals = array();
+  $recieved_counts = array();
+  
+  return $table;
+}
+
+function get_average_rating_for_student($peerassessment,$userid) {
+  global $CFG;
+  $sql = "SELECT AVG(rating) AS average FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND userid={$userid}";
+  $rs = get_record_sql($sql);
+  if ($rs->average >PA_UPPER_THRESHOLD) {
+    return "<sup>+</sup>".$rs->average;//"<img src='abovethreshold.png' alt='Above Threshold'/>";
+  }  
+  if ($rs->average < PA_LOWER_THRESHOLD) {
+    return "<sup>-</sup>.$rs->average";//"<img src='belowthreshold.png' alt='Below Threshold'/>";
+  }
+  return $rs->average;
+}
+function get_average_rating_by_student($peerassessment,$userid) {
+   global $CFG;
+  $sql = "SELECT AVG(rating) AS average FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$userid}";
+  $rs = get_record_sql($sql);
+  //print_r($rs);  
+  if ($rs->average >PA_UPPER_THRESHOLD) {
+    return "<sup>+</sup>".$rs->average;//"<img src='abovethreshold.png' alt='Above Threshold'/>";
+  }  
+  if ($rs->average <PA_LOWER_THRESHOLD) {
+    return "<sup>-</sup>".$rs->average;//<img src='belowthreshold.png' alt='Below Threshold'/>";
+  }
+  return $rs->average;
 }

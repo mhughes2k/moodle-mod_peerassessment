@@ -50,7 +50,7 @@ $members = groups_get_members($groupid);
 
 $group = groups_get_group($groupid);//get_record('groups','id',$groupid);
 
-$table = new stdClass;
+//$table = new stdClass;
 
 //print_r($peerassessment);
 
@@ -73,71 +73,39 @@ echo "<input type='hidden' name='id' value='{$id}'/><input type='submit' value='
 echo '</form></div>';
 
 if ($groupid) {
-$table=new stdClass;
-$table->head = array();
-//$table->head[] ="";
-$table->head[] ="Student\Recipient &gt;";
-foreach($members as $m2) {
-    $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
-}
-$recieved_totals = array();
-$recieved_counts = array();
 
-foreach($members as $m) {
-  $a = array();
-  $name = "{$m->lastname}, {$m->firstname} ({$m->id})";
-  $a[] = $name;
-  $t1 = 0;
-  $c=0;
-  //$recieved_counts[$m2->id] = 0;
-  //$recieved_totals[$m2->id] = 0;             
+//print_r($peerassessment);
+switch ($peerassessment->frequency) {
+  case PA_FREQ_ONCE:
+    $table = peerassessment_get_table_single_frequency($peerassessment,$members);
+    break;
+  case PA_FREQ_WEEKLY:
+    $overview_table = new Stdclass;
+    $overview_table->head[] = '';
+    $a = array(); // average rating
+    $b = array(); //average given rating
+    $a[] = 'Average Rating Recieved';
+    $b[] = 'Average Rating Given';
+    foreach($members as $m) {
+      $overview_table->head[] = $m->lastname . ', '.$m->firstname;
+      $a[] = get_average_rating_for_student($peerassessment,$m->id);
+      $b[] = get_average_rating_by_student($peerassessment,$m->id);                                                                    
+    }
+    //$a[] = '&nbsp;';
+    $overview_table->data[] = $a;
+    $overview_table->data[] = $b;
+    print_heading("Overview");
+    print_table($overview_table);
+    $table = peerassessment_get_table_weekly_frequency($peerassessment,$members);
+    print_heading("Details");    
+    break;  
+  case PA_FREQ_UNLIMITED:
+    $table = peerassessment_get_table_unlimited_frequency($peerassessment,$members);
+    break; 
+  	
+	break;
+}
 
-  foreach($members as $m2) {
-    $sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$m->id} AND userid={$m2->id}";
-    //echo $sql;
-    $rating = get_record_sql($sql);
-    //print_object($rating);
-    if ($rating) {
-      //we have a ratiing fo r this user
-      //$rating = $ratings[0];
-      $a[] = $rating->rating;
-      $t1 = $t1+$rating->rating;
-      $c++;
-      if (!isset( $recieved_totals[$m2->id]) ) {
-        $recieved_totals[$m2->id] =0;      
-      }
-      $recieved_totals[$m2->id] = $recieved_totals[$m2->id]+$rating->rating;
-      if (!isset( $recieved_counts[$m2->id]) ) {
-         $recieved_counts[$m2->id] = 0;
-      }
-      $recieved_counts[$m2->id] = $recieved_counts[$m2->id]+1;
-    }
-    else {
-      $a[] ='-';
-    }
-  }
-  //now display the average mark that m GAVE
-  if ($c>0) {
-    $a[] = $t1/$c;
-  }
-  else {$a[] ='';}
-  $table->data[] = $a;
-}
-//output the average grade received by top of column
-$a = array();
-$a[] = '';
-foreach($members as $m) {
-  $recieved_ave=''; 
-  if (isset($recieved_counts[$m->id]) && $recieved_counts[$m->id] > 0 ) {
-    $recieved_ave = $recieved_totals[$m->id] / $recieved_counts[$m->id];
-  }
-  else {
-    $recieved_ave ='&nbsp;';
-  }
-  $a[] = $recieved_ave;        //NOTE THIS IS ALSO THE RESULT THAT SHOULD GO TO GRADEBOOK!
-}
-$a[] = '&nbsp;';
-$table->data[] = $a;
 
 print_table($table);
      

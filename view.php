@@ -63,38 +63,109 @@ if (isguestuser()) {
     exit;
 
 }
-//print_object($cm);
+
+$alreadyCompleted = false;
+echo "One Week: ". PA_ONE_WEEK;
+$compareTime = time();
+switch($peerassessment->frequency) {
+  case PA_FREQ_ONCE:
+    //find out if the user has completed this acitivy AT ALL
+    //echo '1';
+    if (
+$ratings = get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AND peerassessment={$peerassessment->id}") 
+      ) {
+      $alreadyCompleted = PA_COMPLETED;  
+      //notice(get_string('alreadycompleted','peerassessment'));
+    }
+    //print_r($ratings);
+    break;
+  case PA_FREQ_WEEKLY:
+    //echo 'wkly';
+    $oneWeekAgo =$compareTime - PA_ONE_WEEK;
+    //find out if the user has completed this acitivy within the last week
+    if($ratings = get_records_select('peerassessment_ratings',"timemodified>{$oneWeekAgo} AND peerassessment={$peerassessment->id}")) {
+      //print_r($ratings);
+      //we've got a rating record(s) that are were modified more recenly than a week ago
+      $alreadyCompleted =PA_COMPLETED_THIS_WEEK;
+      //notice(get_string('notenoughtimepassed','peerassessment'));
+    }
+
+    break;
+  case PA_FREQ_UNLIMITED:
+   // echo 'unlim';
+    //just display the thing
+    break;
+}
+
+
 $data = data_submitted();
 if ($data) {
-  //print_r($data);
-  //die();
-  //$cm = get_coursemodule_from_id('peerassessment',$data->cmid);
-  //print_object($cm);
-  //print_object($peerassessment);
-  $comments = $data->comments;
-  $success = true;
-  $submittime = time();// so the ratings are all at the same time
-  foreach((array)$data as $name=>$value) {
-    
-    if (substr(strtolower($name),0,7) =='rating_') {
-      //have a user rating
+  if ($alreadyCompleted && $peerassessment->canedit) 
+  {
+    //we probably have to do an update on each of the existing ratings
+    $comments = $data->comments;                  //TODO WE NEED SAVE THIS
+    $submittime = time();
+    foreach((array)$data as $name=>$value) {
       
-      $userid = substr($name,7);
-      
-      $ins = new stdClass;
-      $ins->ratedby = $USER->id;
-      $ins->peerassessment = $peerassessment->id;
-      $ins->userid=$userid;
-      $ins->rating = $value;
-      $ins->timemodified = $submittime;
-      $result = insert_record('peerassessment_ratings',$ins);
-      //print_object($ins);
-      /*$success = $success & $result;
-      if (!$result) {
-           //die("{$success} Failed to record rating of {$value} for user {$userid}.");
-      }*/
-    }
+      if (substr(strtolower($name),0,7) =='rating_') {
+        //have a user rating
+        //fetch the existing rating
+        $userid = substr($name,7);
+        
+        $select = "SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment = {$peerassessment->id} AND ratedby = {$USER->id} AND userid={$userid}";
+        $ratings = get_records_sql($select);
+        print_r($ratings);        
+        foreach($ratings as $rating) {
+          
+          $ins = new stdClass;
+          $ins->id = $rating->id;
+          $ins->rating = $value;
+          $ins->timemodified = $submittime;
+          //$result = insert_record('peerassessment_ratings',$ins);
+          //print_object($ins);
+          $result = update_record('peerassessment_ratings',$ins);
+        }
+        /*$success = $success & $result;
+        if (!$result) {
+             //die("{$success} Failed to record rating of {$value} for user {$userid}.");
+        }*/
+        
+      }
+    } 
+    //die();       
   }
+  else if (!$alreadyCompleted) {
+    $comments = $data->comments;            //TODO WE NEED SAVE THIS
+    $success = true;
+    $submittime = time();// so the ratings are all at the same time
+    foreach((array)$data as $name=>$value) {
+      
+      if (substr(strtolower($name),0,7) =='rating_') {
+        //have a user rating
+        
+        $userid = substr($name,7);
+        
+        $ins = new stdClass;
+        $ins->ratedby = $USER->id;
+        $ins->peerassessment = $peerassessment->id;
+        $ins->userid=$userid;
+        $ins->rating = $value;
+        $ins->timemodified = $submittime;
+        $result = insert_record('peerassessment_ratings',$ins);
+        //print_object($ins);
+        /*$success = $success & $result;
+        if (!$result) {
+             //die("{$success} Failed to record rating of {$value} for user {$userid}.");
+        }*/
+      }
+    } 
+  }
+  else {
+    //we are already completed but can't edit
+    ///we really shoulnd't do anything 
+  
+  }
+  
   //if (!$success) {
       //die('Unable to save whole peer assessment!');
   //}
@@ -116,33 +187,7 @@ $PAGE->print_header($course->shortname.': %fullname%');
 
 //check what frequency this is running at and if it should be displayed for the user.
 $ratings = false;
-$alreadyCompleted = false;
-switch($peerassessment->frequency) {
-  case PA_FREQ_ONCE:
-    //find out if the user has completed this acitivy AT ALL
-    //echo '1';
-    if ($ratings = get_records('peerassessment_ratings','peerassessment',$peerassessment->id)) {
-      $alreadyCompleted = PA_COMPLETED;  
-      //notice(get_string('alreadycompleted','peerassessment'));
-    }
-    //print_r($ratings);
-    break;
-  case PA_FREQ_WEEKLY:
-    //echo 'wkly';
-    $oneWeekAgo = time() - 604800000;
-    //find out if the user has completed this acitivy within the last week
-    if($ratings = get_records_select('peerassessment_ratings',"timemodified>{$oneWeekAgo} AND peerassessment={$peerassessment->id}")) {
-      //we've got a rating record(s) that are were modified more recenly than a week ago
-      $alreadyCompleted =PA_COMPLETED_THIS_WEEK;
-      //notice(get_string('notenoughtimepassed','peerassessment'));
-    }
 
-    break;
-  case PA_FREQ_UNLIMITED:
-   // echo 'unlim';
-    //just display the thing
-    break;
-}
 
 //die();
 
@@ -222,18 +267,34 @@ foreach ($lt as $column) {
             }
             
             //echo "Completed: ". (int)$alreadyCompleted;
-            if ($alreadyCompleted) {
-              switch($alreadyCompleted) {
+            //if ($alreadyCompleted) {
+           // echo ("Aready completed: ".(int)$alreadyCompleted);
+            
+             $editResponses = $alreadyCompleted && $peerassessment->canedit;
+           // echo ("Responses Can be Edited: ".(int)$editResponses);
+             switch($alreadyCompleted) {
                 case PA_COMPLETED:
-                  notice(get_string('alreadycompleted','peerassessment'));
+                  if ($peerassessment->canedit) {
+                    print_box(get_string('alreadycompleted','peerassessment'));
+                  }
+                  else {
+                    notice(get_string('alreadycompleted','peerassessment'));
+                  }
                   break;
                 case PA_COMPLETED_THIS_WEEK:
-                  notice(get_string('notenoughtimepassed','peerassessment'));
+                  if ($peerassessment->canedit) {
+                    print_box(get_string('notenoughtimepassed','peerassessment'));
+                  }                  
+                  else {
+                    notice(get_string('notenoughtimepassed','peerassessment'));
+                  }
                   break;
               }
               
-            }
-            else {
+            //}
+            //else {
+           
+            if (!$alreadyCompleted | $editResponses) {
             //check that the opening / due times are still OK
               $ctime = time();
               if ($peerassessment->timeavailable!=0 &&
@@ -261,7 +322,7 @@ foreach ($lt as $column) {
                 // assignment
                 //if ($chatusers = chat_get_users($chat->id, $currentgroup, $cm->groupingid)) {
                 echo '<form  method="post">';
-                echo "<input type='text' name='cmid' value='{$cm->id}'/>";
+                echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
                 echo '<table id="members">';
                 echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
                 if ($members){

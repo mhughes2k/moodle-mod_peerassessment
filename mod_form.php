@@ -28,7 +28,6 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         */
         $mform->addElement('select','assignment',get_string('assignment','peerassessment'),$assignments,array('optional'=>true));
 
-
         $mform->addElement('text', 'name', get_string('name'), array('size'=>'48'));
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
@@ -36,14 +35,16 @@ class mod_peerassessment_mod_form extends moodleform_mod {
             $mform->setType('name', PARAM_CLEAN);
         }
         $mform->addRule('name', null, 'required', null, 'client');
+
+        $mform->addElement('selectyesno','canedit',get_string('canedit','peerassessment'));
         
         $mform->addElement('header','scheduling',get_string('scheduling','peerassessment'));
         $options=array();
         $options[0]  = get_string('oncefrequency', 'peerassessment');
-        /*
+        
         $options[1]  = get_string('weeklyfrequency', 'peerassessment');
         $options[2]  = get_string('unlimitedfrequency', 'peerassessment');
-        */
+        
         $mform->addElement('select', 'frequency', get_string('frequency', 'peerassessment'), $options);
         
         $mform->addElement('date_time_selector', 'timeavailable', get_string('availablefrom', 'peerassessment'),array('optional'=>true));
