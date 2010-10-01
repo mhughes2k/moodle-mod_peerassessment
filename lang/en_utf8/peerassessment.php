@@ -1,6 +1,7 @@
 <?php
 $string['modulename'] = 'Peer Assessment Activity';
 $string['modulenameplural'] = 'Peer Assessment Activities';
+$string['nogroup'] = 'You are not a member of a group.';
 $string['assignment'] = 'Assignment';
 $string['noassignment'] = 'No Assignment';
 $string['frequency'] ='Frequency';
