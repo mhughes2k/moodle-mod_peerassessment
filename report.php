@@ -1,5 +1,6 @@
 <?php
 require ('../../config.php');
+
 require_once("lib.php");
 require_once($CFG->dirroot."/lib/tablelib.php");    
 

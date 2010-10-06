@@ -119,13 +119,13 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     }
     //now display the average mark that m GAVE
     if (has_capability('mod/peerassessment:recordrating',$context,$m->id)) {     
-      $a[] = get_average_rating_by_student($peerassessment,$m->id);
+      $a['avggiven'] = get_average_rating_by_student($peerassessment,$m->id);
     }
     else {
       $a[] ='';
     }
     if ($hasEntries) {
-      $a[] = print_delete_attempt_form($peerassessment,$group,$m->id,null,$timemodified);
+      $a[''] = print_delete_attempt_form($peerassessment,$group,$m->id,null,$timemodified);
     }
     
     /*
@@ -138,7 +138,8 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
   }
   //output the average grade received by top of column
   $a = array();
-  $a[] = 'Average Rating Recieved';
+  $a['avgrecieved'] = 'Average Rating Recieved';
+  //$table->rowclass['avgrecieved']='header';
   foreach($members as $m) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
       continue;
@@ -156,7 +157,8 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     */
   }
   //$a[] = '&nbsp;';
-  $table->data[] = $a;
+  $table->data['avgrow'] = $a;
+  
   return $table;
 }
 
