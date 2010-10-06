@@ -12,6 +12,11 @@ $string['weeklyfrequency'] = 'Weekly';
 $string['unlimitedfrequency'] = 'Unlimited';
 $string['scheduling'] = 'Frequency';
 $string['canedit'] = 'Responses can be changed';
+$string['lowerbound'] ='Lower Bound';
+$string['upperbound'] ='Upper Bound';
+$string['lowerbound_help'] ='This is the value <strong>below</strong> which the average rating will be highlighted.';
+$string['upperbound_help'] ='This is the value <strong>above</strong> which the average rating will be highlighted.';
+
 $string['canedithelp'] = 'Allow students to change their responses.';
 $string['additionalinfo'] = '<p>This module <strong>requires</strong> the use of Groups!</p><p>If you have selected an <strong>Assignment</strong> then the groups that are specified for that assignment will be used.</p><p>If you <strong>haven\'t</strong> selected and assignment, you should choose a group option below.</p><p>It is probably easiest to create a \"Peer Assessment\" grouping to hold the groups that will be used.</p>';
 $string['notavailableyet']='This activity is not yet available.';

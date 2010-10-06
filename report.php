@@ -3,12 +3,16 @@ require ('../../config.php');
 require_once("lib.php");
 require_once($CFG->dirroot."/lib/tablelib.php");    
 
-$id = required_param('id',PARAM_INT);	//course module id;
-$groupid = optional_param('selectedgroup',false,PARAM_INT);
 
+
+$id = optional_param('id',false,PARAM_INT);	//course module id;
+$groupid = optional_param('selectedgroup',false,PARAM_INT);
+$startReportPeriod =optional_param('startperiod',false,PARAM_INT);
+
+$p = optional_param('peerassessment',0,PARAM_INT); 
 if($id) {
     if (!$cm = get_coursemodule_from_id('peerassessment', $id)) {
-        error("Course Module ID was incorrect");
+        error("Course Module ID was incorrect (1)");
     }
 
     if (!$course = get_record('course', 'id', $cm->course)) {
@@ -19,11 +23,24 @@ if($id) {
     }
     
 }
+else {
 
+    if (! $peerassessment = get_record('peerassessment', 'id', $p)) {
+        error('Course module is incorrect');
+    }
+    if (! $course = get_record('course', 'id', $peerassessment->course)) {
+        error('Course is misconfigured');
+    }
+    if (! $cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id, $course->id)) {
+        error('Course Module ID was incorrect (2)');
+    }
+    $id=$cm->id;
+}
 require_course_login($course, true, $cm);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
+$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+require_capability('mod/peerassessment:viewreport',$context);
 $ratings = get_records('peerassessment_ratings','peerassessment',$peerassessment->id);
 
 $group = false;
@@ -38,6 +55,50 @@ if($peerassessment->assignment) {
 else {
   $assignment_cm = $cm;
 }
+
+$data = data_submitted();
+
+if ($data) {
+
+  //print_r($data);
+  if(!empty($data->delete)) {
+    //add_to_log('requested deletion of rating')
+    echo "deleting a rating\n";
+    if ($rating = get_record('peerassessment_ratings','id',$data->ratingid)) {  
+      if($rating) {
+        //$rating = get_record_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ");       
+        if(!delete_records('peerassessment_ratings','id',$rating->id)) {
+          notice("Could not delete rating");
+        }
+      }      
+    } 
+    else {
+      if ($rating = get_record_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) { 
+        if(!delete_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) {
+          notice("Could not delete rating");
+        }
+      }
+      else {
+        notice("Couldn't locate a rating for specified user");
+      }
+      
+    }   
+    redirect($CFG->wwwroot."/mod/peerassessment/report.php?selectedgroup={$groupid}&id={$id}");  
+  }	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 $displaygroups= array();
   //display a list of groups to display
 $groups = groups_get_activity_allowed_groups($assignment_cm);
@@ -77,7 +138,7 @@ if ($groupid) {
 //print_r($peerassessment);
 switch ($peerassessment->frequency) {
   case PA_FREQ_ONCE:
-    $table = peerassessment_get_table_single_frequency($peerassessment,$members);
+    $table = peerassessment_get_table_single_frequency($peerassessment,$group);
     break;
   case PA_FREQ_WEEKLY:
     $overview_table = new Stdclass;
@@ -96,11 +157,11 @@ switch ($peerassessment->frequency) {
     $overview_table->data[] = $b;
     print_heading("Overview");
     print_table($overview_table);
-    $table = peerassessment_get_table_weekly_frequency($peerassessment,$members);
+    $table = peerassessment_get_table_weekly_frequency($peerassessment,$group);//$members);
     print_heading("Details");    
     break;  
   case PA_FREQ_UNLIMITED:
-    $table = peerassessment_get_table_unlimited_frequency($peerassessment,$members);
+    $table = peerassessment_get_table_unlimited_frequency($peerassessment,$group);//$members);
     break; 
   	
 	break;

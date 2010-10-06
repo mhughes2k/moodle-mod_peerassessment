@@ -10,8 +10,8 @@ define('PA_LOWER_THRESHOLD',2.5);
 /**
  *  One week in seconds!
  **/ 
-//define('PA_ONE_WEEK',604800);//000);
-define('PA_ONE_WEEK',5); // 5 seconds (for testing only!)
+define('PA_ONE_WEEK',604800);//000);
+//define('PA_ONE_WEEK',60*60*24); // 5 seconds (for testing only!)
 
 function peerassessment_add_instance($pa) {
   global $USER;
@@ -42,36 +42,64 @@ function get_week_start_from_time($start_date){
 /**
  * Returns a table displaying the results for SINGLE frequency Peerassessment
  */ 
-function peerassessment_get_table_single_frequency($peerassessment,$members) {
+function peerassessment_get_table_single_frequency($peerassessment,$group) {
   global $CFG;
+  //print_r($group);
+
+  $cm = get_coursemodule_from_instance('peerassessment',$peerassessment->id);  
+  $context = get_context_instance(CONTEXT_MODULE,$cm->id);
+
+  $members = groups_get_members($group->id);
   $table=new stdClass;
   $table->head = array();
   //$table->head[] ="";
   $table->head[] ="Student\Recipient &gt;";
   foreach($members as $m2) {
-      $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
+    if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
+      continue;
+    }
+    $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
   }
   $recieved_totals = array();
   $recieved_counts = array();
-  
+
+  $timemodified = -1;
+
+   
   foreach($members as $m) {
+    if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
+      continue;
+    }
     $a = array();
+    $comment = get_record('peerassessment_comments','userid',$m->id,'peerassessment',$peerassessment->id);
+//    print_r($comment);
     $name = "{$m->lastname}, {$m->firstname} ({$m->id})";
+    if($comment) {
+      //$c = addslashes($comment->studentcomment);
+      $c = $comment->studentcomment;
+      $name.="<sup><span class='popup' title=\"{$c}\">[Comment]</span></sup>";
+    }
     $a[] = $name;
     $t1 = 0;
     $c=0;
     //$recieved_counts[$m2->id] = 0;
     //$recieved_totals[$m2->id] = 0;             
-  
+    $hasEntries = false;   
     foreach($members as $m2) {
+      if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
+        continue;
+      }
       $sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$m->id} AND userid={$m2->id}";
       //echo $sql;
       $rating = get_record_sql($sql);
       //print_object($rating);
+      
       if ($rating) {
+        $hasEntries = true;
+        $timemodified = $rating->timemodified;
         //we have a ratiing fo r this user
         //$rating = $ratings[0];
-        $a[] = $rating->rating;
+        $a[] = $rating->rating ;//.print_delete_attempt_form($peerassessment,$m->id,$rating,null);
         $t1 = $t1+$rating->rating;
         $c++;
         if (!isset( $recieved_totals[$m2->id]) ) {
@@ -82,13 +110,23 @@ function peerassessment_get_table_single_frequency($peerassessment,$members) {
            $recieved_counts[$m2->id] = 0;
         }
         $recieved_counts[$m2->id] = $recieved_counts[$m2->id]+1;
+        
       }
       else {
         $a[] ='-';
       }
     }
     //now display the average mark that m GAVE
-    $a[] = get_average_rating_by_student($peerassessment,$m->id);
+    if (has_capability('mod/peerassessment:recordrating',$context,$m->id)) {     
+      $a[] = get_average_rating_by_student($peerassessment,$m->id);
+    }
+    else {
+      $a[] ='';
+    }
+    if ($hasEntries) {
+      $a[] = print_delete_attempt_form($peerassessment,$group,$m->id,null,$timemodified);
+    }
+    
     /*
     if ($c>0) {
       $a[] = $t1/$c;
@@ -101,6 +139,9 @@ function peerassessment_get_table_single_frequency($peerassessment,$members) {
   $a = array();
   $a[] = '';
   foreach($members as $m) {
+    if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
+      continue;
+    }
     $a[] = get_average_rating_for_student($peerassessment,$m->id);
     /*
     $recieved_ave=''; 
@@ -118,8 +159,9 @@ function peerassessment_get_table_single_frequency($peerassessment,$members) {
   return $table;
 }
 
-function peerassessment_get_table_weekly_frequency($peerassessment,$members,$showdetails=true) {
+function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showdetails=true) {
   global $CFG;
+  $members = $members = groups_get_members($group->id);
   $table=new stdClass;
   $table->head = array();
   //$table->head[] ="";
@@ -136,6 +178,11 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$members,$sho
   //get earliest recorded entry
   $earliest_sql = "SELECT min(timemodified) AS timemodifed FROM {$CFG->prefix}peerassessment_ratings WHERE  peerassessment ={$peerassessment->id} ";
   $earliest_rs = get_record_sql($earliest_sql);
+  //print_r($earliest_rs);
+  if (!isset($earliest_rs->timemodifed)) {
+    $table->data[] = array('No Entries');
+    return $table;
+  } 
   $earliest_date=strtotime("last monday", $earliest_rs->timemodifed);
   //echo "Start of week: ".date('r',$earliest_date). ':'.$earliest_date;
   $last_sql ="SELECT max(timemodified) AS timemodifed FROM {$CFG->prefix}peerassessment_ratings WHERE  peerassessment ={$peerassessment->id}"; 
@@ -144,14 +191,19 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$members,$sho
   //echo "Last day of entries: ".date('r',$last_date).":".$last_date;
   
   $duration_secs = $last_date -$earliest_date; //gives number of seconds entries have been made over
-  $duration_weeks = ceil(((($duration_secs/60)/60)/24)/7);
-  //echo "Duration of entries: ".$duration_weeks.' weeks ';
+  $duration_weeks = ceil($duration_secs/PA_ONE_WEEK);//((($duration_secs/60)/60)/24)/7);
+  echo "Duration of entries: ".$duration_weeks.' periods ';
   //get_week_start_from_time($start_date
+  //if ($duration_weeks > 10) {
+    //$duration_weeks = 1
+  //}  
   $startDate = $earliest_date;
   $entries_for_week = array();
   for($i = 0 ;$i < $duration_weeks; $i++) {
     //get all of the entries for the given week and each member
-    $endDate = strtotime("next monday",$startDate); //this is the sunday/monday midnight
+    $offset="+ ".PA_ONE_WEEK .' seconds';
+    $endDate = strtotime($offset,$startDate); //this is the sunday/monday midnight
+   // echo (date('r',$startDate) .'-'.date('r',$endDate)."<br />");
     $entries_for_week_sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND timemodified >= $startDate and timemodified<=$endDate";
     $entries = get_records_sql($entries_for_week_sql);
 //print_object($entries);    
@@ -186,7 +238,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$members,$sho
     foreach($entries_for_week as $week => $value) {
       //echo 'Week Starting ' .date('d-M-Y',$week);
       if (!$doneheadings && $showdetails) {
-        $heading[]='Week Starting ' .date('d-M-Y',$week);
+        $heading[]='Week Starting ' .date('D d-M-Y',$week);
         for($j= 0 ;$j<count($members)-1;$j++) {
           $heading[] ='';
         }
@@ -236,7 +288,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$members,$sho
         //}
          
       }
-
+      
           
       //$table->data[] = array('Week Starting ' .date('r',$week));//date('r',$week);
     }
@@ -286,9 +338,10 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$members,$sho
   return $table;
 }
 
-function peerassessment_get_table_unlimited_frequency($peerassessment,$members) {
+function peerassessment_get_table_unlimited_frequency($peerassessment,$group) {
   $table=new stdClass;
   $table->head = array();
+  $members = $members = groups_get_members($group->id);
   //$table->head[] ="";
   $table->head[] ="Student\Recipient &gt;";
   foreach($members as $m2) {
@@ -305,10 +358,10 @@ function get_average_rating_for_student($peerassessment,$userid) {
   $sql = "SELECT AVG(rating) AS average FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND userid={$userid}";
   $rs = get_record_sql($sql);
   if ($rs->average >PA_UPPER_THRESHOLD) {
-    return "<sup>+</sup>".$rs->average;//"<img src='abovethreshold.png' alt='Above Threshold'/>";
+    return "<span style='color:green'><sup>+</sup>".$rs->average."</span>";//"<img src='abovethreshold.png' alt='Above Threshold'/>";
   }  
   if ($rs->average < PA_LOWER_THRESHOLD) {
-    return "<sup>-</sup>.$rs->average";//"<img src='belowthreshold.png' alt='Below Threshold'/>";
+    return "<span style='color:red'><sup style='color:red'>-</sup>".$rs->average."</span>";//"<img src='belowthreshold.png' alt='Below Threshold'/>";
   }
   return $rs->average;
 }
@@ -318,10 +371,40 @@ function get_average_rating_by_student($peerassessment,$userid) {
   $rs = get_record_sql($sql);
   //print_r($rs);  
   if ($rs->average >PA_UPPER_THRESHOLD) {
-    return "<sup>+</sup>".$rs->average;//"<img src='abovethreshold.png' alt='Above Threshold'/>";
+    return "<span style='color:green'><sup style='color:green'>+</sup>".$rs->average."</span>";//"<img src='abovethreshold.png' alt='Above Threshold'/>";
   }  
   if ($rs->average <PA_LOWER_THRESHOLD) {
-    return "<sup>-</sup>".$rs->average;//<img src='belowthreshold.png' alt='Below Threshold'/>";
+    return "<span style='color:red'><sup style='color:red'>-</sup>".$rs->average ."</span>";//<img src='belowthreshold.png' alt='Below Threshold'/>";
   }
   return $rs->average;
+}
+
+/**
+ * Displays a form that allows an appropriate user to delete a rating or ratings.
+ **/ 
+function print_delete_attempt_form($peerassessment,$group,$userid,$rating=null,$timemodified=null, $return = true) {
+  global $CFG, $USER;
+  $cm = get_coursemodule_from_instance('peerassessment',$peerassessment->id);  
+  $context = get_context_instance(CONTEXT_MODULE,$cm->id);
+  if (!has_capability('mod/peerassessment:deleteratings',$context)) {
+    return '';  //don't return a form
+  }
+  $out = "<form action='report.php' method='post'>";
+  
+  $ratingid='';
+  if(!is_null($rating)) {
+    $ratingid=$rating->id;  
+  }
+  $out.="<input type='hidden' name='ratingid' value='{$ratingid}'/>";
+  $out.="<input type='hidden' name='ratingtime' value='{$timemodified}'/>";
+  $out.="<input type='hidden' name='peerassessment' value='{$peerassessment->id}'/>";
+  $out.="<input type='hidden' name='userid' value='{$userid}'/>";
+  $out.="<input type='hidden' name='selectedgroup' value='{$group->id}'/>";  
+  $out.="<input type='submit' name='delete' value='Delete'/>";
+  $out.="</form>";                                                               
+
+  if ($return) {
+    return $out;
+  }
+  echo $out;
 }

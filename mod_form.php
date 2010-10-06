@@ -49,7 +49,18 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         
         $mform->addElement('date_time_selector', 'timeavailable', get_string('availablefrom', 'peerassessment'),array('optional'=>true));
         $mform->addElement('date_time_selector', 'timedue', get_string('submissiondate', 'peerassessment'),array('optional'=>true));
-  
+
+        $mform->addElement('header','advancedsettings','Advanced');
+        $mform->addElement('text','lower_bound',get_string('lowerbound','peerassessment'),array('value'=>'2.5'));
+        $mform->setHelpButton('lower_bound',array('bounds',get_string('lowerbound','peerassessment'),'peerassessment'));
+        $mform->addElement('text','upper_bound',get_string('upperbound','peerassessment'),array('value'=>'3.5'));
+        $mform->setHelpButton('upper_bound',array('bounds',get_string('upper_bound','peerassessment'),'peerassessment'));
+
+        $mform->addRule('lower_bound','Must be numeric','numeric',null,'client');
+        //$mform->addRule('lower_bound','Must be between less than or equal to 5','compare',array(,'client');
+        $mform->addRule('upper_bound','Must be numeric','numeric',null,'client');
+
+
         $mform->addElement('header','additionalinfo','Additional Information');
                
         $mform->addElement('html',get_string('additionalinfo','peerassessment')); 

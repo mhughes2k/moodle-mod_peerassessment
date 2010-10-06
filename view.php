@@ -100,10 +100,11 @@ $ratings = get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AN
 
 $data = data_submitted();
 if ($data) {
+//print_r($data);
   if ($alreadyCompleted && $peerassessment->canedit) 
   {
     //we probably have to do an update on each of the existing ratings
-    $comments = $data->comments;                  //TODO WE NEED SAVE THIS
+    $comments = $data->comments;                  
     $submittime = time();
     foreach((array)$data as $name=>$value) {
       
@@ -114,7 +115,7 @@ if ($data) {
         
         $select = "SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment = {$peerassessment->id} AND ratedby = {$USER->id} AND userid={$userid}";
         $ratings = get_records_sql($select);
-        print_r($ratings);        
+        //print_r($ratings);        
         foreach($ratings as $rating) {
           
           $ins = new stdClass;
@@ -123,15 +124,21 @@ if ($data) {
           $ins->timemodified = $submittime;
           //$result = insert_record('peerassessment_ratings',$ins);
           //print_object($ins);
+         // $ins->studentcomment  = $comments;
           $result = update_record('peerassessment_ratings',$ins);
         }
+     
         /*$success = $success & $result;
         if (!$result) {
              //die("{$success} Failed to record rating of {$value} for user {$userid}.");
         }*/
         
       }
-    } 
+    }
+    $co = get_record('peerassessment_comments','userid',$USER->id,'peerassessment',$peerassessment->id);
+    $co->timemodified= $submittime;
+    $co->studentcomment=$comments; 
+    update_record('peerassessment_comments',$co);   
     //die();       
   }
   else if (!$alreadyCompleted) {
@@ -151,14 +158,23 @@ if ($data) {
         $ins->userid=$userid;
         $ins->rating = $value;
         $ins->timemodified = $submittime;
+        //$ins->studentcomment  = $comments;  //this will overwrite        
         $result = insert_record('peerassessment_ratings',$ins);
+        
         //print_object($ins);
         /*$success = $success & $result;
         if (!$result) {
              //die("{$success} Failed to record rating of {$value} for user {$userid}.");
         }*/
       }
-    } 
+    }
+    $co = new stdClass;
+    $co->userid=$USER->id;
+    $co->peerassessment=$peerassessment->id;
+    $co->timecreated= $submittime;
+    $co->timemodified= $submittime;
+    $co->studentcomment=$comments;
+    $co_result = insert_record('peerassessment_comments',$co); 
   }
   else {
     //we are already completed but can't edit
@@ -327,6 +343,9 @@ foreach ($lt as $column) {
                 echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
                 if ($members){
                 foreach ($members as $user) {
+                  if (!has_capability('mod/peerassessment:recordrating',$context,$user->id)) {
+                    continue;
+                  }
                     echo '<tr>';
                     echo '<td>';
                     echo "{$user->lastname}, {$user->firstname}";
@@ -346,7 +365,9 @@ foreach ($lt as $column) {
                   echo "<tr><td>".get_string('nomembersfound','peerassessment').'</td></tr>';
               }
               echo "<tr><th colspan='6'>Comments</th></tr>";
-              echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40'></textarea></td></tr>";
+              echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40'>";
+              //really should display existing comment
+              echo "</textarea></td></tr>";
               echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='reset' value='Cancel'/></td></tr>";
               echo '</table>';
               echo '</form>';
