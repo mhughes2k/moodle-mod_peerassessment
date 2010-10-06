@@ -65,7 +65,7 @@ if (isguestuser()) {
 }
 
 $alreadyCompleted = false;
-echo "One Week: ". PA_ONE_WEEK;
+
 $compareTime = time();
 switch($peerassessment->frequency) {
   case PA_FREQ_ONCE:
