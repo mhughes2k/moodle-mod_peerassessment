@@ -60,6 +60,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     }
     $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
   }
+  $table->head[] = "Average Rating Given";
   $recieved_totals = array();
   $recieved_counts = array();
 
@@ -137,7 +138,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
   }
   //output the average grade received by top of column
   $a = array();
-  $a[] = '';
+  $a[] = 'Average Rating Recieved';
   foreach($members as $m) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
       continue;
@@ -154,7 +155,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     $a[] = $recieved_ave;        //NOTE THIS IS ALSO THE RESULT THAT SHOULD GO TO GRADEBOOK!
     */
   }
-  $a[] = '&nbsp;';
+  //$a[] = '&nbsp;';
   $table->data[] = $a;
   return $table;
 }
