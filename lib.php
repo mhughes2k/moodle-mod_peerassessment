@@ -56,7 +56,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
   $table->head[] ="Student\Recipient &gt;";
   foreach($members as $m2) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
-      continue;
+      //continue;
     }
     $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
   }
@@ -69,7 +69,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
    
   foreach($members as $m) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
-      continue;
+     // continue;
     }
     $a = array();
     $comment = get_record('peerassessment_comments','userid',$m->id,'peerassessment',$peerassessment->id);
@@ -88,7 +88,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     $hasEntries = false;   
     foreach($members as $m2) {
       if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
-        continue;
+        //continue;
       }
       $sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$m->id} AND userid={$m2->id}";
       //echo $sql;
@@ -118,14 +118,14 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
       }
     }
     //now display the average mark that m GAVE
-    if (has_capability('mod/peerassessment:recordrating',$context,$m->id)) {     
       $a['avggiven'] = get_average_rating_by_student($peerassessment,$m->id);
+    if (has_capability('mod/peerassessment:deleteratings',$context)) {     
+      if ($hasEntries) {
+        $a[''] = print_delete_attempt_form($peerassessment,$group,$m->id,null,$timemodified);
+      }
     }
     else {
-      $a[] ='';
-    }
-    if ($hasEntries) {
-      $a[''] = print_delete_attempt_form($peerassessment,$group,$m->id,null,$timemodified);
+      //$a[] ='';
     }
     
     /*
@@ -142,7 +142,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
   //$table->rowclass['avgrecieved']='header';
   foreach($members as $m) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
-      continue;
+      //continue;
     }
     $a[] = get_average_rating_for_student($peerassessment,$m->id);
     /*

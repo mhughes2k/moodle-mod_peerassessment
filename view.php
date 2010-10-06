@@ -101,6 +101,12 @@ $ratings = get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AN
 $data = data_submitted();
 if ($data) {
 //print_r($data);
+  if ($data->cancel) {
+    //user clicked on the cancel button;
+    redirect($CFG->wwwroot.'/course/view.php?id='.$course->id);
+    exit();
+  }
+//die();
   if ($alreadyCompleted && $peerassessment->canedit) 
   {
     //we probably have to do an update on each of the existing ratings
@@ -368,7 +374,7 @@ foreach ($lt as $column) {
               echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40'>";
               //really should display existing comment
               echo "</textarea></td></tr>";
-              echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='reset' value='Cancel'/></td></tr>";
+              echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='submit' name='cancel' value='Cancel'/></td></tr>";
               echo '</table>';
               echo '</form>';
               print_container_end();
