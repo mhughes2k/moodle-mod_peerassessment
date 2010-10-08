@@ -227,42 +227,43 @@ $groupmode = false;
 $group_context=false;
 //print_object($peerassessment);
 if($peerassessment->assignment) {
-  //use the underlying activities
-  //echo 'Has assignment';
+
   if(!$assignment_cm = get_coursemodule_from_id('assignment',$peerassessment->assignment)){//,$peerassessment->course)) {
     die('Couldn\'t get cm for assignment');
   }
- // print_r($assignment_cm);
-  $groupmode = groups_get_activity_groupmode($assignment_cm);
+  $groupmode = groups_get_activity_groupmode($assignment_cm,$course);
 
-  $groupid = groups_get_activity_group($assignment_cm,true);
+  $groupid = groups_get_activity_group($assignment_cm);
   
   $group_context = get_context_instance(CONTEXT_MODULE, $assignment_cm->id);
 }
 else {
-  //echo 'doesn\'t have assignment';
-  //we should use the peer assessment's group
   $groupmode = groups_get_activity_groupmode($cm);
   $groupid = groups_get_activity_group($cm,true);
   $group_context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
 }
 
-$members = groups_get_members($groupid);
+
 
 if (!$group = groups_get_group($groupid) ) {
-  if (!has_capability('moodle/course:recordrating',$context,$USER->id,false)) {
+  notice(get_string('nogroup','peerassessment'));
+  exit();
+}
+if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id,false)) {
     $a = new stdClass;
     $a->id = $cm->id;
     notice(get_string('mustbestudent','peerassessment',$cm->id));
     exit();
-  }
-  else {
-    notice(get_string('nogroup','peerassessment'));
-    exit();
-  }
 }
 
+$members = groups_get_members($groupid);
+
+if (!in_array($USER->id,array_keys($members))) {//$USER->id)) {
+  notice(get_string('usernotactuallyingroup','peerassessment'));
+  add_to_log($course->id, 'peerassessment', 'rate other', "", "Attempted to record attempt for group user wasn't a member of.",$cm->id);
+  exit();
+}
 
 $a = new stdClass;
 $a->peerassessmentname = $peerassessment->name;

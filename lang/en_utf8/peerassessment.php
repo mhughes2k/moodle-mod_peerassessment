@@ -30,4 +30,6 @@ $string['notenoughtimepassed'] = 'You can\'t complete this activity just now, no
 $string['nomembersfound'] = 'No members found';
 $string['viewreport'] ='View Report';
 $string['peerassessmentreportheading'] = 'Peer Assessment Activity Report: $a->name';
+
+$string['usernotactuallyingroup'] = 'You are not actually in this group. This has been recorded';
 ?>
