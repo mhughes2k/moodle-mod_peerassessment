@@ -5,6 +5,8 @@
 .cavggiven {
 //  border-left:thin solid black;
 }
+/*
 .lastrow {
   border-top:thick double #eee;
 }
+*/

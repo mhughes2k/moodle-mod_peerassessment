@@ -6,7 +6,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
     function definition() {
         global $CFG,$COURSE;
         $mform =& $this->_form;
-
+        //$mform->setHelpButton('upper_bound',array('bounds',get_string('upper_bound','peerassessment'),'peerassessment'));
 //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
         
@@ -38,7 +38,8 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
         $mform->addElement('selectyesno','canedit',get_string('canedit','peerassessment'));
         
-        $mform->addElement('header','scheduling',get_string('scheduling','peerassessment'));
+        //$mform->addElement('header','scheduling',get_string('scheduling','peerassessment'));
+        $mform->addElement('header','advancedsettings','Advanced');
         $options=array();
         $options[0]  = get_string('oncefrequency', 'peerassessment');
         
@@ -46,11 +47,16 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $options[2]  = get_string('unlimitedfrequency', 'peerassessment');
         
         $mform->addElement('select', 'frequency', get_string('frequency', 'peerassessment'), $options);
+        //$mform->setAdvanced('scheduling');
+        //$mform->disabledIf('frequency','assignment','neq','0');
         
         $mform->addElement('date_time_selector', 'timeavailable', get_string('availablefrom', 'peerassessment'),array('optional'=>true));
+        //$mform->setAdvanced('timeavailable');
         $mform->addElement('date_time_selector', 'timedue', get_string('submissiondate', 'peerassessment'),array('optional'=>true));
+        //$mform->setAdvanced('timedue');
 
-        $mform->addElement('header','advancedsettings','Advanced');
+        
+        $mform->setAdvanced('advancedsettings');
         $mform->addElement('text','lower_bound',get_string('lowerbound','peerassessment'),array('value'=>'2.5'));
         $mform->setHelpButton('lower_bound',array('bounds',get_string('lowerbound','peerassessment'),'peerassessment'));
         $mform->addElement('text','upper_bound',get_string('upperbound','peerassessment'),array('value'=>'3.5'));

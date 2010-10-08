@@ -18,21 +18,144 @@ function peerassessment_add_instance($pa) {
   
   //print_object($pa);
   
-  if ($returnid = insert_record('peerassessment',$pa)) {
-  
+  if (!$returnid = insert_record('peerassessment',$pa)) {
+    return false;
   }
+  peerassessment_grade_item_update(stripslashes_recursive($pa));
   return $returnid;                              
 }
 
 function peerassessment_update_instance($pa) {
   //print_object($pa);
   $pa->id = $pa->instance;
-  if ($returnid = update_record('peerassessment',$pa)) {
-  
+  if (!$returnid = update_record('peerassessment',$pa)) {
+    return false;  
   }
+  peerassessment_grade_item_update(stripslashes_recursive($pa));
   
+  peerassessment_update_grades(stripslashes_recursive($pa),0,false);
   return $returnid;
 }
+
+function peerassessment_delete_instance($id) {
+  if (! $pa = get_record('peerassessment','id',$id)) {
+    return false;
+  }
+  $result = true;
+  if (! delete_records('peerassessment','id',$pa->id)) {
+    $result = false;
+  }  
+  if (! delete_records('peerassessment_ratings','peerassessment',$pa->id)) {
+    $result = false;
+  }
+    
+  if ($events = get_records_select('event',"modulename = 'peerassessment' and instance = '{$pa->id}'")) {
+    foreach($events as $event) {
+      delete_event($event->id);
+    }
+  }  
+  peerassessment_grade_item_delete($pa);  
+  //die("deleteing {$pa}");
+  return $result;
+}
+function peerassessment_get_user_grades($pa,$userid=0) {
+  global $CFG;
+  $user = $userid ? "AND userid=$userid" :"";
+  
+  $sql = "SELECT userid as userid, AVG(rating) AS rawgrade FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$pa->id} $user GROUP BY userid";
+
+  //TODO we still need to sling the comment into the grade object.
+  
+  $grades = get_records_sql($sql);
+  return $grades;
+/*  
+  //print_r($grades);
+  //print_r($pa);
+  
+  
+  $results = array();
+  $r = new stdClass;
+  $r->userid = $userid;
+  $r->rawgrade = 0;
+  $r->feedback ='ffedback';
+  $r->usermodified = 0;
+  $r->dategraded = 0;
+  $r->datesubmitted = 0;
+  $results[$r->userid]=$r;        
+  print_object($results);             
+  return $results;// get_records_sql($sql); 
+  */ 
+}
+
+/** 
+ * Updates the grades in the Gradebook
+ */ 
+function peerassessment_update_grades($pa = null,$userid=0, $nullifnone=true) {
+  global $CFG;
+  if (!function_exists('grade_update')) {
+    require_once($CFG->libdir.'/gradelib.php');
+  }
+  //die('updating grade 1');
+  if ($pa != null) {
+    
+    if ($grades = peerassessment_get_user_grades($pa,$userid)) {
+      peerassessment_grade_item_update($pa,$grades);      
+    }
+    else if ($userid and $nullifnone) {
+      $grade = new Stdclass;
+      $grade->userid=$userid;
+      $grade->rawgrade = NULL;
+      peerassessment_grade_item_update($pa,$grade);
+    }
+    else {
+      peerassessment_grade_item_update($pa);    
+    }
+    //die('updating grade 2');  
+  }
+  //die('updating grade END');  
+  //return true;
+}
+
+function peerassessment_grade_item_delete($data) {
+  global $CFG;
+  if (!function_exists('grade_update')) {
+    require_once($CFG->libdir.'/gradelib.php');
+  }
+  return grade_update('mod/peerassessment',$data->course,'mod','peerassessment',$pa->id,0,NULL, array('deleted'=>1));
+}
+
+/**
+ * Creates a grade item for a particular peerassessment activity
+ */  
+function peerassessment_grade_item_update($pa,$grades=null) {
+  global $CFG;
+
+  if (!function_exists('grade_update')) {
+    require_once($CFG->libdir.'/gradelib.php');
+  }
+
+  $params =array('itemname'=>$pa->name);
+  $params['gradetype'] = GRADE_TYPE_VALUE;
+  $params['grademax'] = 5;
+  $params['grademin'] = 1;
+  if ($grades ==='reset') {
+    $params['reset'] = true;
+    $grades= NULL;
+  }
+  else if (!empty($grades)){
+    
+  }
+  return grade_update('mod/peerassessment',$pa->course,'mod','peerassessment',$pa->id,0,$grades,$params);
+}
+
+function peerassessment_reset_gradebook() {
+
+}
+
+
+/*
+ * From here on is all custom code, above is "Moodle" required code
+ */ 
 
 function get_week_start_from_time($start_date){
   return mktime(0, 0, 0, date('m', $start_date), date('d', $start_date), date('Y', $start_date)) - ((date("w", $start_date) ==0) ? 0 : (86400 * date("w", $start_date)));
@@ -56,7 +179,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
   $table->head[] ="Student\Recipient &gt;";
   foreach($members as $m2) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
-      //continue;
+      continue;
     }
     $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
   }
@@ -69,7 +192,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
    
   foreach($members as $m) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
-     // continue;
+      continue;
     }
     $a = array();
     $comment = get_record('peerassessment_comments','userid',$m->id,'peerassessment',$peerassessment->id);
@@ -88,7 +211,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     $hasEntries = false;   
     foreach($members as $m2) {
       if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
-        //continue;
+        continue;
       }
       $sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$m->id} AND userid={$m2->id}";
       //echo $sql;
@@ -142,7 +265,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
   //$table->rowclass['avgrecieved']='header';
   foreach($members as $m) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
-      //continue;
+      continue;
     }
     $a[] = get_average_rating_for_student($peerassessment,$m->id);
     /*

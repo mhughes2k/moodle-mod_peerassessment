@@ -107,6 +107,7 @@ if ($data) {
     exit();
   }
 //die();
+  require_capability('mod/peerassessment:recordrating',$context);
   if ($alreadyCompleted && $peerassessment->canedit) 
   {
     //we probably have to do an update on each of the existing ratings
@@ -193,6 +194,7 @@ if ($data) {
   //}
 
 //print_r($data);
+  peerassessment_update_grades($peerassessment);//,$USER->id);    //update this user's grade in gradebook
   redirect($CFG->wwwroot."/course/view.php?id={$course->id}");
   exit();
 }
@@ -249,7 +251,7 @@ else {
 $members = groups_get_members($groupid);
 
 if (!$group = groups_get_group($groupid) ) {
-  if (has_capability('moodle/course:manageactivities',$context)) {
+  if (!has_capability('moodle/course:recordrating',$context,$USER->id,false)) {
     $a = new stdClass;
     $a->id = $cm->id;
     notice(get_string('mustbestudent','peerassessment',$cm->id));
@@ -339,6 +341,7 @@ foreach ($lt as $column) {
               
               }
               else {
+                require_capability('mod/peerassessment:recordrating',$context,true);
                 print_container_start();
                 //get a list of the all the members of the group that this user is in for the underlying a
                 // assignment

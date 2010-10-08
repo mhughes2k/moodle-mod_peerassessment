@@ -106,7 +106,12 @@ $groups = groups_get_activity_allowed_groups($assignment_cm);
 foreach($groups as $g) {
   $displaygroups[$g->id] =$g->name;
 }
-
+//print_r($displaygroups);
+ksort($displaygroups,SORT_STRING);      /*  This is a hack based on the fact that 
+                                            groups are created in numeric/
+                                            alphabetical order.
+                                        */
+//print_r($displaygroups);
 
 $members = groups_get_members($groupid);
 
@@ -175,3 +180,5 @@ print_table($table);
 else {
   print_box("Please choose a group to display.");
 }     
+
+print_object(peerassessment_get_user_grades($peerassessment));

@@ -30,24 +30,42 @@ print_heading(get_string('modulenameplural','peerassessment'));
 
 print_box_start();
 $table=new stdClass;
-$table->head = array('Peer Assessment Activity','Associated Assignment');       
+$table->head = array('Peer Assessment Activity','Associated Assignment','Frequency');       
 if ( $activities = get_records('peerassessment','course',$course->id)) {
 
 foreach($activities as $a) {
   $e = array();
   $e[]= "<A href='{$CFG->wwwroot}/mod/peerassessment/view.php?p={$a->id}'>$a->name</a>";
   //print_r($a);
-  $ass_cm = get_coursemodule_from_id('assignment', $a->assignment);
-  $ass = get_record('assignment','id',$ass_cm->instance);
-  if (
-    $ass_cm  
-  && 
-    $ass
-  ) {
-    $e[] = $ass->name;
+  if ($a->assignment) {
+    $ass_cm = get_coursemodule_from_id('assignment', $a->assignment);
+    if (!$ass_cm) {
+      $table->data[]= array("Could not get course module from id",print_r($a,true));
+      //continue;
+    }
+    $ass = get_record('assignment','id',$ass_cm->instance);
+    if (
+      $ass_cm  
+    && 
+      $ass
+    ) {
+      $e[] = $ass->name;
+    }
   }
   else {
-    $e[] ='None';
+    $e[] ='No Associated Assignment';
+  }
+  switch($a->frequency) {
+    case PA_FREQ_WEEKLY:
+      $e[] = 'Weekly';
+      break;
+    case PA_FREQ_UNLIMITED:
+      $e[] = 'Unlimited';
+      break;
+    case PA_FREQ_ONCE:
+      $e[] = 'Once';
+      break;
+
   }
  // $e[] =print_r($a,true);
   $table->data[] = $e;
