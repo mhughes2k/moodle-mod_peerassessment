@@ -246,9 +246,12 @@ else {
 
 
 
-if (!$group = groups_get_group($groupid) ) {
-  notice(get_string('nogroup','peerassessment'));
-  exit();
+if (!$group = groups_get_group($groupid)  ) {
+  if (!has_capability('mod/peerassessment:viewreport',$context,$USER->id)) {
+    notice(get_string('nogroup','peerassessment'));
+    exit();
+  }
+  
 }
 if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id,false)) {
     $a = new stdClass;
