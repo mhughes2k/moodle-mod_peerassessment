@@ -100,8 +100,8 @@ $ratings = get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AN
 
 $data = data_submitted();
 if ($data) {
-//print_r($data);
-  if ($data->cancel) {
+
+  if (!empty($data->cancel)) {
     //user clicked on the cancel button;
     redirect($CFG->wwwroot.'/course/view.php?id='.$course->id);
     exit();
@@ -167,7 +167,9 @@ if ($data) {
         $ins->timemodified = $submittime;
         //$ins->studentcomment  = $comments;  //this will overwrite        
         $result = insert_record('peerassessment_ratings',$ins);
-        
+        if ($result) {
+         
+        }        
         //print_object($ins);
         /*$success = $success & $result;
         if (!$result) {
@@ -194,7 +196,8 @@ if ($data) {
   //}
 
 //print_r($data);
-  peerassessment_update_grades($peerassessment);//,$USER->id);    //update this user's grade in gradebook
+//  peerassessment_update_grades($peerassessment),$USER->id);    //update this user's grade in gradebook
+  peerassessment_update_grades(stripslashes_recursive($peerassessment));
   redirect($CFG->wwwroot."/course/view.php?id={$course->id}");
   exit();
 }

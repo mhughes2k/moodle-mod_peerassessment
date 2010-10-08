@@ -21,7 +21,8 @@ function peerassessment_add_instance($pa) {
   if (!$returnid = insert_record('peerassessment',$pa)) {
     return false;
   }
-  peerassessment_grade_item_update(stripslashes_recursive($pa));
+  $pa->id=$returnid;        
+  peerassessment_grade_item_update($pa);//stripslashes_recursive($pa));
   return $returnid;                              
 }
 
@@ -31,9 +32,9 @@ function peerassessment_update_instance($pa) {
   if (!$returnid = update_record('peerassessment',$pa)) {
     return false;  
   }
-  peerassessment_grade_item_update(stripslashes_recursive($pa));
-  
-  peerassessment_update_grades(stripslashes_recursive($pa),0,false);
+  //peerassessment_grade_item_update(stripslashes_recursive($pa));
+  peerassessment_grade_item_update($pa);  
+  //peerassessment_update_grades(stripslashes_recursive($pa),0,false);
   return $returnid;
 }
 
@@ -67,7 +68,15 @@ function peerassessment_get_user_grades($pa,$userid=0) {
   //TODO we still need to sling the comment into the grade object.
   
   $grades = get_records_sql($sql);
+  $i=0;
+  foreach($grades as $grade) {
+    //$i++;
+    
+    //$grade->feedback = 'Feedback '.$i;
+  }
+print_r($grades);
   return $grades;
+  //return $grades;
 /*  
   //print_r($grades);
   //print_r($pa);
@@ -86,12 +95,14 @@ function peerassessment_get_user_grades($pa,$userid=0) {
   return $results;// get_records_sql($sql); 
   */ 
 }
-
+$pugCounter = 0;
 /** 
  * Updates the grades in the Gradebook
  */ 
 function peerassessment_update_grades($pa = null,$userid=0, $nullifnone=true) {
-  global $CFG;
+  global $CFG, $pugCounter;
+  echo debug_backtrace();
+  $pugCounter++;   
   if (!function_exists('grade_update')) {
     require_once($CFG->libdir.'/gradelib.php');
   }
@@ -105,9 +116,11 @@ function peerassessment_update_grades($pa = null,$userid=0, $nullifnone=true) {
       $grade = new Stdclass;
       $grade->userid=$userid;
       $grade->rawgrade = NULL;
+      //die('p_u_g 1');
       peerassessment_grade_item_update($pa,$grade);
     }
     else {
+      //die('p_u_g 2');
       peerassessment_grade_item_update($pa);    
     }
     //die('updating grade 2');  
@@ -121,7 +134,7 @@ function peerassessment_grade_item_delete($data) {
   if (!function_exists('grade_update')) {
     require_once($CFG->libdir.'/gradelib.php');
   }
-  return grade_update('mod/peerassessment',$data->course,'mod','peerassessment',$pa->id,0,NULL, array('deleted'=>1));
+  return grade_update('mod/peerassessment',$data->course,'mod','peerassessment',$data->id,0,NULL, array('deleted'=>1));
 }
 
 /**
@@ -143,9 +156,24 @@ function peerassessment_grade_item_update($pa,$grades=null) {
     $grades= NULL;
   }
   else if (!empty($grades)){
+  
+    if (is_object($grades)) {
+      $grades = array($grades->userid =>$grades);
+    }
+    else if(array_key_exists('userid',$grades)) {
+      $grades = array($grades['userid'] => $grades);
+    }
+    foreach($grades as $key=>$grade) {
+      if (!is_array($grade)) {
+        $grades[$key]= $grade = (array)$grade;
+      }
+      $grades[$key]['rawgrade'] = ($grade['rawgrade']);
+    }
     
   }
-  return grade_update('mod/peerassessment',$pa->course,'mod','peerassessment',$pa->id,0,$grades,$params);
+  $r = grade_update('mod/peerassessment',$pa->course,'mod','peerassessment',$pa->id,0,$grades,$params);
+print_r($grades);
+  return $r;
 }
 
 function peerassessment_reset_gradebook() {

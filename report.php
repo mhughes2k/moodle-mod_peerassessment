@@ -65,7 +65,7 @@ if ($data) {
   if(!empty($data->delete)) {
     //add_to_log('requested deletion of rating')
     echo "deleting a rating\n";
-    if ($rating = get_record('peerassessment_ratings','id',$data->ratingid)) {  
+    if ($rating = get_records('peerassessment_ratings','id',$data->ratingid)) {  
       if($rating) {
         //$rating = get_record_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ");       
         if(!delete_records('peerassessment_ratings','id',$rating->id)) {
@@ -74,7 +74,7 @@ if ($data) {
       }      
     } 
     else {
-      if ($rating = get_record_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) { 
+      if ($rating = get_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) { 
         if(!delete_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) {
           notice("Could not delete rating");
         }
@@ -83,7 +83,8 @@ if ($data) {
         notice("Couldn't locate a rating for specified user");
       }
       
-    }   
+    }
+    peerassessment_update_grades($peerassessment) ;//update the grade book since we've deleted some entries   
     redirect($CFG->wwwroot."/mod/peerassessment/report.php?selectedgroup={$groupid}&id={$id}");  
   }	
 }
@@ -181,4 +182,4 @@ else {
   print_box("Please choose a group to display.");
 }     
 
-print_object(peerassessment_get_user_grades($peerassessment));
+//print_object(peerassessment_get_user_grades($peerassessment));
