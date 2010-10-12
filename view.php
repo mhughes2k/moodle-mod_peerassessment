@@ -254,32 +254,39 @@ if (!$group = groups_get_group($groupid)  ) {
     notice(get_string('nogroup','peerassessment'));
     exit();
   }
-  
 }
-if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id,false)) {
+else {
+  //we couldn't get a group
+
+}
+if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id)) {
     $a = new stdClass;
     $a->id = $cm->id;
     notice(get_string('mustbestudent','peerassessment',$cm->id));
     exit();
 }
 
-$members = groups_get_members($groupid);
-
-if (!in_array($USER->id,array_keys($members))) {//$USER->id)) {
-  notice(get_string('usernotactuallyingroup','peerassessment'));
-  add_to_log($course->id, 'peerassessment', 'rate other', "", "Attempted to record attempt for group user wasn't a member of.",$cm->id);
-  exit();
+if ($members = groups_get_members($groupid) && is_array($members)) {
+  if (!in_array($USER->id,array_keys($members))) {//$USER->id)) {
+    notice(get_string('usernotactuallyingroup','peerassessment'));
+    add_to_log($course->id, 'peerassessment', 'rate other', "", "Attempted to record attempt for group user wasn't a member of.",$cm->id);
+    exit();
+  }
 }
-
-$a = new stdClass;
-$a->peerassessmentname = $peerassessment->name;
-if (substr(strtolower($group->name),0,6) == 'group ') {
-  $a->groupname =substr($group->name,6);
+if ($group) {
+  $a = new stdClass;
+  $a->peerassessmentname = $peerassessment->name;
+  if (substr(strtolower($group->name),0,6) == 'group ') {
+    $a->groupname =substr($group->name,6);
+  }
+  else {
+    $a->groupname =$group->name;
+  }
+  print_heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
 }
 else {
-  $a->groupname =$group->name;
+  print_heading(get_string('modulename','peerassessment'));
 }
-print_heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
 
 
 echo '<table id="layout-table"><tr>';
@@ -349,47 +356,54 @@ foreach ($lt as $column) {
               }
               else {
                 require_capability('mod/peerassessment:recordrating',$context,true);
-                print_container_start();
-                //get a list of the all the members of the group that this user is in for the underlying a
-                // assignment
-                //if ($chatusers = chat_get_users($chat->id, $currentgroup, $cm->groupingid)) {
-                echo '<form  method="post">';
-                echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
-                echo '<table id="members">';
-                echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
-                if ($members){
-                foreach ($members as $user) {
-                  if (!has_capability('mod/peerassessment:recordrating',$context,$user->id)) {
-                    continue;
-                  }
-                    echo '<tr>';
-                    echo '<td>';
-                    echo "{$user->lastname}, {$user->firstname}";
-                    if ($user->id == $USER->id) {
-                      echo ' (You)';
+                if ($group) {
+                  print_container_start();
+                  //get a list of the all the members of the group that this user is in for the underlying a
+                  // assignment
+                  //if ($chatusers = chat_get_users($chat->id, $currentgroup, $cm->groupingid)) {
+                  echo '<form  method="post">';
+                  echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
+                  echo '<table id="members">';
+                  echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
+                  if ($members){
+                  foreach ($members as $user) {
+                    if (!has_capability('mod/peerassessment:recordrating',$context,$user->id)) {
+                      continue;
                     }
-                    echo '</td>';
-                    echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
-                    echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
-                    echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
-                    echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
-                    echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";
-                    echo '</tr>'  ;
-                } 
+                      echo '<tr>';
+                      echo '<td>';
+                      echo "{$user->lastname}, {$user->firstname}";
+                      if ($user->id == $USER->id) {
+                        echo ' (You)';
+                      }
+                      echo '</td>';
+                      echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
+                      echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
+                      echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
+                      echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
+                      echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";
+                      echo '</tr>'  ;
+                  } 
+                }
+                else {
+                    echo "<tr><td>".get_string('nomembersfound','peerassessment').'</td></tr>';
+                }
+                echo "<tr><th colspan='6'>Comments</th></tr>";
+                echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40'>";
+                //really should display existing comment
+                echo "</textarea></td></tr>";
+                echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='submit' name='cancel' value='Cancel'/></td></tr>";
+                echo '</table>';
+                echo '</form>';
+                print_container_end();
               }
-              else {
-                  echo "<tr><td>".get_string('nomembersfound','peerassessment').'</td></tr>';
+              else  {
+                print_box(get_string('nogroup','peerassessment'));
               }
-              echo "<tr><th colspan='6'>Comments</th></tr>";
-              echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40'>";
-              //really should display existing comment
-              echo "</textarea></td></tr>";
-              echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='submit' name='cancel' value='Cancel'/></td></tr>";
-              echo '</table>';
-              echo '</form>';
-              print_container_end();
             }
           }
+       
+          
            
         }
           break;
