@@ -247,6 +247,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     if($comments) {
       //$c = addslashes($comment->studentcomment);
       $name .="<sup>";
+      $c='';
       foreach($comments as $comment) {
         $c = "$comment->studentcomment\n". $c;
         
