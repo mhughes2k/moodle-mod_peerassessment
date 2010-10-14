@@ -266,7 +266,7 @@ if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id)) {
     exit();
 }
 
-if ($members = groups_get_members($groupid))) {
+if ($members = groups_get_members($groupid)) {
   if (is_array($members) && !in_array($USER->id,array_keys($members))) {//$USER->id)) {
     notice(get_string('usernotactuallyingroup','peerassessment'));
     add_to_log($course->id, 'peerassessment', 'rate other', "", "Attempted to record attempt for group user wasn't a member of.",$cm->id);
