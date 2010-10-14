@@ -12,6 +12,23 @@ define('PA_LOWER_THRESHOLD',2.5);
  **/ 
 define('PA_ONE_WEEK',604800);//000);
 //define('PA_ONE_WEEK',60*60*24); // 5 seconds (for testing only!)
+/**
+ * This function enables our "test role" to work
+ * 
+ * Returns a list of "types" which are displayed in the add fields.  
+ */ 
+function peerassessment_get_types() {
+  global $USER,$COURSE;
+  $context =  get_context_instance(CONTEXT_COURSE,$COURSE->id);
+  if (has_capability('mod/peerassessment:usepeerassessment',$context)) {
+    $type = new stdclass;
+    $type->modclass=MOD_CLASS_ACTIVITY;
+    $type->type='peerassessment';
+    $type->typestr=get_string('modulename','peerassessment');
+    return array($type);     
+  }
+  return array(); 
+}
 
 function peerassessment_add_instance($pa) {
   global $USER;
