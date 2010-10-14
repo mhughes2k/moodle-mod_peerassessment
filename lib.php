@@ -118,7 +118,7 @@ $pugCounter = 0;
  */ 
 function peerassessment_update_grades($pa = null,$userid=0, $nullifnone=true) {
   global $CFG, $pugCounter;
-  echo debug_backtrace();
+  //echo debug_backtrace();
   $pugCounter++;   
   if (!function_exists('grade_update')) {
     require_once($CFG->libdir.'/gradelib.php');
@@ -240,13 +240,18 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
       continue;
     }
     $a = array();
-    $comment = get_record('peerassessment_comments','userid',$m->id,'peerassessment',$peerassessment->id);
+    $comments = get_records('peerassessment_comments','userid',$m->id,'peerassessment',$peerassessment->id);
 //    print_r($comment);
     $name = "{$m->lastname}, {$m->firstname} ({$m->id})";
-    if($comment) {
+    if($comments) {
       //$c = addslashes($comment->studentcomment);
-      $c = $comment->studentcomment;
-      $name.="<sup><span class='popup' title=\"{$c}\">[Comment]</span></sup>";
+      $name .="<sup>";
+      foreach($comments as $comment) {
+        $c = "$comment->studentcomment\n". $c;
+        
+      }
+      $name.="<span class='popup' title=\"{$c}\">[Comment]</span></sup>";
+      $name .="<sup>";
     }
     $a[] = $name;
     $t1 = 0;
