@@ -1,5 +1,13 @@
 <?php
   $mod_peerassessment_capabilities = array(
+    'mod/peerassessment:usepeerassessment' => array(
+      'riskbitmask' =>  0,
+      'captype'     =>  'read',
+      'contextlevel'=>  CONTEXT_MODULE,
+      'legacy'      =>  array(
+        'admin'   =>  CAP_ALLOW,
+      )
+    ),
     'mod/peerassessment:recordrating' => array(
       'riskbitmask' =>  RISK_PERSONAL,
       'captype'     =>  'write',
