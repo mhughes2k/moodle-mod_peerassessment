@@ -91,7 +91,7 @@ function peerassessment_get_user_grades($pa,$userid=0) {
     
     //$grade->feedback = 'Feedback '.$i;
   }
-print_r($grades);
+//print_r($grades);
   return $grades;
   //return $grades;
 /*  
@@ -189,7 +189,7 @@ function peerassessment_grade_item_update($pa,$grades=null) {
     
   }
   $r = grade_update('mod/peerassessment',$pa->course,'mod','peerassessment',$pa->id,0,$grades,$params);
-print_r($grades);
+//print_r($grades);
   return $r;
 }
 
