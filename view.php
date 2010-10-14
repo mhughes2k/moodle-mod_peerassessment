@@ -247,8 +247,6 @@ else {
 
 }
 
-
-
 if (!$group = groups_get_group($groupid)  ) {
   if (!has_capability('mod/peerassessment:viewreport',$context,$USER->id)) {
     notice(get_string('nogroup','peerassessment'));
@@ -257,6 +255,8 @@ if (!$group = groups_get_group($groupid)  ) {
 }
 else {
   //we couldn't get a group
+  //This could be due to the fact that we've got "DOANYTHING" rights 
+  //or we're just not in a group
 
 }
 if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id)) {
@@ -266,8 +266,8 @@ if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id)) {
     exit();
 }
 
-if ($members = groups_get_members($groupid) && is_array($members)) {
-  if (!in_array($USER->id,array_keys($members))) {//$USER->id)) {
+if ($members = groups_get_members($groupid))) {
+  if (is_array($members) && !in_array($USER->id,array_keys($members))) {//$USER->id)) {
     notice(get_string('usernotactuallyingroup','peerassessment'));
     add_to_log($course->id, 'peerassessment', 'rate other', "", "Attempted to record attempt for group user wasn't a member of.",$cm->id);
     exit();
