@@ -240,7 +240,8 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
       continue;
     }
     $a = array();
-    $comments = get_records('peerassessment_comments','userid',$m->id,'peerassessment',$peerassessment->id);
+    $select ="userid = {$m->id} AND peerassessment={$peerassessment->id}";
+    $comments = get_records_select('peerassessment_comments',$select);
 //    print_r($comment);
     $name = "{$m->lastname}, {$m->firstname} ({$m->id})";
     if($comments) {
