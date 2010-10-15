@@ -372,7 +372,7 @@ foreach ($lt as $column) {
                     }
                       echo '<tr>';
                       echo '<td>';
-                      
+                      echo "<a href='{$CFG->wwwroot}/user/view.php?id={$user->id}' target='_blank'>";                      
                       if ($user->id == $USER->id) {
                         echo "<strong>{$user->lastname}, {$user->firstname}</strong>";
                         //echo ' (You)';
@@ -380,6 +380,7 @@ foreach ($lt as $column) {
                       else {
                         echo "{$user->lastname}, {$user->firstname}";
                       }
+                      echo "</a>";
                       echo '</td>';
                       echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
                       echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
