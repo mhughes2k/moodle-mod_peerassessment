@@ -372,9 +372,13 @@ foreach ($lt as $column) {
                     }
                       echo '<tr>';
                       echo '<td>';
-                      echo "{$user->lastname}, {$user->firstname}";
+                      
                       if ($user->id == $USER->id) {
-                        echo ' (You)';
+                        echo "<strong>{$user->lastname}, {$user->firstname}</strong>";
+                        //echo ' (You)';
+                      }
+                      else {
+                        echo "{$user->lastname}, {$user->firstname}";
                       }
                       echo '</td>';
                       echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
