@@ -1,10 +1,7 @@
 <?php
 require ('../../config.php');
-
 require_once("lib.php");
 require_once($CFG->dirroot."/lib/tablelib.php");    
-
-
 
 $id = optional_param('id',false,PARAM_INT);	//course module id;
 $groupid = optional_param('selectedgroup',false,PARAM_INT);
@@ -89,18 +86,6 @@ if ($data) {
   }	
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 $displaygroups= array();
   //display a list of groups to display
 $groups = groups_get_activity_allowed_groups($assignment_cm);
@@ -141,41 +126,41 @@ echo "<input type='hidden' name='id' value='{$id}'/><input type='submit' value='
 echo '</form></div>';
 
 if ($groupid) {
-
-//print_r($peerassessment);
-switch ($peerassessment->frequency) {
-  case PA_FREQ_ONCE:
-    $table = peerassessment_get_table_single_frequency($peerassessment,$group);
-    break;
-  case PA_FREQ_WEEKLY:
-    $overview_table = new Stdclass;
-    $overview_table->head[] = '';
-    $a = array(); // average rating
-    $b = array(); //average given rating
-    $a[] = 'Average Rating Recieved';
-    $b[] = 'Average Rating Given';
-    foreach($members as $m) {
-      $overview_table->head[] = $m->lastname . ', '.$m->firstname;
-      $a[] = get_average_rating_for_student($peerassessment,$m->id);
-      $b[] = get_average_rating_by_student($peerassessment,$m->id);                                                                    
-    }
-    //$a[] = '&nbsp;';
-    $overview_table->data[] = $a;
-    $overview_table->data[] = $b;
-    print_heading("Overview");
-    print_table($overview_table);
-    $table = peerassessment_get_table_weekly_frequency($peerassessment,$group);//$members);
-    print_heading("Details");    
-    break;  
-  case PA_FREQ_UNLIMITED:
-    $table = peerassessment_get_table_unlimited_frequency($peerassessment,$group);//$members);
-    break; 
-  	
-	break;
-}
-
-
-print_table($table);
+  
+  //print_r($peerassessment);
+  switch ($peerassessment->frequency) {
+    case PA_FREQ_ONCE:
+      $table = peerassessment_get_table_single_frequency($peerassessment,$group);
+      break;
+    case PA_FREQ_WEEKLY:
+      $overview_table = new Stdclass;
+      $overview_table->head[] = '';
+      $a = array(); // average rating
+      $b = array(); //average given rating
+      $a[] = 'Average Rating Recieved';
+      $b[] = 'Average Rating Given';
+      foreach($members as $m) {
+        $overview_table->head[] = $m->lastname . ', '.$m->firstname;
+        $a[] = get_average_rating_for_student($peerassessment,$m->id);
+        $b[] = get_average_rating_by_student($peerassessment,$m->id);                                                                    
+      }
+      //$a[] = '&nbsp;';
+      $overview_table->data[] = $a;
+      $overview_table->data[] = $b;
+      print_heading("Overview");
+      print_table($overview_table);
+      $table = peerassessment_get_table_weekly_frequency($peerassessment,$group);//$members);
+      print_heading("Details");    
+      break;  
+    case PA_FREQ_UNLIMITED:
+      $table = peerassessment_get_table_unlimited_frequency($peerassessment,$group);//$members);
+      break; 
+    	
+  	break;
+  }
+  
+  
+  print_table($table);
      
 }
 else {
@@ -183,3 +168,5 @@ else {
 }     
 
 //print_object(peerassessment_get_user_grades($peerassessment));
+
+print_footer();
