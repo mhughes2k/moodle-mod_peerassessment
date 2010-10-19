@@ -3,19 +3,26 @@
     global $CFG, $THEME, $db;
 
     $result = true;
-    /*
-    if ($result && $oldversion < 2007012100) {
+    if ($result && $oldversion < 2010091407) {
 
-    /// Changing precision of field lang on table chat_users to (30)
-        $table = new XMLDBTable('chat_users');
-        $field = new XMLDBField('lang');
-        $field->setAttributes(XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null, null, null, 'course');
+    /// Define field lowerbound to be added to peerassessment
+        $table = new XMLDBTable('peerassessment');
+        $field = new XMLDBField('lowerbound');
+        $field->setAttributes(XMLDB_TYPE_NUMBER, '3, 2', XMLDB_UNSIGNED, null, null, null, null, '2.5', 'canedit');
 
-    /// Launch change of precision for field lang
-        $result = $result && change_field_precision($table, $field);
+    /// Launch add field lowerbound
+        $result = $result && add_field($table, $field);
+		
+
+    /// Define field upperbound to be added to peerassessment
+        $table = new XMLDBTable('peerassessment');
+        $field = new XMLDBField('upperbound');
+        $field->setAttributes(XMLDB_TYPE_NUMBER, '3, 2', XMLDB_UNSIGNED, null, null, null, null, '3.5', 'lowerbound');
+
+    /// Launch add field upperbound
+        $result = $result && add_field($table, $field);
     }
 
-    */
 
     return $result;
   
