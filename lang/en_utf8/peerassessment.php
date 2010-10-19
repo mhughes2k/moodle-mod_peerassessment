@@ -14,7 +14,7 @@ $string['frequency'] ='Frequency';
 $string['lowerbound'] ='Lower Bound';
 $string['lowerbound_help'] ='This is the value <strong>below</strong> which the average rating will be highlighted.';
 $string['mustbestudent']='<p>You cannot perform this activity as staff, you must be in a student role.</p><p><a href=\'report.php?id=$a\'>View report</p>';
-$string['noassignment'] = 'No Assignment';
+$string['noassignment'] = 'No Associated Assignment';
 $string['nogroup'] = 'You are not a member of a group.';
 $string['nogroups']='This doesn\'t appear to have a group set up';
 $string['nomembersfound'] = 'No members found';
