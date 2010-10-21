@@ -72,7 +72,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addElement('html',get_string('additionalinfo','peerassessment')); 
         $this->standard_coursemodule_elements(array('groups'=>true, 'groupmembersonly'=>true, 'gradecat'=>true));
 		
-		$mform->disabledIf();
+//		$mform->disabledIf();
 
         $this->add_action_buttons();        
   }
