@@ -62,15 +62,17 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addElement('text','upperbound',get_string('upperbound','peerassessment'),array('value'=>'3.5'));
         $mform->setHelpButton('upperbound',array('bounds',get_string('upperbound','peerassessment'),'peerassessment'));
 
-        $mform->addRule('lower_bound','Must be numeric','numeric',null,'client');
+        $mform->addRule('lowerbound','Must be numeric','numeric',null,'client');
         //$mform->addRule('lower_bound','Must be between less than or equal to 5','compare',array(,'client');
-        $mform->addRule('upper_bound','Must be numeric','numeric',null,'client');
+        $mform->addRule('upperbound','Must be numeric','numeric',null,'client');
 
 
         $mform->addElement('header','additionalinfo','Additional Information');
                
         $mform->addElement('html',get_string('additionalinfo','peerassessment')); 
         $this->standard_coursemodule_elements(array('groups'=>true, 'groupmembersonly'=>true, 'gradecat'=>true));
+		
+		$mform->disabledIf();
 
         $this->add_action_buttons();        
   }
