@@ -20,6 +20,7 @@ $string['nogroups']='This doesn\'t appear to have a group set up';
 $string['nomembersfound'] = 'No members found';
 $string['notavailableyet']='This activity is not yet available.';
 $string['notenoughtimepassed'] = 'You can\'t complete this activity just now, not enough time has passed since your last submission.';
+$string['notenoughtimepassedcanedit'] = 'You can\'t submit a new rating as not enough time has passed since your last submission. You may change your existing rating.';
 $string['oncefrequency'] = 'Once';
 $string['peerassessmentactivityheading'] = 'Peer Assessment Activity: $a->peerassessment->name';
 $string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity: $a->peerassessmentname for Group $a->groupname';

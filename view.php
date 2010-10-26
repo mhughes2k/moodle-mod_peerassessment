@@ -72,7 +72,7 @@ switch($peerassessment->frequency) {
     //find out if the user has completed this acitivy AT ALL
     //echo '1';
     if (
-$ratings = get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AND peerassessment={$peerassessment->id}") 
+		$ratings = get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AND peerassessment={$peerassessment->id}") 
       ) {
       $alreadyCompleted = PA_COMPLETED;  
       //notice(get_string('alreadycompleted','peerassessment'));
@@ -321,7 +321,7 @@ foreach ($lt as $column) {
                   break;
                 case PA_COMPLETED_THIS_WEEK:
                   if ($peerassessment->canedit) {
-                    print_box(get_string('notenoughtimepassed','peerassessment'));
+                    print_box(get_string('notenoughtimepassedcanedit','peerassessment'));
                   }                  
                   else {
                     notice(get_string('notenoughtimepassed','peerassessment'));
@@ -382,12 +382,40 @@ foreach ($lt as $column) {
                       }
                       echo "</a>";
                       echo '</td>';
-                      echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
-                      echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
-                      echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
-                      echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
-                      echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";
-                      echo '</tr>'  ;
+					  if ($editResponses) {
+						$select = "peerassessment={$peerassessment->id} AND ratedby ={$USER->id} AND userid={$user->id}";
+						$lastRatingTime = get_field_select('peerassessment_ratings','max(timemodified) as Timestamp',$select);
+						if ($previousResponses = get_records_select('peerassessment_ratings',$select . " AND timemodified =$lastRatingTime")) {
+							foreach($previousResponses as $prev) {
+								//print_r($prev);
+								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+								if ($prev->rating == 1) { echo 'checked ' ;}
+								echo "value='1'></td>";
+								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+								if ($prev->rating == 2) { echo 'checked ' ;}
+								echo "value='2'></td>";
+								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+								if ($prev->rating == 3) { echo 'checked ' ;}
+								echo "value='3'></td>";
+								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+								if ($prev->rating == 4) { echo 'checked ' ;}
+								echo "value='4'></td>";
+								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+								if ($prev->rating == 5) { echo 'checked ' ;}
+								echo "value='5'></td>";
+								echo '</tr>'  ;					  
+							}
+
+						}
+					  }
+					  else {
+						  echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
+						  echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
+						  echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
+						  echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
+						  echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";
+						  echo '</tr>'  ;
+					  }
                   } 
                 }
                 else {
