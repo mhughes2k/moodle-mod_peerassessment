@@ -157,10 +157,12 @@ if ($data) {
         
       }
     }
-    $co = get_record('peerassessment_comments','userid',$USER->id,'peerassessment',$peerassessment->id);
-    $co->timemodified= $submittime;
-    $co->studentcomment=$comments; 
-    update_record('peerassessment_comments',$co);   
+	if ($comments !='') {
+		$co = get_record('peerassessment_comments','userid',$USER->id,'peerassessment',$peerassessment->id);
+		$co->timemodified= $submittime;
+		$co->studentcomment=$comments; 
+		update_record('peerassessment_comments',$co);   
+	}
           
   }
   else if (!$alreadyCompleted) {
@@ -192,13 +194,15 @@ if ($data) {
         }*/
       }
     }
-    $co = new stdClass;
-    $co->userid=$USER->id;
-    $co->peerassessment=$peerassessment->id;
-    $co->timecreated= $submittime;
-    $co->timemodified= $submittime;
-    $co->studentcomment=$comments;
-    $co_result = insert_record('peerassessment_comments',$co); 
+	if ($comments !='') {
+		$co = new stdClass;
+		$co->userid=$USER->id;
+		$co->peerassessment=$peerassessment->id;
+		$co->timecreated= $submittime;
+		$co->timemodified= $submittime;
+		$co->studentcomment=$comments;
+		$co_result = insert_record('peerassessment_comments',$co); 
+	}
   }
   else {
     //we are already completed but can't edit
