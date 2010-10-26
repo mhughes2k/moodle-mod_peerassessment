@@ -226,7 +226,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
       continue;
     }
-    $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
+    $table->head[] = "{$m2->lastname}, {$m2->firstname}";// ({$m2->id})";
   }
   $table->head[] = "Average Rating Given";
   $recieved_totals = array();
@@ -243,7 +243,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     $select ="userid = {$m->id} AND peerassessment={$peerassessment->id}";
     $comments = get_records_select('peerassessment_comments',$select);
 //    print_r($comment);
-    $name = "{$m->lastname}, {$m->firstname} ({$m->id})";
+    $name = "{$m->lastname}, {$m->firstname}";// ({$m->id})";
     if($comments) {
       //$c = addslashes($comment->studentcomment);
       $name .="<sup>";
@@ -346,6 +346,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showd
   
   foreach($members as $m2) {
      // $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
+	 
   }
   $recieved_totals = array();
   $recieved_counts = array();
@@ -405,7 +406,11 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showd
   $done_user_headings =false;
   foreach($members as $m1) 
   {
-  
+  /*
+    if (!has_capability('mod/peerassessment:recordrating',$context,$m2->id)) {
+		continue;
+    }
+	*/
     $t1 = 0;
     $c = 0;
     //echo $m1->id .":".$m1->lastname .', '.$m1->firstname;
@@ -523,7 +528,7 @@ function peerassessment_get_table_unlimited_frequency($peerassessment,$group) {
   //$table->head[] ="";
   $table->head[] ="Student\Recipient &gt;";
   foreach($members as $m2) {
-      $table->head[] = "{$m2->lastname}, {$m2->firstname} ({$m2->id})";
+      $table->head[] = "{$m2->lastname}, {$m2->firstname}";//({$m2->id})";
   }
   $recieved_totals = array();
   $recieved_counts = array();
