@@ -4,6 +4,7 @@ $string['modulenameplural'] = 'Peer Assessment Activities';
 
 $string['additionalinfo'] = '<p>This module <strong>requires</strong> the use of Groups!</p><p>If you have selected an <strong>Assignment</strong> then the groups that are specified for that assignment will be used.</p><p>If you <strong>haven\'t</strong> selected and assignment, you should choose a group option below.</p><p>It is probably easiest to create a \"Peer Assessment\" grouping to hold the groups that will be used.</p>';
 $string['alreadycompleted'] = 'You have already completed this activity.';
+$string['alreadycompletedcanedit'] = 'You have already completed this activity. You may change the <strong>last</strong> rating.';
 $string['assignment'] = 'Assignment';
 $string['availablefrom'] = "Available from";
 $string['canedit'] = 'Responses can be changed';
