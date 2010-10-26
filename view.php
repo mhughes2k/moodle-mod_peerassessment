@@ -122,18 +122,33 @@ if ($data) {
         
         $select = "SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment = {$peerassessment->id} AND ratedby = {$USER->id} AND userid={$userid}";
         $ratings = get_records_sql($select);
-        //print_r($ratings);        
-        foreach($ratings as $rating) {
-          
-          $ins = new stdClass;
-          $ins->id = $rating->id;
-          $ins->rating = $value;
-          $ins->timemodified = $submittime;
-          //$result = insert_record('peerassessment_ratings',$ins);
-          //print_object($ins);
-         // $ins->studentcomment  = $comments;
-          $result = update_record('peerassessment_ratings',$ins);
-        }
+		if ($ratings === false) {
+			//we have a form but for a user that we' haven't got a previous rating for so we need to insert it.
+			echo 'Inserting rating for a new member to group.';
+			$ins = new stdClass;
+			$ins->ratedby = $USER->id;
+			$ins->peerassessment = $peerassessment->id;
+			$ins->userid=$userid;
+			$ins->rating = $value;
+			$ins->timemodified = $submittime;
+			//$ins->studentcomment  = $comments;  //this will overwrite        
+			$result = insert_record('peerassessment_ratings',$ins);
+		}
+		else {
+			//print_object($ratings);
+			echo 'Updating existing';
+			foreach($ratings as $rating) {
+			  
+			  $ins = new stdClass;
+			  $ins->id = $rating->id;
+			  $ins->rating = $value;
+			  $ins->timemodified = $submittime;
+			  //$result = insert_record('peerassessment_ratings',$ins);
+			  //print_object($ins);
+			 // $ins->studentcomment  = $comments;
+			$result = update_record('peerassessment_ratings',$ins);
+			}
+		}
      
         /*$success = $success & $result;
         if (!$result) {
@@ -146,7 +161,7 @@ if ($data) {
     $co->timemodified= $submittime;
     $co->studentcomment=$comments; 
     update_record('peerassessment_comments',$co);   
-    //die();       
+          
   }
   else if (!$alreadyCompleted) {
     $comments = $data->comments;            //TODO WE NEED SAVE THIS
@@ -313,7 +328,7 @@ foreach ($lt as $column) {
              switch($alreadyCompleted) {
                 case PA_COMPLETED:
                   if ($peerassessment->canedit) {
-                    print_box(get_string('alreadycompleted','peerassessment'));
+                    print_box(get_string('alreadycompletedcanedit','peerassessment'));
                   }
                   else {
                     notice(get_string('alreadycompleted','peerassessment'));
@@ -366,57 +381,71 @@ foreach ($lt as $column) {
                   echo '<table id="members">';
                   echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
                   if ($members){
-                  foreach ($members as $user) {
-                    if (!has_capability('mod/peerassessment:recordrating',$context,$user->id)) {
-                      continue;
-                    }
-                      echo '<tr>';
-                      echo '<td>';
-                      echo "<a href='{$CFG->wwwroot}/user/view.php?id={$user->id}' target='_blank'>";                      
-                      if ($user->id == $USER->id) {
-                        echo "<strong>{$user->lastname}, {$user->firstname}</strong>";
-                        //echo ' (You)';
-                      }
-                      else {
-                        echo "{$user->lastname}, {$user->firstname}";
-                      }
-                      echo "</a>";
-                      echo '</td>';
-					  if ($editResponses) {
-						$select = "peerassessment={$peerassessment->id} AND ratedby ={$USER->id} AND userid={$user->id}";
-						$lastRatingTime = get_field_select('peerassessment_ratings','max(timemodified) as Timestamp',$select);
-						if ($previousResponses = get_records_select('peerassessment_ratings',$select . " AND timemodified =$lastRatingTime")) {
-							foreach($previousResponses as $prev) {
-								//print_r($prev);
-								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
-								if ($prev->rating == 1) { echo 'checked ' ;}
-								echo "value='1'></td>";
-								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
-								if ($prev->rating == 2) { echo 'checked ' ;}
-								echo "value='2'></td>";
-								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
-								if ($prev->rating == 3) { echo 'checked ' ;}
-								echo "value='3'></td>";
-								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
-								if ($prev->rating == 4) { echo 'checked ' ;}
-								echo "value='4'></td>";
-								echo "<td><input type='radio' name='rating_{$prev->userid}' ";
-								if ($prev->rating == 5) { echo 'checked ' ;}
-								echo "value='5'></td>";
-								echo '</tr>'  ;					  
-							}
-
+					foreach ($members as $user) {
+						if (!has_capability('mod/peerassessment:recordrating',$context,$user->id)) {
+						  continue;
 						}
-					  }
-					  else {
-						  echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
-						  echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
-						  echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
-						  echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
-						  echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";
-						  echo '</tr>'  ;
-					  }
-                  } 
+						echo '<tr>';
+						echo '<td>';
+						echo "<a href='{$CFG->wwwroot}/user/view.php?id={$user->id}' target='_blank'>";                      
+						if ($user->id == $USER->id) {
+							echo "<strong>{$user->lastname}, {$user->firstname}</strong>";
+							//echo ' (You)';
+						}
+						else {
+						  echo "{$user->lastname}, {$user->firstname}";  
+						}
+						echo "</a>";
+						echo '</td>';
+						if ($editResponses) {
+							$select = "peerassessment={$peerassessment->id} AND ratedby ={$USER->id} AND userid={$user->id}";
+							$lastRatingTime = get_field_select('peerassessment_ratings','max(timemodified) as Timestamp',$select);
+							$previousResponses = false;
+							if ($lastRatingTime =='') {
+								// we don't have a last record
+							}
+							else {
+								$previousResponses = get_records_select('peerassessment_ratings',$select . " AND timemodified =$lastRatingTime");
+							}
+							if ($previousResponses !== false) {
+								foreach($previousResponses as $prev) {
+									//print_r($prev);
+									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									if ($prev->rating == 1) { echo 'checked ' ;}
+									echo "value='1'></td>";
+									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									if ($prev->rating == 2) { echo 'checked ' ;}
+									echo "value='2'></td>";
+									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									if ($prev->rating == 3) { echo 'checked ' ;}
+									echo "value='3'></td>";
+									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									if ($prev->rating == 4) { echo 'checked ' ;}
+									echo "value='4'></td>";
+									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									if ($prev->rating == 5) { echo 'checked ' ;}
+									echo "value='5'></td>";
+								}
+							}
+							else {
+								echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
+								echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
+								echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
+								echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
+								echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";							
+								echo "<td>*</td>";
+							}
+						}
+						else {
+							echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
+							echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
+							echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
+							echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
+							echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";
+						}
+						echo '</tr>'  ;
+					}
+				
                 }
                 else {
                     echo "<tr><td>".get_string('nomembersfound','peerassessment').'</td></tr>';
