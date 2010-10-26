@@ -266,8 +266,12 @@ else {
 
 }
 
+$canRecordRating = has_capability('mod/peerassessment:recordrating',$context,$USER->id);
+$canViewReport = has_capability('mod/peerassessment:viewreport',$context,$USER->id);
+
+
 if (!$group = groups_get_group($groupid)  ) {
-  if (!has_capability('mod/peerassessment:viewreport',$context,$USER->id)) {
+  if (!$canViewReport) {
     notice(get_string('nogroup','peerassessment'));
     exit();
   }
@@ -278,7 +282,7 @@ else {
   //or we're just not in a group
 
 }
-if (!has_capability('mod/peerassessment:recordrating',$context,$USER->id)) {
+if (!$canRecordRating & !$canViewReport) {
     $a = new stdClass;
     $a->id = $cm->id;
     notice(get_string('mustbestudent','peerassessment',$cm->id));
@@ -307,7 +311,7 @@ else {
   print_heading(get_string('modulename','peerassessment'));
 }
 
-
+$groups = groups_get_activity_allowed_groups($cm);
 echo '<table id="layout-table"><tr>';
 $lt = (empty($THEME->layouttable)) ? array('left', 'middle', 'right') : $THEME->layouttable;
 foreach ($lt as $column) {
@@ -317,22 +321,35 @@ foreach ($lt as $column) {
           break;
         case 'middle':
           {
-            if (has_capability('mod/peerassessment:viewreport',$context)) {
+            if ($canViewReport) {
+				//echo '<div class="reportlink">';
+				if (!$group) {
+					print_box_start();
+					print_report_select_form($id,$groups,$groupid);
+					print_box_end();
+				}
+				else {
+					echo '<div class="reportlink">';
+					print_report_select_form($id,$groups,$groupid);
+					echo '</div>';
+				}
+			/*
 				$displaygroups= array();
 				//display a list of groups to display
-				$groups = groups_get_activity_allowed_groups($cm);
+				
 				foreach($groups as $g) {
 					$displaygroups[$g->id] =$g->name;
 				}
 				//print_r($displaygroups);
 				ksort($displaygroups,SORT_STRING);   
-				echo '<div class="reportlink">';
+				
 				echo "<form action='report.php' method='get'><p>". get_string('viewreportgroup','peerassessment');
 				choose_from_menu($displaygroups,'selectedgroup',$groupid);
 				echo "<input type='hidden' name='id' value='{$id}'/><input type='submit' value='Select'/></p>";
 				echo '</form>';
-              /*echo "<a href=\"report.php?id=$cm->id&gid={$groupid}\">".get_string('viewreport', 'peerassessment').'</a>';*/
+              echo "<a href=\"report.php?id=$cm->id&gid={$groupid}\">".get_string('viewreport', 'peerassessment').'</a>';
               echo '</div>';
+			  */
             }
             
             //echo "Completed: ". (int)$alreadyCompleted;
@@ -386,8 +403,8 @@ foreach ($lt as $column) {
               
               }
               else {
-                require_capability('mod/peerassessment:recordrating',$context,true);
-                if ($group) {
+                //require_capability('mod/peerassessment:recordrating',$context,true);
+                if ($canRecordRating && $group) {
                   print_container_start();
                   //get a list of the all the members of the group that this user is in for the underlying a
                   // assignment
@@ -476,7 +493,13 @@ foreach ($lt as $column) {
                 print_container_end();
               }
               else  {
-                print_box(get_string('nogroup','peerassessment'));
+				if ($canViewReport & !$group) {
+					//print_box('You are staff.');
+					//print_report_select_form($id,$groups,$selectedGroupId);
+				}
+				else if (!$group) {
+					print_box(get_string('nogroup','peerassessment'));
+				}
               }
             }
           }

@@ -591,3 +591,22 @@ function print_delete_attempt_form($peerassessment,$group,$userid,$rating=null,$
   }
   echo $out;
 }
+
+function print_report_select_form($id,$groups,$selectedGroupId) {
+	$displaygroups= array();
+	//display a list of groups to display
+	//$groups = groups_get_activity_allowed_groups($cm);
+	foreach($groups as $g) {
+		$displaygroups[$g->id] =$g->name;
+	}
+	//print_r($displaygroups);
+	ksort($displaygroups,SORT_STRING);   
+	
+	echo "<form action='report.php' method='get'><p>". get_string('viewreportgroup','peerassessment');
+	choose_from_menu($displaygroups,'selectedgroup',$selectedGroupId);
+	echo "<input type='hidden' name='id' value='{$id}'/><input type='submit' value='Select'/></p>";
+	echo '</form>';
+  /*echo "<a href=\"report.php?id=$cm->id&gid={$groupid}\">".get_string('viewreport', 'peerassessment').'</a>';*/
+   //echo '</div>';
+
+}
