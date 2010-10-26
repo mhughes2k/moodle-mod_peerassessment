@@ -318,8 +318,20 @@ foreach ($lt as $column) {
         case 'middle':
           {
             if (has_capability('mod/peerassessment:viewreport',$context)) {
-              echo '<div class="reportlink">';
-              echo "<a href=\"report.php?id=$cm->id&gid={$groupid}\">".get_string('viewreport', 'peerassessment').'</a>';
+				$displaygroups= array();
+				//display a list of groups to display
+				$groups = groups_get_activity_allowed_groups($cm);
+				foreach($groups as $g) {
+					$displaygroups[$g->id] =$g->name;
+				}
+				//print_r($displaygroups);
+				ksort($displaygroups,SORT_STRING);   
+				echo '<div class="reportlink">';
+				echo "<form action='report.php' method='get'><p>". get_string('viewreportgroup','peerassessment');
+				choose_from_menu($displaygroups,'selectedgroup',$groupid);
+				echo "<input type='hidden' name='id' value='{$id}'/><input type='submit' value='Select'/></p>";
+				echo '</form>';
+              /*echo "<a href=\"report.php?id=$cm->id&gid={$groupid}\">".get_string('viewreport', 'peerassessment').'</a>';*/
               echo '</div>';
             }
             

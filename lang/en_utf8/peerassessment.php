@@ -35,6 +35,7 @@ $string['upperbound_help'] ='This is the value <strong>above</strong> which the 
 $string['userpeerassessment'] ='Enable Peer Assessment Activity';
 $string['usernotactuallyingroup'] = 'You are not actually in this group. This has been recorded';
 $string['viewreport'] ='View Report';
+$string['viewreportgroup']='View Report for Group:';
 $string['weeklyfrequency'] = 'Weekly';
 
 ?>
