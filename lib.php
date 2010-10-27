@@ -339,6 +339,10 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
 
 function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showdetails=true) {
   global $CFG;
+  $cm = get_coursemodule_from_instance('peerassessment',$peerassessment->id);  
+  $context = get_context_instance(CONTEXT_MODULE,$cm->id);
+  $user_can_delete_ratings = has_capability('mod/peerassessment:deleteratings',$context);
+  
   $members = $members = groups_get_members($group->id);
   $table=new stdClass;
   $table->head = array();
@@ -449,8 +453,13 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showd
         //$row[] ='';
         if (isset($user_entries[$m1->id][$m2->id])) {
           $entry = $user_entries[$m1->id][$m2->id];
-          if ($showdetails) {
-            $row[]  = $entry->rating;
+          if (true){//$showdetails) {
+			$content =$entry->rating; 
+			if ($user_can_delete_ratings) {     
+			//function print_delete_attempt_form($peerassessment,$group,$userid,$rating=null,$timemodified=null, $return = true) {
+				$content .= print_delete_attempt_form($peerassessment,$group,$m1->id,$entry,$entry->timemodified,true);
+			}
+            $row[]  = $content;
           }
           $t1 = $t1+$entry->rating;
           $c++;
@@ -570,7 +579,7 @@ function print_delete_attempt_form($peerassessment,$group,$userid,$rating=null,$
   $cm = get_coursemodule_from_instance('peerassessment',$peerassessment->id);  
   $context = get_context_instance(CONTEXT_MODULE,$cm->id);
   if (!has_capability('mod/peerassessment:deleteratings',$context)) {
-    return '';  //don't return a form
+	return '';  //don't return a form
   }
   $out = "<form action='report.php' method='post'>";
   
