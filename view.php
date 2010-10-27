@@ -377,9 +377,7 @@ foreach ($lt as $column) {
                   break;
               }
               
-            //}
-            //else {
-           
+
             if (!$alreadyCompleted | $editResponses) {
             //check that the opening / due times are still OK
               $ctime = time();
@@ -494,7 +492,7 @@ foreach ($lt as $column) {
               }
               else  {
 				if ($canViewReport & !$group) {
-					//print_box('You are staff.');
+					//print_box('You are staff but not in a group');
 					//print_report_select_form($id,$groups,$selectedGroupId);
 				}
 				else if (!$group) {
