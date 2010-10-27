@@ -407,11 +407,11 @@ foreach ($lt as $column) {
                   //get a list of the all the members of the group that this user is in for the underlying a
                   // assignment
                   //if ($chatusers = chat_get_users($chat->id, $currentgroup, $cm->groupingid)) {
-                  echo '<form  method="post">';
-                  echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
-                  echo '<table id="members">';
-                  echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
-                  if ($members){
+                echo '<form  method="post">';
+                echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
+                echo '<table id="members">';
+                echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
+                if ($members){
 					foreach ($members as $user) {
 						if (!has_capability('mod/peerassessment:recordrating',$context,$user->id)) {
 						  continue;
@@ -476,7 +476,6 @@ foreach ($lt as $column) {
 						}
 						echo '</tr>'  ;
 					}
-				
                 }
                 else {
                     echo "<tr><td>".get_string('nomembersfound','peerassessment').'</td></tr>';
