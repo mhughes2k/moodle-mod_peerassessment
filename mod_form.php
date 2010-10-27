@@ -44,7 +44,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $options[0]  = get_string('oncefrequency', 'peerassessment');
         
         $options[1]  = get_string('weeklyfrequency', 'peerassessment');
-        $options[2]  = get_string('unlimitedfrequency', 'peerassessment');
+       // $options[2]  = get_string('unlimitedfrequency', 'peerassessment');
         
         $mform->addElement('select', 'frequency', get_string('frequency', 'peerassessment'), $options);
         //$mform->setAdvanced('scheduling');
