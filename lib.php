@@ -252,8 +252,8 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
         $c = "$comment->studentcomment\n". $c;
         
       }
-      $name.="<span class='popup' title=\"{$c}\"><a href='{$CFG->wwwroot}/mod/peerassessment/comments.php?p={$peerassessment->id}&userid={$m->id}'>[Comment]</a></span></sup>";
-      $name .="<sup>";
+      $name.="<span class='popup' title=\"{$c}\"><a href='{$CFG->wwwroot}/mod/peerassessment/comments.php?p={$peerassessment->id}&userid={$m->id}'><img src='{$CFG->wwwroot}/mod/peerassessment/comment.gif' alt='Comment'></img></a></span>";
+      //$name .="<sup>";
       
     }
     $a[] = $name;
