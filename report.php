@@ -120,10 +120,21 @@ print_header_simple(format_string($peerassessment->name), '', $navigation,
 
 print_heading(get_string('peerassessmentreportheading','peerassessment',$peerassessment));
 echo '<div class="reportlink">';
-echo '<form><p>Display Group:';
+print_string('displaygroup','peerassessment');
+popup_form(
+    $CFG->wwwroot."/mod/peerassessment/report.php?id={$id}&selectedgroup=",
+    $displaygroups,
+    'reportgroupjump',
+    $groupid
+);
+/*
+echo '<form id="reportgroupjump"><p>' . get_string('displaygroup','peerassessment');
 choose_from_menu($displaygroups,'selectedgroup',$groupid);
+
 echo "<input type='hidden' name='id' value='{$id}'/><input type='submit' value='Select'/></p>";
-echo '</form></div>';
+echo '</form>';
+*/
+echo '</div>';
 
 if ($groupid) {
   
@@ -137,8 +148,8 @@ if ($groupid) {
       $overview_table->head[] = '';
       $a = array(); // average rating
       $b = array(); //average given rating
-      $a[] = 'Average Rating Recieved';
-      $b[] = 'Average Rating Given';
+      $a[] = get_string('averageratingreceived','peerassessment');//'Average Rating Recieved';
+      $b[] = get_string('averageratinggiven','peerassessment');//'Average Rating Given';
       foreach($members as $m) {
         $overview_table->head[] = $m->lastname . ', '.$m->firstname;
         $a[] = get_average_rating_for_student($peerassessment,$m->id);
@@ -147,10 +158,10 @@ if ($groupid) {
       //$a[] = '&nbsp;';
       $overview_table->data[] = $a;
       $overview_table->data[] = $b;
-      print_heading("Overview");
+      print_heading(get_string('overview','peerassessment'));
       print_table($overview_table);
       $table = peerassessment_get_table_weekly_frequency($peerassessment,$group);//$members);
-      print_heading("Details");    
+      print_heading(get_string('details','peerassessment'));    
       break;  
     case PA_FREQ_UNLIMITED:
       $table = peerassessment_get_table_unlimited_frequency($peerassessment,$group);//$members);
@@ -164,7 +175,16 @@ if ($groupid) {
      
 }
 else {
-  print_box("Please choose a group to display.");
+  print_box_start();
+  echo("Please choose a group to display.");
+  /*
+popup_form(
+    $CFG->wwwroot."/mod/peerassessment/report.php?id={$id}&selectedgroup=",
+    $displaygroups,
+    'reportgroupjump',
+    $groupid
+);*/
+  print_box_end();
 }     
 
 //print_object(peerassessment_get_user_grades($peerassessment));

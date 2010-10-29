@@ -88,7 +88,7 @@ foreach($activities as $a) {
 
   }
   if ($viewReport) {
-    $e[] = "<a href='{$CFG->wwwroot}/mod/peerassessment/report.php?id={$a->id}'>View Report</a>";
+    $e[] = "<a href='{$CFG->wwwroot}/mod/peerassessment/report.php?id={$cm->id}'>View Report</a>";
   }
  // $e[] =print_r($a,true);
   $table->data[] = $e;
