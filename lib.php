@@ -252,8 +252,9 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
         $c = "$comment->studentcomment\n". $c;
         
       }
-      $name.="<span class='popup' title=\"{$c}\">[Comment]</span></sup>";
+      $name.="<span class='popup' title=\"{$c}\"><a href='{$CFG->wwwroot}/mod/peerassessment/comments.php?p={$peerassessment->id}&userid={$m->id}'>[Comment]</a></span></sup>";
       $name .="<sup>";
+      
     }
     $a[] = $name;
     $t1 = 0;
@@ -605,6 +606,10 @@ function print_report_select_form($id,$groups,$selectedGroupId) {
 	$displaygroups= array();
 	//display a list of groups to display
 	//$groups = groups_get_activity_allowed_groups($cm);
+    if (!$groups) {
+        notify (get_string('nogroups','peerassessment'));
+        return;
+    }
 	foreach($groups as $g) {
 		$displaygroups[$g->id] =$g->name;
 	}

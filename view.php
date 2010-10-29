@@ -410,13 +410,18 @@ foreach ($lt as $column) {
                 echo '<form  method="post">';
                 echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
                 echo '<table id="members">';
-                echo "<tr><th>Name</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
+                $strLo = get_string('low','peerassessment');
+                $strHo = get_string('high','peerassessment');
+                $strName = get_string('name','peerassessment');
+                $strcommenthelp = get_string('commenthelp','peerassessment');
+                echo "<tr><th></th><th>$strLo</th><th></th><th></th><th></th><th>$strHo</th></tr>";
+                echo "<tr><th>$strName</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
                 if ($members){
 					foreach ($members as $user) {
 						if (!has_capability('mod/peerassessment:recordrating',$context,$user->id)) {
 						  continue;
 						}
-						echo '<tr>';
+						echo "<tr class='peerassessment_row'>";
 						echo '<td>';
 						echo "<a href='{$CFG->wwwroot}/user/view.php?id={$user->id}' target='_blank'>";                      
 						if ($user->id == $USER->id) {
@@ -441,38 +446,38 @@ foreach ($lt as $column) {
 							if ($previousResponses !== false) {
 								foreach($previousResponses as $prev) {
 									//print_r($prev);
-									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									echo "<td class='peerassessment_center'><input type='radio' name='rating_{$prev->userid}' ";
 									if ($prev->rating == 1) { echo 'checked ' ;}
 									echo "value='1'></td>";
-									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									echo "<td class='peerassessment_center'><input type='radio' name='rating_{$prev->userid}' ";
 									if ($prev->rating == 2) { echo 'checked ' ;}
 									echo "value='2'></td>";
-									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									echo "<td class='peerassessment_center'><input type='radio' name='rating_{$prev->userid}' ";
 									if ($prev->rating == 3) { echo 'checked ' ;}
 									echo "value='3'></td>";
-									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									echo "<td class='peerassessment_center'><input type='radio' name='rating_{$prev->userid}' ";
 									if ($prev->rating == 4) { echo 'checked ' ;}
 									echo "value='4'></td>";
-									echo "<td><input type='radio' name='rating_{$prev->userid}' ";
+									echo "<td class='peerassessment_center'><input type='radio' name='rating_{$prev->userid}' ";
 									if ($prev->rating == 5) { echo 'checked ' ;}
 									echo "value='5'></td>";
 								}
 							}
 							else {
-								echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
-								echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
-								echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
-								echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
-								echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";							
-								echo "<td>*</td>";
+								echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='1'></td>";
+								echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='2'></td>";
+								echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='3'></td>";
+								echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='4'></td>";
+								echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='5'></td>";							
+								echo "<td class='peerassessment_center'>*</td>";
 							}
 						}
 						else {
-							echo "<td><input type='radio' name='rating_{$user->id}' value='1'></td>";
-							echo "<td><input type='radio' name='rating_{$user->id}' value='2'></td>";
-							echo "<td><input type='radio' name='rating_{$user->id}' value='3'></td>";
-							echo "<td><input type='radio' name='rating_{$user->id}' value='4'></td>";
-							echo "<td><input type='radio' name='rating_{$user->id}' value='5'></td>";
+							echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='1'></td>";
+							echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='2'></td>";
+							echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='3'></td>";
+							echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='4'></td>";
+							echo "<td class='peerassessment_center'><input type='radio' name='rating_{$user->id}' value='5'></td>";
 						}
 						echo '</tr>'  ;
 					}
@@ -481,7 +486,9 @@ foreach ($lt as $column) {
                     echo "<tr><td>".get_string('nomembersfound','peerassessment').'</td></tr>';
                 }
                 echo "<tr><th colspan='6'>Comments</th></tr>";
-                echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40'>";
+                echo "<tr><td colspan='6'>$strcommenthelp</td></tr>";
+                
+                echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40' class='peerassessment_fullwidth'>";
                 //really should display existing comment
                 echo "</textarea></td></tr>";
                 echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='submit' name='cancel' value='Cancel'/></td></tr>";

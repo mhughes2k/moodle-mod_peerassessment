@@ -12,6 +12,15 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         
 //        $mform->addElement('static', 'statictype', get_string('assignmenttype', 'assignment'), get_string('type'.$type,'assignment'));
         
+        $mform->addElement('text', 'name', get_string('name'), array('size'=>'48'));
+        if (!empty($CFG->formatstringstriptags)) {
+            $mform->setType('name', PARAM_TEXT);
+        } else {
+            $mform->setType('name', PARAM_CLEAN);
+        }
+        $mform->addRule('name', null, 'required', null, 'client');
+        
+        
         // get_records("assignment",'course',$COURSE->id);
         $assignments = array();
         $assignments[0] = get_string('noassignment','peerassessment');
@@ -27,16 +36,14 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $assignments[1]  = "Some Assignment2";
         */
         $mform->addElement('select','assignment',get_string('assignment','peerassessment'),$assignments,array('optional'=>true));
+        $mform->setHelpButton('assignment',array('mods',get_string('assignment','peerassessment'),'peerassessment'));
 
-        $mform->addElement('text', 'name', get_string('name'), array('size'=>'48'));
-        if (!empty($CFG->formatstringstriptags)) {
-            $mform->setType('name', PARAM_TEXT);
-        } else {
-            $mform->setType('name', PARAM_CLEAN);
-        }
-        $mform->addRule('name', null, 'required', null, 'client');
 
         $mform->addElement('selectyesno','canedit',get_string('canedit','peerassessment'));
+        $mform->addElement('header','additionalinfo',get_string('additionalinfoheader','peerassessment'));
+        $mform->addElement('html',get_string('additionalinfo','peerassessment')); 
+
+
         
         //$mform->addElement('header','scheduling',get_string('scheduling','peerassessment'));
         $mform->addElement('header','advancedsettings','Advanced');
@@ -67,9 +74,6 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addRule('upperbound','Must be numeric','numeric',null,'client');
 
 
-        $mform->addElement('header','additionalinfo','Additional Information');
-               
-        $mform->addElement('html',get_string('additionalinfo','peerassessment')); 
         $this->standard_coursemodule_elements(array('groups'=>true, 'groupmembersonly'=>true, 'gradecat'=>true));
 		
 //		$mform->disabledIf();
