@@ -1,4 +1,6 @@
 <?php
+$string['pluginadministration']	='Peer Assessment Activity Admin';
+$string['pluginname']= 'Peer Assessment Activity';
 $string['modulename'] = 'Peer Assessment Activity';
 $string['modulenameplural'] = 'Peer Assessment Activities';
 
@@ -33,6 +35,28 @@ $string['notenoughtimepassed'] = 'You can\'t complete this activity just now, no
 $string['notenoughtimepassedcanedit'] = 'You can\'t submit a new rating as not enough time has passed since your last submission. You may change your existing rating.';
 $string['oncefrequency'] = 'Once';
 $string['overview'] ='Overview';
+$string['assignment_help'] = '<p><img alt="" src="<?php echo $CFG->wwwroot?>/mod/peerassessment/icon.gif" />&nbsp;<b>Peer Assessment Activities</b></p>
+<div class="indent">
+The Peer Assessment Activity (PAA) module allows group members to rate themselves and the other group members.
+</div>
+<div class="indent">
+There are 2 modes that the PAA module can be used:
+<ol>
+<li>Associated with an Assignment</li>
+<li>Unassociated with an Assignment</li>
+</ol>
+</div>
+
+<p><b>Associated Assignment Mode</b></p>
+<div class="indent">
+<p>In this mode the Peer Assessment Activity is associated with a specific assignment in the course.</p>
+<p>The groups that are configured for the associated activity are used to control the list of students that users are able to rate.</p> 
+</div>
+<p><b>No Associated Assignment Mode</b>  </p>
+<div class="indent">
+<p>In this mode the activity is not associated with any specific assignment.</p>
+<p>You will need to specify what group information is used.</p>  
+</div>';
 $string['peerassessmentactivityheading'] = 'Peer Assessment Activity: $a->peerassessment->name';
 $string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity: $a->peerassessmentname for Group $a->groupname';
 $string['peerassessmentreportheading'] = 'Peer Assessment Activity Report: $a->name';

@@ -17,10 +17,11 @@ if($id) {
         error("Course Module ID was incorrect");
     }
 
-    if (!$course = get_record('course', 'id', $cm->course)) {
+    if (!$course = $DB->get_record('course', array('id'=>$cm->course))) {
         error("Course is misconfigured");
     }
-    if (!$peerassessment = get_record(PA_TABLE, 'id', $cm->instance)) {
+
+    if (!$peerassessment =  $DB->get_record(PA_TABLE, array('id'=>$cm->instance))) {
         error("Course module is incorrect");
     }
 /*
@@ -31,10 +32,10 @@ if($id) {
 } 
 else {
 
-    if (! $peerassessment = get_record('peerassessment', 'id', $p)) {
+    if (! $peerassessment =  $DB->get_record('peerassessment', array('id'=>$p))) {
         error('Course module is incorrect');
     }
-    if (! $course = get_record('course', 'id', $peerassessment->course)) {
+    if (! $course = $DB->get_record('course', array('id'=>$peerassessment->course))) {
         error('Course is misconfigured');
     }
     if (! $cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id, $course->id)) {
@@ -49,8 +50,10 @@ $context = get_context_instance(CONTEXT_MODULE, $cm->id);
         // show some info for guests
 if (isguestuser()) {
     $navigation = build_navigation('', $cm);
-    print_header_simple(format_string($peerassessment->name), '', $navigation,
+    $OUTPUT->header(format_string($peerassessment->name));
+    /*, '', $navigation,
                   '', '', true, '', navmenu($course, $cm));
+                  */
     $wwwroot = $CFG->wwwroot.'/login/index.php';
     if (!empty($CFG->loginhttps)) {
         $wwwroot = str_replace('http:','https:', $wwwroot);
@@ -59,7 +62,7 @@ if (isguestuser()) {
     notice_yesno(get_string('noguests', 'chat').'<br /><br />'.get_string('liketologin'),
             $wwwroot, $CFG->wwwroot.'/course/view.php?id='.$course->id);
 
-    print_footer($course);
+    $OUTPUT->footer($course);
     exit;
 
 }
@@ -72,7 +75,7 @@ switch($peerassessment->frequency) {
     //find out if the user has completed this acitivy AT ALL
     //echo '1';
     if (
-		$ratings = get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AND peerassessment={$peerassessment->id}") 
+		$ratings = $DB->get_records_select('peerassessment_ratings',"ratedby = {$USER->id} AND peerassessment={$peerassessment->id}") 
       ) {
       $alreadyCompleted = PA_COMPLETED;  
       //notice(get_string('alreadycompleted','peerassessment'));
@@ -83,7 +86,7 @@ switch($peerassessment->frequency) {
     //echo 'wkly';
     $oneWeekAgo =$compareTime - PA_ONE_WEEK;
     //find out if the user has completed this acitivy within the last week
-    if($ratings = get_records_select('peerassessment_ratings',"timemodified>{$oneWeekAgo} AND peerassessment={$peerassessment->id}")) {
+    if($ratings = $DB->get_records_select('peerassessment_ratings',"timemodified>{$oneWeekAgo} AND peerassessment={$peerassessment->id}")) {
       //print_r($ratings);
       //we've got a rating record(s) that are were modified more recenly than a week ago
       $alreadyCompleted =PA_COMPLETED_THIS_WEEK;
@@ -183,7 +186,7 @@ if ($data) {
         $ins->rating = $value;
         $ins->timemodified = $submittime;
         //$ins->studentcomment  = $comments;  //this will overwrite        
-        $result = insert_record('peerassessment_ratings',$ins);
+        $result = $DB->insert_record('peerassessment_ratings',$ins);
         if ($result) {
          
         }        
@@ -201,7 +204,7 @@ if ($data) {
 		$co->timecreated= $submittime;
 		$co->timemodified= $submittime;
 		$co->studentcomment=$comments;
-		$co_result = insert_record('peerassessment_comments',$co); 
+		$co_result = $DB->insert_record('peerassessment_comments',$co); 
 	}
   }
   else {
@@ -216,7 +219,7 @@ if ($data) {
 
 //print_r($data);
 //  peerassessment_update_grades($peerassessment),$USER->id);    //update this user's grade in gradebook
-  peerassessment_update_grades(stripslashes_recursive($peerassessment));
+  peerassessment_update_grades($peerassessment);
   redirect($CFG->wwwroot."/course/view.php?id={$course->id}");
   exit();
 }
@@ -224,16 +227,19 @@ if ($data) {
 
 
 
-$PAGE       = page_create_instance($peerassessment->id);
-$pageblocks = blocks_setup($PAGE);
-$blocks_preferred_width = bounded_number(180, blocks_preferred_width($pageblocks[BLOCK_POS_LEFT]), 210);
+//$PAGE       = page_create_instance($peerassessment->id);
+//$pageblocks = blocks_setup($PAGE);
+//$blocks_preferred_width = bounded_number(180, blocks_preferred_width($pageblocks[BLOCK_POS_LEFT]), 210);
 
 
-$PAGE->print_header($course->shortname.': %fullname%');
-
+//$PAGE->print_header($course->shortname.': %fullname%');
+//print_header();
+$params = array();
+$PAGE->set_title($course->shortname.': ' .$course->fullname);
+$PAGE->set_url('/mod/peerassessment/view.php',$params);
 //check what frequency this is running at and if it should be displayed for the user.
 $ratings = false;
-
+echo $OUTPUT->header();
 
 //die();
 
@@ -305,10 +311,10 @@ if ($group) {
   else {
     $a->groupname =$group->name;
   }
-  print_heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
+  $OUTPUT->heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
 }
 else {
-  print_heading(get_string('modulename','peerassessment'));
+  $OUTPUT->heading(get_string('modulename','peerassessment'));
 }
 
 $groups = groups_get_activity_allowed_groups($cm);
@@ -324,9 +330,9 @@ foreach ($lt as $column) {
             if ($canViewReport) {
 				//echo '<div class="reportlink">';
 				if (!$group) {
-					print_box_start();
+					$OUTPUT->box_start();
 					print_report_select_form($id,$groups,$groupid);
-					print_box_end();
+					$OUTPUT->box_end();
 				}
 				else {
 					echo '<div class="reportlink">';
@@ -516,4 +522,4 @@ foreach ($lt as $column) {
           break;
     }
 }
-print_footer($course);
+$OUTPUT->footer($course);

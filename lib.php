@@ -18,7 +18,7 @@ define('PA_ONE_WEEK',604800);//000);
  * Returns a list of "types" which are displayed in the add fields.  
  */ 
 function peerassessment_get_types() {
-  global $USER,$COURSE;
+  global $DB,$USER,$COURSE;
   $context =  get_context_instance(CONTEXT_COURSE,$COURSE->id);
   if (has_capability('mod/peerassessment:usepeerassessment',$context)) {
     $type = new stdclass;
@@ -31,11 +31,11 @@ function peerassessment_get_types() {
 }
 
 function peerassessment_add_instance($pa) {
-  global $USER;
+  global $DB,$USER;
   
   //print_object($pa);
   
-  if (!$returnid = insert_record('peerassessment',$pa)) {
+  if (!$returnid = $DB->insert_record('peerassessment',$pa)) {
     return false;
   }
   $pa->id=$returnid;        
@@ -44,9 +44,10 @@ function peerassessment_add_instance($pa) {
 }
 
 function peerassessment_update_instance($pa) {
-  //print_object($pa);
+  global $DB;
   $pa->id = $pa->instance;
-  if (!$returnid = update_record('peerassessment',$pa)) {
+  unset($pa->introformat);
+  if (!$returnid = $DB->update_record('peerassessment',$pa)) {
     return false;  
   }
   //peerassessment_grade_item_update(stripslashes_recursive($pa));
@@ -56,14 +57,15 @@ function peerassessment_update_instance($pa) {
 }
 
 function peerassessment_delete_instance($id) {
-  if (! $pa = get_record('peerassessment','id',$id)) {
+    global $DB;
+  if (! $pa = $DB->get_record('peerassessment',array('id'=>$id))) {
     return false;
   }
   $result = true;
-  if (! delete_records('peerassessment','id',$pa->id)) {
+  if (! $DB->delete_records('peerassessment',array('id'=>$pa->id))) {
     $result = false;
   }  
-  if (! delete_records('peerassessment_ratings','peerassessment',$pa->id)) {
+  if (! delete_records('peerassessment_ratings',array('peerassessment'=>$pa->id))) {
     $result = false;
   }
     
@@ -77,14 +79,15 @@ function peerassessment_delete_instance($id) {
   return $result;
 }
 function peerassessment_get_user_grades($pa,$userid=0) {
-  global $CFG;
+	
+  global $CFG,$DB;
   $user = $userid ? "AND userid=$userid" :"";
   
   $sql = "SELECT userid as userid, AVG(rating) AS rawgrade FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$pa->id} $user GROUP BY userid";
 
   //TODO we still need to sling the comment into the grade object.
   
-  $grades = get_records_sql($sql);
+  $grades = $DB->get_records_sql($sql);
   $i=0;
   foreach($grades as $grade) {
     //$i++;
@@ -211,14 +214,14 @@ function get_week_start_from_time($start_date){
  * Returns a table displaying the results for SINGLE frequency Peerassessment
  */ 
 function peerassessment_get_table_single_frequency($peerassessment,$group) {
-  global $CFG;
+  global $CFG,$DB;
   //print_r($group);
 
   $cm = get_coursemodule_from_instance('peerassessment',$peerassessment->id);  
   $context = get_context_instance(CONTEXT_MODULE,$cm->id);
 
   $members = groups_get_members($group->id);
-  $table=new stdClass;
+  $table= new html_table();//new stdClass;
   $table->head = array();
   //$table->head[] ="";
   $table->head[] ="Student\Recipient &gt;";
@@ -241,7 +244,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
     }
     $a = array();
     $select ="userid = {$m->id} AND peerassessment={$peerassessment->id}";
-    $comments = get_records_select('peerassessment_comments',$select);
+    $comments = $DB->get_records_select('peerassessment_comments',$select);
 //    print_r($comment);
     $name = "{$m->lastname}, {$m->firstname}";// ({$m->id})";
     if($comments) {
@@ -268,7 +271,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
       }
       $sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$m->id} AND userid={$m2->id}";
       //echo $sql;
-      $rating = get_record_sql($sql);
+      $rating = $DB->get_record_sql($sql);
       //print_object($rating);
       
       if ($rating) {
@@ -339,7 +342,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
 }
 
 function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showdetails=true) {
-  global $CFG;
+  global $CFG,$DB;
   $cm = get_coursemodule_from_instance('peerassessment',$peerassessment->id);  
   $context = get_context_instance(CONTEXT_MODULE,$cm->id);
   $user_can_delete_ratings = has_capability('mod/peerassessment:deleteratings',$context);
@@ -361,7 +364,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showd
   $heading[]='';
   //get earliest recorded entry
   $earliest_sql = "SELECT min(timemodified) AS timemodifed FROM {$CFG->prefix}peerassessment_ratings WHERE  peerassessment ={$peerassessment->id} ";
-  $earliest_rs = get_record_sql($earliest_sql);
+  $earliest_rs = $DB->get_record_sql($earliest_sql);
   //print_r($earliest_rs);
   if (!isset($earliest_rs->timemodifed)) {
     $table->data[] = array('No Entries');
@@ -389,7 +392,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showd
     $endDate = strtotime($offset,$startDate); //this is the sunday/monday midnight
    // echo (date('r',$startDate) .'-'.date('r',$endDate)."<br />");
     $entries_for_week_sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND timemodified >= $startDate and timemodified<=$endDate";
-    $entries = get_records_sql($entries_for_week_sql);
+    $entries = $DB->get_records_sql($entries_for_week_sql);
 //print_object($entries);    
     $entries_for_week[$startDate] = array();//
     if ($entries) {
@@ -547,9 +550,9 @@ function peerassessment_get_table_unlimited_frequency($peerassessment,$group) {
 }
 
 function get_average_rating_for_student($peerassessment,$userid) {
-  global $CFG;
+  global $CFG,$DB;
   $sql = "SELECT AVG(rating) AS average FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND userid={$userid}";
-  $rs = get_record_sql($sql);
+  $rs = $DB->get_record_sql($sql);
   if ($rs->average >PA_UPPER_THRESHOLD) {
     return "<span style='color:green'><sup>+</sup>".$rs->average."</span>";//"<img src='abovethreshold.png' alt='Above Threshold'/>";
   }  
@@ -559,9 +562,9 @@ function get_average_rating_for_student($peerassessment,$userid) {
   return $rs->average;
 }
 function get_average_rating_by_student($peerassessment,$userid) {
-   global $CFG;
+   global $CFG,$DB;
   $sql = "SELECT AVG(rating) AS average FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment={$peerassessment->id} AND ratedby={$userid}";
-  $rs = get_record_sql($sql);
+  $rs = $DB->get_record_sql($sql);
   //print_r($rs);  
   if ($rs->average >PA_UPPER_THRESHOLD) {
     return "<span style='color:green'><sup style='color:green'>+</sup>".$rs->average."</span>";//"<img src='abovethreshold.png' alt='Above Threshold'/>";
@@ -617,7 +620,8 @@ function print_report_select_form($id,$groups,$selectedGroupId) {
 	ksort($displaygroups,SORT_STRING);   
 	
 	echo "<form action='report.php' method='get'><p>". get_string('viewreportgroup','peerassessment');
-	choose_from_menu($displaygroups,'selectedgroup',$selectedGroupId);
+	//print_object($displaygroups);
+	echo html_writer::select($displaygroups,'selectedgroup',$selectedGroupId);
 	echo "<input type='hidden' name='id' value='{$id}'/><input type='submit' value='Select'/></p>";
 	echo '</form>';
   /*echo "<a href=\"report.php?id=$cm->id&gid={$groupid}\">".get_string('viewreport', 'peerassessment').'</a>';*/

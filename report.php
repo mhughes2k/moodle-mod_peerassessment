@@ -6,27 +6,40 @@ require_once($CFG->dirroot."/lib/tablelib.php");
 $id = optional_param('id',false,PARAM_INT);	//course module id;
 $groupid = optional_param('selectedgroup',false,PARAM_INT);
 $startReportPeriod =optional_param('startperiod',false,PARAM_INT);
-
-$p = optional_param('peerassessment',0,PARAM_INT); 
+$p = optional_param('peerassessment',0,PARAM_INT);
+$params = array();
+if ($id) {
+	$params['id']=$id;
+}
+if ($groupid) {
+	$params['selectedgroup'] = $groupid;
+}
+if ($startReportPeriod) {
+	$params['startReportPeriod'] = $startReportPeriod;
+}
+if ($p != 0) {
+	$params['peerassessment'] = $p;
+}
+ 
 if($id) {
     if (!$cm = get_coursemodule_from_id('peerassessment', $id)) {
         error("Course Module ID was incorrect (1)");
     }
 
-    if (!$course = get_record('course', 'id', $cm->course)) {
+    if (!$course = $DB->get_record('course',array('id'=>$cm->course))) {
         error("Course is misconfigured");
     }
-    if (!$peerassessment = get_record(PA_TABLE, 'id', $cm->instance)) {
+    if (!$peerassessment = $DB->get_record(PA_TABLE,array('id'=>$cm->instance))) {
         error("Course module is incorrect");
     }
     
 }
 else {
 
-    if (! $peerassessment = get_record('peerassessment', 'id', $p)) {
+    if (! $peerassessment = $DB->get_record('peerassessment',array('id'=>$p))) {
         error('Course module is incorrect');
     }
-    if (! $course = get_record('course', 'id', $peerassessment->course)) {
+    if (! $course = $DB->get_record('course', array('id'=>$peerassessment->course))) {
         error('Course is misconfigured');
     }
     if (! $cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id, $course->id)) {
@@ -36,10 +49,11 @@ else {
 }
 require_course_login($course, true, $cm);
 
+$PAGE->set_url('/mod/peerassessment/report.php',$params);
 
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 require_capability('mod/peerassessment:viewreport',$context);
-$ratings = get_records('peerassessment_ratings','peerassessment',$peerassessment->id);
+$ratings = $DB->get_records('peerassessment_ratings',array('peerassessment'=>$peerassessment->id));
 
 $group = false;
 $groupmode = false;
@@ -62,7 +76,7 @@ if ($data) {
   if(!empty($data->delete)) {
     //add_to_log('requested deletion of rating')
     echo "deleting a rating\n";
-    if ($rating = get_records('peerassessment_ratings','id',$data->ratingid)) {  
+    if ($rating = $DB->get_records('peerassessment_ratings',array('id'=>$data->ratingid))) {  
       if($rating) {
         //$rating = get_record_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ");       
         if(!delete_records('peerassessment_ratings','id',$rating->id)) {
@@ -71,7 +85,7 @@ if ($data) {
       }      
     } 
     else {
-      if ($rating = get_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) { 
+      if ($rating = $DB->get_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) { 
         if(!delete_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) {
           notice("Could not delete rating");
         }
@@ -118,15 +132,25 @@ $navigation = build_navigation('', $cm);
 print_header_simple(format_string($peerassessment->name), '', $navigation,
                       '', '', true, '', navmenu($course, $cm));
 
-print_heading(get_string('peerassessmentreportheading','peerassessment',$peerassessment));
+$OUTPUT->heading(get_string('peerassessmentreportheading','peerassessment',$peerassessment));
 echo '<div class="reportlink">';
 print_string('displaygroup','peerassessment');
-popup_form(
+print_report_select_form($id,$groups,$groupid);
+/*
+echo $OUTPUT->single_select(
+    $CFG->wwwroot."/mod/peerassessment/report.php?id={$id}&selectedgroup=",
+    'reportgroupjump',
+    $displaygroups,
+    $groupid
+);*/
+
+/*popup_form(
     $CFG->wwwroot."/mod/peerassessment/report.php?id={$id}&selectedgroup=",
     $displaygroups,
     'reportgroupjump',
     $groupid
 );
+*/
 /*
 echo '<form id="reportgroupjump"><p>' . get_string('displaygroup','peerassessment');
 choose_from_menu($displaygroups,'selectedgroup',$groupid);
@@ -171,12 +195,19 @@ if ($groupid) {
   }
   
   
-  print_table($table);
+	//print_table($table);
+	echo html_writer::table($table);
      
 }
 else {
-  print_box_start();
+  $OUTPUT->box_start();
   echo("Please choose a group to display.");
+  $OUTPUT->single_select(
+    $CFG->wwwroot."/mod/peerassessment/report.php?id={$id}&selectedgroup=",
+    'reportgroupjump',
+    $displaygroups,
+    $groupid
+);
   /*
 popup_form(
     $CFG->wwwroot."/mod/peerassessment/report.php?id={$id}&selectedgroup=",
@@ -184,9 +215,9 @@ popup_form(
     'reportgroupjump',
     $groupid
 );*/
-  print_box_end();
+  $OUTPUT->box_end();
 }     
 
 //print_object(peerassessment_get_user_grades($peerassessment));
 
-print_footer();
+$OUTPUT->footer();

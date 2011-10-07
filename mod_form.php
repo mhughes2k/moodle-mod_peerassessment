@@ -36,7 +36,8 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $assignments[1]  = "Some Assignment2";
         */
         $mform->addElement('select','assignment',get_string('assignment','peerassessment'),$assignments,array('optional'=>true));
-        $mform->setHelpButton('assignment',array('mods',get_string('assignment','peerassessment'),'peerassessment'));
+        $mform->addHelpButton('assignment','assignment','peerassessment');
+        //array('mods',get_string('assignment','peerassessment'),'peerassessment'));
 
 
         $mform->addElement('selectyesno','canedit',get_string('canedit','peerassessment'));
@@ -65,9 +66,9 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         
         $mform->setAdvanced('advancedsettings');
         $mform->addElement('text','lowerbound',get_string('lowerbound','peerassessment'),array('value'=>'2.5'));
-        $mform->setHelpButton('lowerbound',array('bounds',get_string('lowerbound','peerassessment'),'peerassessment'));
+        $mform->addHelpButton('lowerbound','lowerbound','peerassessment');//,array('bounds',get_string('lowerbound','peerassessment'),'peerassessment'));
         $mform->addElement('text','upperbound',get_string('upperbound','peerassessment'),array('value'=>'3.5'));
-        $mform->setHelpButton('upperbound',array('bounds',get_string('upperbound','peerassessment'),'peerassessment'));
+        $mform->addHelpButton('upperbound','upperbound','peerassessment');//array('bounds',get_string('upperbound','peerassessment'),'peerassessment'));
 
         $mform->addRule('lowerbound','Must be numeric','numeric',null,'client');
         //$mform->addRule('lower_bound','Must be between less than or equal to 5','compare',array(,'client');

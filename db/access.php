@@ -1,18 +1,17 @@
 <?php
-  $mod_peerassessment_capabilities = array(
+  $capabilities = array(
     'mod/peerassessment:usepeerassessment' => array(
       'riskbitmask' =>  0,
       'captype'     =>  'read',
       'contextlevel'=>  CONTEXT_MODULE,
-      'legacy'      =>  array(
-        'admin'   =>  CAP_ALLOW,
+      'archetypes'      =>  array(
       )
     ),
     'mod/peerassessment:recordrating' => array(
       'riskbitmask' =>  RISK_PERSONAL,
       'captype'     =>  'write',
       'contextlevel'=>  CONTEXT_MODULE,
-      'legacy'      =>  array(
+      'archetypes'      =>  array(
         'student'   =>  CAP_ALLOW,
       )
     ),
@@ -20,8 +19,8 @@
       'riskbitmask' =>  RISK_PERSONAL,
       'captype'     =>  'read',
       'contextlevel'=>  CONTEXT_MODULE,
-      'legacy'      =>  array(
-          'admin'   => CAP_ALLOW,
+      'archetypes'      =>  array(
+          'manager' =>CAP_ALLOW,
           'teacher' => CAP_ALLOW
       )
     ),
@@ -29,8 +28,8 @@
       'riskbitmask' =>  RISK_PERSONAL,
       'captype'     =>  'write',
       'contextlevel'=>  CONTEXT_MODULE,
-      'legacy'      =>  array(
-          'admin'   => CAP_ALLOW,
+      'archetypes'      =>  array(
+          'manager' =>CAP_ALLOW,
           'teacher' => CAP_ALLOW
       )
     ),
