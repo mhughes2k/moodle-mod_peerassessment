@@ -79,14 +79,14 @@ if ($data) {
     if ($rating = $DB->get_records('peerassessment_ratings',array('id'=>$data->ratingid))) {  
       if($rating) {
         //$rating = get_record_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ");       
-        if(!delete_records('peerassessment_ratings','id',$rating->id)) {
+        if(!$DB->delete_records('peerassessment_ratings',array('id'=>$rating->id))) {
           notice("Could not delete rating");
         }
       }      
     } 
     else {
       if ($rating = $DB->get_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) { 
-        if(!delete_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) {
+        if(!$DB->delete_records_select('peerassessment_ratings',"peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")) {
           notice("Could not delete rating");
         }
       }

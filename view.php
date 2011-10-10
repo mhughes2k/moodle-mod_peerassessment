@@ -33,13 +33,13 @@ if($id) {
 else {
 
     if (! $peerassessment =  $DB->get_record('peerassessment', array('id'=>$p))) {
-        error('Course module is incorrect');
+        print_error('Course module is incorrect');
     }
     if (! $course = $DB->get_record('course', array('id'=>$peerassessment->course))) {
-        error('Course is misconfigured');
+        print_error('Course is misconfigured');
     }
     if (! $cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id, $course->id)) {
-        error('Course Module ID was incorrect');
+        print_error('Course Module ID was incorrect');
     }
     $id=$cm->id;
 }
