@@ -314,7 +314,7 @@ function peerassessment_get_table_single_frequency($peerassessment,$group) {
   }
   //output the average grade received by top of column
   $a = array();
-  $a['avgrecieved'] = 'Average Rating Recieved';
+  $a['avgrecieved'] = get_string('averageratingreceived','peerassessment');
   //$table->rowclass['avgrecieved']='header';
   foreach($members as $m) {
     if (!has_capability('mod/peerassessment:recordrating',$context,$m->id)) {
