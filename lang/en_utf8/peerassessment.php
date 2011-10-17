@@ -12,7 +12,7 @@ $string['averageratinggiven']='Average Rating Given';
 $string['averageratingreceived']='Average Rating Received';
 $string['canedit'] = 'Responses can be changed';
 $string['canedithelp'] = 'Allow students to change their responses.';
-$string['commenthelp'] = 'You can attach a comment about the whole activity you are reviewing.';
+$string['commenthelp'] = 'You can attach a comment.';
 $string['displaygroup'] = 'Display Group';
 $string['deleteratings'] ='Delete Student\'s Ratings';
 $string['details'] ='Details';
@@ -47,5 +47,7 @@ $string['usernotactuallyingroup'] = 'You are not actually in this group. This ha
 $string['viewreport'] ='View Report';
 $string['viewreportgroup']='View Report for Group:';
 $string['weeklyfrequency'] = 'Weekly';
+
+$string['deleteallreports'] =   'Delete All Peer Assessment Content';
 
 ?>

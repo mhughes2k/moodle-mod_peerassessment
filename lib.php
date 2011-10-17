@@ -193,8 +193,54 @@ function peerassessment_grade_item_update($pa,$grades=null) {
   return $r;
 }
 
-function peerassessment_reset_gradebook() {
+function peerassessment_reset_gradebook($courseid,$type='') {
+    
+    global $CFG;
+    $sql = "SELECT d.*, cm.idnumber as cmidnumber, d.course as courseid
+        FROM {$CFG->prefix}peerassessment d, {$CFG->prefix}course_modules cm, {$CFG->prefix}modules m
+        WHERE m.name='peerassessment' AND m.id=cm.module AND cm.instance=d.id AND d.course=$courseid";
+    if ($datas = get_records_sql($sql)) {
+        foreach ($datas as $data) {
+            data_grade_item_update($data, 'reset');
+        }
+    }
 
+}
+
+function peerassessment_reset_course_form_definition(&$mform) {
+    $mform->addElement('header','peerassessmentheader',get_string('modulenameplural','peerassessment'));
+    $mform->addElement('checkbox','reset_peerassessment',get_string('deleteallreports','peerassessment'));
+    //$mform->disabledIf('reset_peerassessment
+}
+
+function peerassessment_reset_course_form_defaults($course) {
+    return array('reset_peerassessment'=>1);
+}
+
+function peerassessment_reset_userdata($data) {
+    global $CFG;
+    //die("reseting userdata");
+    $status = array();
+    if (!empty($data->reset_perrassessment)) {
+        $all_ratings = "SELECT p.id FROM {$CFG->prefix}peerassessment_ratings pr 
+                INNER JOIN {$CFG->prefix}peerassessment p ON pr.id = p.id
+            WHERE p.course = {$data->courseid}";
+        $all_comments = "SELECT pc.id FROM {$CFG->prefix}peerassessment_comments pc
+                WHERE pc.course={$data->courseid}";
+    
+    // 1.   Delete records from the peerassessment_ratings table.
+        debugging("Deleting Ratings Records");
+        //delete_records_select('peerassessment_ratings',"peerassessment IN {$all_ratings}");
+        $status[] = array('component'=>'Peer Assessment', 'item'=>'Ratings Removed', 'error'=>false);
+    
+    // 2.   Delete records from the peerassessment_comments table.
+//        debugging("Deleting Comments Records");
+        
+        //delete_records_select('peerassessment_comments',"peerassessment IN {$all_comments}");        
+        $status[] = array('component'=>'Peer Assessment', 'item'=>'Comments Removed', 'error'=>false);
+    }
+    return $status;
+    
 }
 
 
@@ -422,7 +468,8 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showd
     $row=array();
     $row[] = $m1->lastname .', '.$m1->firstname;   
     $userheadings[] = 'Student';
-    $userheadings[] = 'Average Rating Given';  //we merged the average to the first column 
+    $userheadings[] = get_string("averateratinggiven",'peerrassessment'); 
+    //'Average Rating Given';  //we merged the average to the first column 
     foreach($entries_for_week as $week => $value) {
       //echo 'Week Starting ' .date('d-M-Y',$week);
       if (!$doneheadings && $showdetails) {
@@ -522,7 +569,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment,$group,$showd
   $a = array();
   //$a[] = '';
   $a[]='';
-  $a[] ='Average rating recieved';
+  $a[] = get_string('averageratingreceived','peerassessment');//'Average rating recieved';
   foreach($members as $m1) {
     $a[] = get_average_rating_for_student($peerassessment,$m1->id);
   }  
