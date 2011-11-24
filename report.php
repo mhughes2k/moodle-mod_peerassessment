@@ -95,6 +95,9 @@ if ($data) {
       }
       
     }
+    if (!($DB->delete_records('peerassessment_comments',array('peerassessment'=>$data->peerassessment,'userid'=>$data->userid)))) {
+    	notice("Could not delete comment");
+    }
     peerassessment_update_grades($peerassessment) ;//update the grade book since we've deleted some entries   
     redirect($CFG->wwwroot."/mod/peerassessment/report.php?selectedgroup={$groupid}&id={$id}");  
   }	

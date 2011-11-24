@@ -124,7 +124,7 @@ if ($data) {
         $userid = substr($name,7);
         
         $select = "SELECT * FROM {$CFG->prefix}peerassessment_ratings WHERE peerassessment = {$peerassessment->id} AND ratedby = {$USER->id} AND userid={$userid}";
-        $ratings = get_records_sql($select);
+        $ratings = $DB->get_records_sql($select);
 		if ($ratings === false) {
 			//we have a form but for a user that we' haven't got a previous rating for so we need to insert it.
 			echo 'Inserting rating for a new member to group.';
@@ -135,7 +135,7 @@ if ($data) {
 			$ins->rating = $value;
 			$ins->timemodified = $submittime;
 			//$ins->studentcomment  = $comments;  //this will overwrite        
-			$result = insert_record('peerassessment_ratings',$ins);
+			$result = $DB->insert_record('peerassessment_ratings',$ins);
 		}
 		else {
 			//print_object($ratings);
@@ -149,7 +149,7 @@ if ($data) {
 			  //$result = insert_record('peerassessment_ratings',$ins);
 			  //print_object($ins);
 			 // $ins->studentcomment  = $comments;
-			$result = update_record('peerassessment_ratings',$ins);
+			$result = $DB->update_record('peerassessment_ratings',$ins);
 			}
 		}
      
@@ -161,10 +161,10 @@ if ($data) {
       }
     }
 	if ($comments !='') {
-		$co = get_record('peerassessment_comments','userid',$USER->id,'peerassessment',$peerassessment->id);
+		$co = $DB->get_record('peerassessment_comments',array('userid'=>$USER->id,'peerassessment'=>$peerassessment->id));
 		$co->timemodified= $submittime;
 		$co->studentcomment=$comments; 
-		update_record('peerassessment_comments',$co);   
+		$DB->update_record('peerassessment_comments',$co);   
 	}
           
   }
@@ -367,7 +367,7 @@ foreach ($lt as $column) {
              switch($alreadyCompleted) {
                 case PA_COMPLETED:
                   if ($peerassessment->canedit) {
-                    print_box(get_string('alreadycompletedcanedit','peerassessment'));
+                    echo $OUTPUT->box(get_string('alreadycompletedcanedit','peerassessment'));
                   }
                   else {
                     notice(get_string('alreadycompleted','peerassessment'));
@@ -375,7 +375,7 @@ foreach ($lt as $column) {
                   break;
                 case PA_COMPLETED_THIS_WEEK:
                   if ($peerassessment->canedit) {
-                    print_box(get_string('notenoughtimepassedcanedit','peerassessment'));
+                    echo $OUTPUT->box(get_string('notenoughtimepassedcanedit','peerassessment'));
                   }                  
                   else {
                     notice(get_string('notenoughtimepassed','peerassessment'));
@@ -383,8 +383,9 @@ foreach ($lt as $column) {
                   break;
               }
               
-
+			$co = false;
             if (!$alreadyCompleted | $editResponses) {
+            	$co = $DB->get_record('peerassessment_comments',array('userid'=>$USER->id,'peerassessment'=>$peerassessment->id));
             //check that the opening / due times are still OK
               $ctime = time();
               if ($peerassessment->timeavailable!=0 &&
@@ -496,6 +497,9 @@ foreach ($lt as $column) {
                 
                 echo "<tr><td colspan='6'><textarea name='comments' rows='5' columns='40' class='peerassessment_fullwidth'>";
                 //really should display existing comment
+                if ($co) {
+                	echo $co->studentcomment;
+                }
                 echo "</textarea></td></tr>";
                 echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='submit' name='cancel' value='Cancel'/></td></tr>";
                 echo '</table>';
