@@ -441,7 +441,7 @@ foreach ($lt as $column) {
 						echo '</td>';
 						if ($editResponses) {
 							$select = "peerassessment={$peerassessment->id} AND ratedby ={$USER->id} AND userid={$user->id}";
-							$lastRatingTime = get_field_select('peerassessment_ratings','max(timemodified) as Timestamp',$select);
+							$lastRatingTime = $DB->get_field_select('peerassessment_ratings','max(timemodified) as Timestamp',$select);
 							$previousResponses = false;
 							if ($lastRatingTime =='') {
 								// we don't have a last record

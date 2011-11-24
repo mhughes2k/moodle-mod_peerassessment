@@ -19,6 +19,7 @@ $string['displaygroup'] = 'Display Group';
 $string['deleteratings'] ='Delete Student\'s Ratings';
 $string['details'] ='Details';
 $string['expired']='This activity is no longer available (deadline passed).';
+
 $string['frequency'] ='Frequency';
 $string['high'] = 'High';
 $string['low'] = 'Low';
