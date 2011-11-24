@@ -447,7 +447,7 @@ foreach ($lt as $column) {
 								// we don't have a last record
 							}
 							else {
-								$previousResponses = get_records_select('peerassessment_ratings',$select . " AND timemodified =$lastRatingTime");
+								$previousResponses = $DB->get_records_select('peerassessment_ratings',$select . " AND timemodified =$lastRatingTime");
 							}
 							if ($previousResponses !== false) {
 								foreach($previousResponses as $prev) {
