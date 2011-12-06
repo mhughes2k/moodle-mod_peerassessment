@@ -21,3 +21,7 @@
 .peerassessment_fullwidth {
 width:100%;
 }
+
+#members th {
+	text-align:center;
+}
