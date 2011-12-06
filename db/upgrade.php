@@ -22,6 +22,17 @@
     /// Launch add field upperbound
         $result = $result && add_field($table, $field);
     }
+    
+	if ($result && $oldversion < 2011120600) {
+
+    /// Define field additionaltext to be added to peerassessment
+        $table = new XMLDBTable('peerassessment');
+        $field = new XMLDBField('additionaltext');
+        $field->setAttributes(XMLDB_TYPE_TEXT, 'medium', null, null, null, null, null, null, 'upperbound');
+
+    /// Launch add field additionaltext
+        $result = $result && add_field($table, $field);
+    }
 
 
     return $result;

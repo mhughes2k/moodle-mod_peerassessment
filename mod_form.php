@@ -40,6 +40,10 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
 
         $mform->addElement('selectyesno','canedit',get_string('canedit','peerassessment'));
+        
+        $mform->addElement('htmleditor','additionaltext',get_string("additionaltext",'peerassessment'));
+        
+        
         $mform->addElement('header','additionalinfo',get_string('additionalinfoheader','peerassessment'));
         $mform->addElement('html',get_string('additionalinfo','peerassessment')); 
 

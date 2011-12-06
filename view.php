@@ -402,8 +402,11 @@ foreach ($lt as $column) {
               }
               else {
                 //require_capability('mod/peerassessment:recordrating',$context,true);
+                print_box_start('center generalbox','','');
+                echo $peerassessment->additionaltext;
+                print_box_end();
                 if ($canRecordRating && $group) {
-                  print_container_start();
+                  print_box_start('center generalbox','','');
                   //get a list of the all the members of the group that this user is in for the underlying a
                   // assignment
                   //if ($chatusers = chat_get_users($chat->id, $currentgroup, $cm->groupingid)) {
@@ -494,7 +497,7 @@ foreach ($lt as $column) {
                 echo "<tr><th colspan='6'><input type='submit' value='Save'/><input type='submit' name='cancel' value='Cancel'/></td></tr>";
                 echo '</table>';
                 echo '</form>';
-                print_container_end();
+                print_box_end();
               }
               else  {
 				if ($canViewReport & !$group) {
