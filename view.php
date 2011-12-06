@@ -321,6 +321,7 @@ foreach ($lt as $column) {
           break;
         case 'middle':
           {
+          	echo "<td>";
             if ($canViewReport) {
 				//echo '<div class="reportlink">';
 				if (!$group) {
@@ -402,9 +403,11 @@ foreach ($lt as $column) {
               }
               else {
                 //require_capability('mod/peerassessment:recordrating',$context,true);
-                print_box_start('center generalbox','','');
-                echo $peerassessment->additionaltext;
-                print_box_end();
+                if (!empty($peerassessment->additionaltext)){
+	                print_box_start('center generalbox','','');
+	                echo $peerassessment->additionaltext;
+	                print_box_end();
+                }
                 if ($canRecordRating && $group) {
                   print_box_start('center generalbox','','');
                   //get a list of the all the members of the group that this user is in for the underlying a
@@ -514,9 +517,11 @@ foreach ($lt as $column) {
           
            
         }
+        	echo "</td>";
           break;
         case 'right':
           break;
     }
 }
+echo '</table>';
 print_footer($course);
