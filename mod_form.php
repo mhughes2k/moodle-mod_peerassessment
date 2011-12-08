@@ -6,6 +6,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
     function definition() {
         global $CFG,$COURSE;
         $mform =& $this->_form;
+        //print_object($this);
         //$mform->setHelpButton('upper_bound',array('bounds',get_string('upper_bound','peerassessment'),'peerassessment'));
 //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -35,7 +36,8 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $assignments[0]  = "Some Assignment";
         $assignments[1]  = "Some Assignment2";
         */
-        $mform->addElement('select','assignment',get_string('assignment','peerassessment'),$assignments,array('optional'=>true));
+        $assElement = $mform->addElement('select','assignment',get_string('assignment','peerassessment'),$assignments,array('optional'=>true));
+        $mform->addElement('static','associatedassignmentdoesntexist');
         $mform->setHelpButton('assignment',array('mods',get_string('assignment','peerassessment'),'peerassessment'));
 
 
@@ -85,4 +87,23 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $this->add_action_buttons();        
   }
   
+  function definition_after_data() {
+  		global $CFG,$COURSE;
+  		parent::definition_after_data();
+        $mform =& $this->_form;
+  		//get_string('associatedassignmentdoesntexist','peerassessment'));
+  		$assId = array_pop($mform->getElement('assignment')->getSelected());
+  		
+  		$assignments = array();
+  		if ($raw_assignments = get_coursemodules_in_course('assignment',$COURSE->id)) {
+          foreach($raw_assignments as $a) {
+            $assignments[$a->id] = $a->name;
+          }
+        }
+  		
+  		$notice = $mform->getElement('associatedassignmentdoesntexist');
+  		if (!is_null($assId) && !array_key_exists($assId,$assignments)) {
+  			$notice->setValue(get_string('associatedassignmentdoesntexist','peerassessment'));
+  		}
+  }
 }
