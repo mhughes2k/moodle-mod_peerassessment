@@ -65,11 +65,11 @@ function peerassessment_delete_instance($id) {
   if (! $DB->delete_records('peerassessment',array('id'=>$pa->id))) {
     $result = false;
   }  
-  if (! delete_records('peerassessment_ratings',array('peerassessment'=>$pa->id))) {
+  if (! $DB->delete_records('peerassessment_ratings',array('peerassessment'=>$pa->id))) {
     $result = false;
   }
     
-  if ($events = get_records_select('event',"modulename = 'peerassessment' and instance = '{$pa->id}'")) {
+  if ($events = $DB->get_records_select('event',"modulename = 'peerassessment' and instance = '{$pa->id}'")) {
     foreach($events as $event) {
       delete_event($event->id);
     }

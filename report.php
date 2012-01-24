@@ -175,7 +175,7 @@ if ($groupid) {
       $overview_table->head[] = '';
       $a = array(); // average rating
       $b = array(); //average given rating
-      $a[] = get_string('averageratingreceived','peerassessment');//'Average Rating Recieved';
+      $a[] = get_string('averageratingreceived','peerassessment');//'Average Rating Received';
       $b[] = get_string('averageratinggiven','peerassessment');//'Average Rating Given';
       foreach($members as $m) {
         $overview_table->head[] = $m->lastname . ', '.$m->firstname;
