@@ -1,8 +1,8 @@
 <?php
-$string['pluginadministration']	='Peer Assessment Activity Admin';
-$string['pluginname']= 'Peer Assessment Activity';
-$string['modulename'] = 'Peer Assessment Activity';
-$string['modulenameplural'] = 'Peer Assessment Activities';
+$string['pluginadministration']	='Peer Assessment Admin';
+$string['pluginname']= 'Peer Assessment';
+$string['modulename'] = 'Peer Assessment';
+$string['modulenameplural'] = 'Peer Assessments';
 
 $string['additionalinfo'] = '<p>This module <strong>requires</strong> the use of Groups!</p><p>If you have selected an <strong>Assignment</strong> then the groups that are specified for that assignment will be used.</p><p>If you <strong>haven\'t</strong> selected and assignment, you should choose a group option below.</p><p>It is probably easiest to create a "Peer Assessment" grouping to hold the groups that will be used.</p>';
 $string['additionalinfoheader'] = 'Additional Information';
@@ -22,6 +22,7 @@ $string['expired']='This activity is no longer available (deadline passed).';
 
 $string['frequency'] ='Frequency';
 $string['high'] = 'High';
+$string['introduction']	=	'Introductory Text';
 $string['low'] = 'Low';
 $string['lowerbound'] ='Lower Bound';
 $string['lowerbound_help'] ='This is the value <strong>below</strong> which the average rating will be highlighted.';

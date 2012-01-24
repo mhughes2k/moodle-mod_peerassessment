@@ -24,12 +24,12 @@
         $result = $result && add_field($table, $field);
     }
     */
-    if ($result && $oldversion < 2010120303) {
+    if ($result && $oldversion < 2010120304) {
 
         // Define table classcatalogue to be created
         $table = new xmldb_table('peerassessment');
 
-        $field = new xmldb_field('course', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, 'cachelastupdated');
+        $field = new xmldb_field('course', XMLDB_TYPE_INTEGER, '11', XMLDB_UNSIGNED, null, null, null, 'cachelastupdated');
 
         // Conditionally launch add field course
         if (!$dbman->field_exists($table, $field)) {
@@ -49,7 +49,7 @@
         }
 
         // classcatalogue savepoint reached
-        upgrade_mod_savepoint(true, 2010120303, 'classcatalogue');
+        upgrade_mod_savepoint(true, 2010120304, 'peerassessment');
     }
 
     return $result;

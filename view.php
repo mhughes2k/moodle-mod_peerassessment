@@ -327,6 +327,11 @@ foreach ($lt as $column) {
           break;
         case 'middle':
           {
+          	if ($peerassessment->intro != ''){
+          		$OUTPUT->box_start();
+          		echo format_text($peerassessment->intro,$peerassessment->introformat);
+          		$OUTPUT->box_end();
+          	}
             if ($canViewReport) {
 				//echo '<div class="reportlink">';
 				if (!$group) {

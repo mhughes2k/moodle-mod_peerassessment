@@ -30,15 +30,13 @@ class mod_peerassessment_mod_form extends moodleform_mod {
             $assignments[$a->id] = $a->name;
           }
         }
-        /*
-        array();
-        $assignments[0]  = "Some Assignment";
-        $assignments[1]  = "Some Assignment2";
-        */
+
         $mform->addElement('select','assignment',get_string('assignment','peerassessment'),$assignments,array('optional'=>true));
         $mform->addHelpButton('assignment','assignment','peerassessment');
         //array('mods',get_string('assignment','peerassessment'),'peerassessment'));
 
+        $this->add_intro_editor(true, get_string('introduction', 'peerassessment'));
+        
 
         $mform->addElement('selectyesno','canedit',get_string('canedit','peerassessment'));
         $mform->addElement('header','additionalinfo',get_string('additionalinfoheader','peerassessment'));
