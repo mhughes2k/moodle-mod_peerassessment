@@ -73,7 +73,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addRule('upperbound','Must be numeric','numeric',null,'client');
 
 
-        $this->standard_coursemodule_elements(array('groups'=>true, 'groupmembersonly'=>true, 'gradecat'=>true));
+        $this->standard_coursemodule_elements();//array('groups'=>true, 'groupmembersonly'=>true, 'gradecat'=>true));
 		
 //		$mform->disabledIf();
 

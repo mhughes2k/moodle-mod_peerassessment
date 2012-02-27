@@ -628,3 +628,25 @@ function print_report_select_form($id,$groups,$selectedGroupId) {
    //echo '</div>';
 
 }
+/**
+ * 
+ * Peer assessment currently supports all features except Adv. Grading and Backup moodle2.
+ * @param string $feature
+ */
+function peerassessment_supports($feature) {
+    switch($feature) {
+        case FEATURE_GROUPS:                  return true;
+        case FEATURE_GROUPINGS:               return true;
+        case FEATURE_GROUPMEMBERSONLY:        return true;
+        case FEATURE_MOD_INTRO:               return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
+        case FEATURE_GRADE_HAS_GRADE:         return true;
+        case FEATURE_GRADE_OUTCOMES:          return true;
+        case FEATURE_GRADE_HAS_GRADE:         return true;
+        case FEATURE_BACKUP_MOODLE2:          return false;
+        case FEATURE_SHOW_DESCRIPTION:        return true;
+        case FEATURE_ADVANCED_GRADING:        return false;
+
+        default: return null;
+    }
+}

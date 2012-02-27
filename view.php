@@ -50,7 +50,7 @@ $context = get_context_instance(CONTEXT_MODULE, $cm->id);
         // show some info for guests
 if (isguestuser()) {
     $navigation = build_navigation('', $cm);
-    $OUTPUT->header(format_string($peerassessment->name));
+    echo $OUTPUT->header(format_string($peerassessment->name));
     /*, '', $navigation,
                   '', '', true, '', navmenu($course, $cm));
                   */
@@ -62,7 +62,7 @@ if (isguestuser()) {
     notice_yesno(get_string('noguests', 'chat').'<br /><br />'.get_string('liketologin'),
             $wwwroot, $CFG->wwwroot.'/course/view.php?id='.$course->id);
 
-    $OUTPUT->footer($course);
+    echo $OUTPUT->footer($course);
     exit;
 
 }
@@ -279,6 +279,7 @@ $canViewReport = has_capability('mod/peerassessment:viewreport',$context,$USER->
 if (!$group = groups_get_group($groupid)  ) {
   if (!$canViewReport) {
     notice(get_string('nogroup','peerassessment'));
+    echo $OUTPUT->footer();
     exit();
   }
 }
@@ -292,6 +293,7 @@ if (!$canRecordRating & !$canViewReport) {
     $a = new stdClass;
     $a->id = $cm->id;
     notice(get_string('mustbestudent','peerassessment',$cm->id));
+    echo $OUTPUT->footer();
     exit();
 }
 
@@ -299,6 +301,7 @@ if ($members = groups_get_members($groupid)) {
   if (is_array($members) && !in_array($USER->id,array_keys($members))) {//$USER->id)) {
     notice(get_string('usernotactuallyingroup','peerassessment'));
     add_to_log($course->id, 'peerassessment', 'rate other', "", "Attempted to record attempt for group user wasn't a member of.",$cm->id);
+    echo $OUTPUT->footer();
     exit();
   }
 }
@@ -311,10 +314,10 @@ if ($group) {
   else {
     $a->groupname =$group->name;
   }
-  $OUTPUT->heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
+  echo $OUTPUT->heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
 }
 else {
-  $OUTPUT->heading(get_string('modulename','peerassessment'));
+  echo $OUTPUT->heading(get_string('modulename','peerassessment'));
 }
 
 $groups = groups_get_activity_allowed_groups($cm);
@@ -531,4 +534,5 @@ foreach ($lt as $column) {
           break;
     }
 }
-$OUTPUT->footer($course);
+echo '</tr></table>';//should fix #1009
+echo $OUTPUT->footer($course);
