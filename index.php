@@ -8,7 +8,7 @@ $id = required_param('id',PARAM_INT);	//course module id;
 
 if($id) {
     
-    if (!$course = get_record('course', 'id', $id)) {
+    if (!$course = $DB->get_record('course', array('id'=>$id))) {
         error("Course is misconfigured");
     }
    
@@ -27,12 +27,14 @@ $navlinks[] = array('name' => $strpas, 'link' => '', 'type' => 'activity');
 $navigation = build_navigation($navlinks);
 print_header_simple('', '', $navigation,'', '', true, '', navmenu($course));
 
-print_heading(get_string('modulenameplural','peerassessment'));
+//print_heading(get_string('modulenameplural','peerassessment'));
+echo $OUTPUT->heading(get_string('modulenameplural','peerassessment'));
 
-print_box_start();
+//print_box_start();
+echo $OUTPUT->box_start();
 $table=new stdClass;
 $table->head = array('Peer Assessment Activity','Associated Assignment','Frequency');       
-if ( $activities = get_records('peerassessment','course',$course->id)) {
+if ( $activities = $DB->get_records('peerassessment',array('course'=>$course->id))) {
 
 foreach($activities as $a) {
     $e = array();
@@ -94,9 +96,12 @@ foreach($activities as $a) {
   $table->data[] = $e;
 }
 print_table($table);
+//html_writer::table($table);
 }
 else {
   p('No activities found');
 }
-     print_box_end();
-print_footer();
+echo $OUTPUT->box_end();
+//     print_box_end();
+//print_footer();
+echo $OUTPUT->footer();
