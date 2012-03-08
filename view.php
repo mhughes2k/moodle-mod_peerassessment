@@ -279,7 +279,7 @@ $canViewReport = has_capability('mod/peerassessment:viewreport',$context,$USER->
 if (!$group = groups_get_group($groupid)  ) {
   if (!$canViewReport) {
     notice(get_string('nogroup','peerassessment'));
-    echo $OUTPUT->footer();
+    echo $OUTPUT->footer($course);
     exit();
   }
 }
@@ -293,7 +293,7 @@ if (!$canRecordRating & !$canViewReport) {
     $a = new stdClass;
     $a->id = $cm->id;
     notice(get_string('mustbestudent','peerassessment',$cm->id));
-    echo $OUTPUT->footer();
+    echo $OUTPUT->footer($course);
     exit();
 }
 
@@ -301,7 +301,7 @@ if ($members = groups_get_members($groupid)) {
   if (is_array($members) && !in_array($USER->id,array_keys($members))) {//$USER->id)) {
     notice(get_string('usernotactuallyingroup','peerassessment'));
     add_to_log($course->id, 'peerassessment', 'rate other', "", "Attempted to record attempt for group user wasn't a member of.",$cm->id);
-    echo $OUTPUT->footer();
+    echo $OUTPUT->footer($course);
     exit();
   }
 }
@@ -314,7 +314,8 @@ if ($group) {
   else {
     $a->groupname =$group->name;
   }
-  echo $OUTPUT->heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
+  
+echo $OUTPUT->heading(get_string('peerassessmentactivityheadingforgroup','peerassessment',$a));
 }
 else {
   echo $OUTPUT->heading(get_string('modulename','peerassessment'));
@@ -331,16 +332,16 @@ foreach ($lt as $column) {
         case 'middle':
           {
           	if ($peerassessment->intro != ''){
-          		$OUTPUT->box_start();
+          		echo $OUTPUT->box_start();
           		echo format_text($peerassessment->intro,$peerassessment->introformat);
-          		$OUTPUT->box_end();
+          		echo $OUTPUT->box_end();
           	}
             if ($canViewReport) {
 				//echo '<div class="reportlink">';
 				if (!$group) {
-					$OUTPUT->box_start();
+					echo $OUTPUT->box_start();
 					print_report_select_form($id,$groups,$groupid);
-					$OUTPUT->box_end();
+					echo $OUTPUT->box_end();
 				}
 				else {
 					echo '<div class="reportlink">';
@@ -528,11 +529,11 @@ foreach ($lt as $column) {
        
           
            
-        }
+        } echo '<!--end middle//-->';
           break;
         case 'right':
           break;
     }
 }
-echo '</tr></table>';//should fix #1009
+echo '</tr></table>';
 echo $OUTPUT->footer($course);
