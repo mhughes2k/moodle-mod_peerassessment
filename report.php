@@ -203,9 +203,9 @@ if ($groupid) {
      
 }
 else {
-  $OUTPUT->box_start();
+  echo $OUTPUT->box_start();
   echo("Please choose a group to display.");
-  $OUTPUT->single_select(
+  echo $OUTPUT->single_select(
     $CFG->wwwroot."/mod/peerassessment/report.php?id={$id}&selectedgroup=",
     'reportgroupjump',
     $displaygroups,
@@ -218,9 +218,9 @@ popup_form(
     'reportgroupjump',
     $groupid
 );*/
-  $OUTPUT->box_end();
+  echo $OUTPUT->box_end();
 }     
 
 //print_object(peerassessment_get_user_grades($peerassessment));
 
-$OUTPUT->footer();
+echo $OUTPUT->footer();
