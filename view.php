@@ -279,6 +279,7 @@ $canViewReport = has_capability('mod/peerassessment:viewreport',$context,$USER->
 if (!$group = groups_get_group($groupid)  ) {
   if (!$canViewReport) {
     notice(get_string('nogroup','peerassessment'));
+
     echo $OUTPUT->footer($course);
     exit();
   }
@@ -535,5 +536,5 @@ foreach ($lt as $column) {
           break;
     }
 }
-echo '</tr></table>';
+echo '</tr></table>';//should fix #1009
 echo $OUTPUT->footer($course);
