@@ -121,7 +121,13 @@ if ($data) {
                     $ins->userid=$userid;
                     $ins->rating = $value;
                     $ins->timemodified = $submittime;
-                    $result = $DB->insert_record('peerassessment_ratings', $ins);
+                    if (!$result = $DB->insert_record('peerassessment_ratings', $ins)) {
+                        $PAGE->set_url('/mod/peerassessment/view.php');
+                        echo $OUTPUT->header();
+                        print_error('failedtosaverating', 'peerassessment');
+                        echo $OUTPUT->footer();
+                        exit();
+                    }
                 } else {
                     echo 'Updating existing';
                     foreach ($ratings as $rating) {
@@ -130,7 +136,13 @@ if ($data) {
                         $ins->id = $rating->id;
                         $ins->rating = $value;
                         $ins->timemodified = $submittime;
-                        $result = $DB->update_record('peerassessment_ratings', $ins);
+                        if (!$result = $DB->update_record('peerassessment_ratings', $ins)) {
+                            $PAGE->set_url('/mod/peerassessment/view.php');
+                            echo $OUTPUT->header();
+                            print_error('failedtosaverating', 'peerassessment');
+                            echo $OUTPUT->footer();
+                            exit();
+                        }
                     }
                 }
             }
@@ -139,19 +151,22 @@ if ($data) {
             $co = $DB->get_record('peerassessment_comments', array('userid' => $USER->id, 'peerassessment' => $peerassessment->id));
             $co->timemodified= $submittime;
             $co->studentcomment=$comments;
-            $DB->update_record('peerassessment_comments', $co);
+            if (!$DB->update_record('peerassessment_comments', $co)) {
+                $PAGE->set_url('/mod/peerassessment/view.php');
+                echo $OUTPUT->header();
+                print_error('failedtosaverating', 'peerassessment');
+                echo $OUTPUT->footer();
+                exit();
+            }
         }
     } else if (!$alreadycompleted) {
         $comments = $data->comments;            //TODO WE NEED SAVE THIS
         $success = true;
         $submittime = time();// so the ratings are all at the same time
         foreach ((array)$data as $name => $value) {
-
             if (substr(strtolower($name), 0, 7) == 'rating_') {
                 //have a user rating
-
                 $userid = substr($name, 7);
-
                 $ins = new stdClass;
                 $ins->ratedby = $USER->id;
                 $ins->peerassessment = $peerassessment->id;
@@ -159,9 +174,8 @@ if ($data) {
                 $ins->rating = $value;
                 $ins->timemodified = $submittime;
                 //$ins->studentcomment  = $comments;  //this will overwrite
-                $result = false;
+                $result = $DB->insert_record('peerassessment_ratings', $ins);
                 if (!$result) {
-                    //todo need to do some error handling.
                     $PAGE->set_url('/mod/peerassessment/view.php');
                     echo $OUTPUT->header();
                     print_error('failedtosaverating', 'peerassessment');
@@ -177,7 +191,13 @@ if ($data) {
             $co->timecreated= $submittime;
             $co->timemodified= $submittime;
             $co->studentcomment=$comments;
-            $co_result = $DB->insert_record('peerassessment_comments', $co);
+            if (!$co_result = $DB->insert_record('peerassessment_comments', $co)) {
+                $PAGE->set_url('/mod/peerassessment/view.php');
+                echo $OUTPUT->header();
+                print_error('failedtosaverating', 'peerassessment');
+                echo $OUTPUT->footer();
+                exit();
+            }
         }
     }
     /*
