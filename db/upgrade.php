@@ -1,5 +1,5 @@
 <?php
-  function xmldb_peerassessment_upgrade($oldversion=0) {
+function xmldb_peerassessment_upgrade($oldversion=0) {
     global $CFG, $THEME, $DB;
     $dbman = $DB->get_manager();
     $result = true;
@@ -13,7 +13,7 @@
 
     /// Launch add field lowerbound
         $result = $result && add_field($table, $field);
-		
+
 
     /// Define field upperbound to be added to peerassessment
         $table = new XMLDBTable('peerassessment');
@@ -53,6 +53,6 @@
     }
 
     return $result;
-  
-  }
-?>
+
+}
+

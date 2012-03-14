@@ -1,5 +1,5 @@
 <?php
-$string['pluginadministration']	='Peer Assessment Admin';
+$string['pluginadministration'] ='Peer Assessment Admin';
 $string['pluginname']= 'Peer Assessment';
 $string['modulename'] = 'Peer Assessment';
 $string['modulenameplural'] = 'Peer Assessments';
@@ -9,6 +9,8 @@ $string['additionalinfoheader'] = 'Additional Information';
 $string['alreadycompleted'] = 'You have already completed this activity.';
 $string['alreadycompletedcanedit'] = 'You have already completed this activity. You may change the <strong>last</strong> rating.';
 $string['assignment'] = 'Assignment';
+$string['associatedactivitynogroups'] = 'The associated assignment does not use groups. Please contact your lecturer/course leader and ask them to reconfigure this activity';
+$string['associatedactivitynogroupsstaff'] = 'The associated assignment does not use groups. Either reconfigure this activity to be a standalone activity or set up groups in the associated activity.';
 $string['availablefrom'] = "Available from";
 $string['averageratinggiven']='Average Rating Given';
 $string['averageratingreceived']='Average Rating Received';
@@ -19,16 +21,17 @@ $string['displaygroup'] = 'Display Group';
 $string['deleteratings'] ='Delete Student\'s Ratings';
 $string['details'] ='Details';
 $string['expired']='This activity is no longer available (deadline passed).';
-
+$string['failedtosaverating'] = 'Unable to save ratings/comments. Please contact the LTE team.';
 $string['frequency'] ='Frequency';
 $string['high'] = 'High';
-$string['introduction']	=	'Introductory Text';
+$string['introduction'] = 'Introductory Text';
 $string['low'] = 'Low';
 $string['lowerbound'] ='Lower Bound';
 $string['lowerbound_help'] ='This is the value <strong>below</strong> which the average rating will be highlighted.';
 $string['mustbestudent']='<p>You cannot perform this activity as staff, you must be in a student role.</p><p><a href=\'report.php?id=$a\'>View report</p>';
 $string['name'] = 'Name';
 $string['noassignment'] = 'No Associated Assignment';
+
 $string['nogroup'] = 'You are not a member of a group.';
 $string['nogroups']='No groups appear to be set up';
 $string['nomembersfound'] = 'No members found';
@@ -52,15 +55,15 @@ There are 2 modes that the PAA module can be used:
 <p><b>Associated Assignment Mode</b></p>
 <div class="indent">
 <p>In this mode the Peer Assessment Activity is associated with a specific assignment in the course.</p>
-<p>The groups that are configured for the associated activity are used to control the list of students that users are able to rate.</p> 
+<p>The groups that are configured for the associated activity are used to control the list of students that users are able to rate.</p>
 </div>
 <p><b>No Associated Assignment Mode</b>  </p>
 <div class="indent">
 <p>In this mode the activity is not associated with any specific assignment.</p>
-<p>You will need to specify what group information is used.</p>  
+<p>You will need to specify what group information is used.</p>
 </div>';
-$string['peerassessmentactivityheading'] = 'Peer Assessment Activity: $a->peerassessment->name';
-$string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity: $a->peerassessmentname for Group $a->groupname';
+$string['peerassessmentactivityheading'] = 'Peer Assessment Activity: {$a->peerassessmentname}';
+$string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity: {$a->peerassessmentname} for Group {$a->groupname}';
 $string['peerassessmentreportheading'] = 'Peer Assessment Activity Report: $a->name';
 $string['recordrating'] ='Record a Rating';
 $string['scheduling'] = 'Frequency';
@@ -74,4 +77,3 @@ $string['viewreport'] ='View Report';
 $string['viewreportgroup']='View Report for Group:';
 $string['weeklyfrequency'] = 'Weekly';
 
-?>
