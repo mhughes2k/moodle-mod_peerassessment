@@ -71,36 +71,35 @@ $data = data_submitted();
 if ($data) {
     if (!empty($data->delete)) {
         //add_to_log('requested deletion of rating')
-        echo "deleting a rating\n";
+        //echo "deleting a rating\n";
+        //if ($rating = $DB->get_records('peerassessment_ratings', array('id' => $data->ratingid))) {
         if ($rating = $DB->get_records('peerassessment_ratings', array('id' => $data->ratingid))) {
-            if ($rating) {
-                if (!$DB->delete_records('peerassessment_ratings', array('id' => $rating->id))) {
+            if (!$DB->delete_records('peerassessment_ratings', array('id' => $rating->id))) {
+                notice("Could not delete rating");
+            }
+        } else {
+            if ($rating = $DB->get_records_select('peerassessment_ratings',
+                    "peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")
+            ) {
+                if (!$DB->delete_records_select('peerassessment_ratings',
+                        "peerassessment={$data->peerassessment}
+                        AND timemodified={$data->ratingtime}
+                        AND ratedby={$data->userid} ")
+                ) {
                     notice("Could not delete rating");
                 }
             } else {
-                if ($rating = $DB->get_records_select('peerassessment_ratings',
-                        "peerassessment={$data->peerassessment} AND timemodified={$data->ratingtime} AND ratedby={$data->userid} ")
-                ) {
-                    if (!$DB->delete_records_select('peerassessment_ratings',
-                            "peerassessment={$data->peerassessment}
-                            AND timemodified={$data->ratingtime}
-                            AND ratedby={$data->userid} ")
-                    ) {
-                        notice("Could not delete rating");
-                    }
-                } else {
-                    notice("Couldn't locate a rating for specified user");
-                }
+                notice("Couldn't locate a rating for specified user");
             }
-            if (!($DB->delete_records('peerassessment_comments', array(
-                    'peerassessment '=> $data->peerassessment, '
-                    userid' => $data->userid)
-            ))) {
-                notice("Could not delete comment");
-            }
-            peerassessment_update_grades($peerassessment); //update the grade book since we've deleted some entries
-            redirect($CFG->wwwroot."/mod/peerassessment/report.php?selectedgroup={$groupid}&id={$id}");
         }
+        if (!($DB->delete_records('peerassessment_comments', array(
+                'peerassessment'=> $data->peerassessment,
+                'userid' => $data->userid)
+        ))) {
+            notice("Could not delete comment");
+        }
+        peerassessment_update_grades($peerassessment); //update the grade book since we've deleted some entries
+        redirect($CFG->wwwroot."/mod/peerassessment/report.php?selectedgroup={$groupid}&id={$id}");
     }
 }
 
