@@ -64,9 +64,10 @@ There are 2 modes that the PAA module can be used:
 <p>You will need to specify what group information is used.</p>
 </div>';
 $string['peerassessmentactivityheading'] = 'Peer Assessment Activity: {$a->peerassessmentname}';
-$string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity: {$a->peerassessmentname} for Group {$a->groupname}';
+$string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity Report: {$a->peerassessmentname} for Group {$a->groupname}';
 $string['peerassessmentreportheading'] = 'Peer Assessment Activity Report: $a->name';
 $string['recordrating'] ='Record a Rating';
+$string['reportfor']    = 'Report for {$a}';
 $string['scheduling'] = 'Frequency';
 $string['submissiondate'] = 'Submission date';
 $string['unlimitedfrequency'] = 'Unlimited';
