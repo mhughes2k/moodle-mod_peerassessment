@@ -22,7 +22,6 @@ function peerassessment_get_types() {
     $context =  get_context_instance(CONTEXT_COURSE, $COURSE->id);
     if (has_capability('mod/peerassessment:usepeerassessment', $context)) {
         $type = new stdclass;
-        $type->modclass=MOD_CLASS_ACTIVITY;
         $type->type='peerassessment';
         $type->typestr=get_string('modulename', 'peerassessment');
         return array($type);
@@ -170,7 +169,7 @@ function peerassessment_reset_gradebook() {
 /*
  * From here on is all custom code, above is "Moodle" required code
  */
-function get_week_start_from_time($start_date) {
+function peerassessment_get_week_start_from_time($start_date) {
     return mktime(0, 0, 0, date('m', $start_date), date('d', $start_date), date('Y', $start_date))
     -
     ((date("w", $start_date) ==0) ? 0 : (86400 * date("w", $start_date)));
@@ -249,7 +248,7 @@ function peerassessment_get_table_single_frequency($peerassessment, $group) {
                 $a[] ='-';
             }
         }
-        $a['avggiven'] = get_average_rating_by_student($peerassessment, $m->id);
+        $a['avggiven'] = peerassessment_get_average_rating_by_student($peerassessment, $m->id);
         if (has_capability('mod/peerassessment:deleteratings', $context)) {
             if ($hasentries) {
                 $a[''] = print_delete_attempt_form($peerassessment, $group, $m->id, null, $timemodified);
@@ -264,7 +263,7 @@ function peerassessment_get_table_single_frequency($peerassessment, $group) {
         if (!has_capability('mod/peerassessment:recordrating', $context, $m->id)) {
             continue;
         }
-        $a[] = get_average_rating_for_student($peerassessment, $m->id);
+        $a[] = peerassessment_get_average_rating_for_student($peerassessment, $m->id);
     }
     $table->data['avgrow'] = $a;
     return $table;
@@ -408,7 +407,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment, $group, $sho
         }
         $name = array_slice($row, 0, 1);
         $values = array_slice($row, 1);
-        $ave = array(get_average_rating_by_student($peerassessment, $m1->id));
+        $ave = array(peerassessment_get_average_rating_by_student($peerassessment, $m1->id));
         $row = array_merge($name, $ave, $values);
         $table->data[$m1->id] = $row;
     }
@@ -416,7 +415,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment, $group, $sho
     $a[]='';
     $a[] ='Average rating recieved';
     foreach ($members as $m1) {
-        $a[] = get_average_rating_for_student($peerassessment, $m1->id);
+        $a[] = peerassessment_get_average_rating_for_student($peerassessment, $m1->id);
     }
     $table->data[] = $a;
     return $table;
@@ -436,7 +435,7 @@ function peerassessment_get_table_unlimited_frequency($peerassessment, $group) {
     return $table;
 }
 
-function get_average_rating_for_student($peerassessment, $userid) {
+function peerassessment_get_average_rating_for_student($peerassessment, $userid) {
     global $CFG, $DB;
     $sql = "SELECT AVG(rating) AS average
               FROM {$CFG->prefix}peerassessment_ratings
@@ -450,7 +449,7 @@ function get_average_rating_for_student($peerassessment, $userid) {
     }
     return $rs->average;
 }
-function get_average_rating_by_student($peerassessment, $userid) {
+function peerassessment_get_average_rating_by_student($peerassessment, $userid) {
     global $CFG, $DB;
     $sql = "SELECT AVG(rating) AS average
               FROM {$CFG->prefix}peerassessment_ratings
