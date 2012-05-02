@@ -1,7 +1,14 @@
 <?php
-
-$module->version = 	2011120600;/* Note this is an order of magnitude out from other moodle version numbers so 
-								  add a 0 at the end so it is 1 digit longer than the "requires" */
-$module->requires = 200710503;
-
+/**
+ * This file defines the version of peerassessment.
+ *
+ * @package mod
+ * @subpackage peerassessment
+ * @copyright 2010 - 2012 University of Strathclyde.
+ * @author Michael Hughes
+ * @author Viktor Dorfler
+ */
+$module->version  = 2011011700;    //moodle 2.x should be 2011
+$module->requires = 2010112400;
+$module->component = 'mod_peerassessment';
 $module->cron =0;

@@ -1,18 +1,15 @@
 <?php
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
 class mod_peerassessment_mod_form extends moodleform_mod {
 
-    function definition() {
-        global $CFG,$COURSE;
+    public function definition() {
+        global $CFG, $COURSE;
         $mform =& $this->_form;
-        //print_object($this);
-        //$mform->setHelpButton('upper_bound',array('bounds',get_string('upper_bound','peerassessment'),'peerassessment'));
-//-------------------------------------------------------------------------------
+
+        //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
-        
-//        $mform->addElement('static', 'statictype', get_string('assignmenttype', 'assignment'), get_string('type'.$type,'assignment'));
-        
+
         $mform->addElement('text', 'name', get_string('name'), array('size'=>'48'));
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
@@ -20,90 +17,56 @@ class mod_peerassessment_mod_form extends moodleform_mod {
             $mform->setType('name', PARAM_CLEAN);
         }
         $mform->addRule('name', null, 'required', null, 'client');
-        
-        
-        // get_records("assignment",'course',$COURSE->id);
+
         $assignments = array();
-        $assignments[0] = get_string('noassignment','peerassessment');
-        //print_r($raw_assignments);
-        if ($raw_assignments = get_coursemodules_in_course('assignment',$COURSE->id)) {
-          foreach($raw_assignments as $a) {
-            $assignments[$a->id] = $a->name;
-          }
+        $assignments[0] = get_string('noassignment', 'peerassessment');
+        if ($raw_assignments = get_coursemodules_in_course('assignment', $COURSE->id)) {
+            foreach ($raw_assignments as $a) {
+                $assignments[$a->id] = $a->name;
+            }
         }
-        /*
-        array();
-        $assignments[0]  = "Some Assignment";
-        $assignments[1]  = "Some Assignment2";
-        */
-        $assElement = $mform->addElement('select','assignment',get_string('assignment','peerassessment'),$assignments,array('optional'=>true));
-        $mform->addElement('static','associatedassignmentdoesntexist');
-        $mform->setHelpButton('assignment',array('mods',get_string('assignment','peerassessment'),'peerassessment'));
 
+        $mform->addElement('select', 'assignment',
+                get_string('assignment', 'peerassessment'),
+                $assignments,
+                array('optional' => true)
+        );
+        $mform->addHelpButton('assignment', 'assignment', 'peerassessment');
 
-        $mform->addElement('selectyesno','canedit',get_string('canedit','peerassessment'));
-        
-        $mform->addElement('htmleditor','additionaltext',get_string("additionaltext",'peerassessment'));
-        
-        
-        $mform->addElement('header','additionalinfo',get_string('additionalinfoheader','peerassessment'));
-        $mform->addElement('html',get_string('additionalinfo','peerassessment')); 
+        $this->add_intro_editor(true, get_string('introduction', 'peerassessment'));
 
+        $mform->addElement('selectyesno', 'canedit', get_string('canedit', 'peerassessment'));
+        $mform->addElement('header', 'additionalinfo', get_string('additionalinfoheader', 'peerassessment'));
+        $mform->addElement('html', get_string('additionalinfo', 'peerassessment'));
 
-        
-        //$mform->addElement('header','scheduling',get_string('scheduling','peerassessment'));
-        $mform->addElement('header','advancedsettings','Advanced');
+        $mform->addElement('header', 'advancedsettings', 'Advanced');
         $options=array();
         $options[0]  = get_string('oncefrequency', 'peerassessment');
-        
+
         $options[1]  = get_string('weeklyfrequency', 'peerassessment');
-       // $options[2]  = get_string('unlimitedfrequency', 'peerassessment');
-        
+
         $mform->addElement('select', 'frequency', get_string('frequency', 'peerassessment'), $options);
-        //$mform->setAdvanced('scheduling');
-        //$mform->disabledIf('frequency','assignment','neq','0');
-        
-        $mform->addElement('date_time_selector', 'timeavailable', get_string('availablefrom', 'peerassessment'),array('optional'=>true));
-        //$mform->setAdvanced('timeavailable');
-        $mform->addElement('date_time_selector', 'timedue', get_string('submissiondate', 'peerassessment'),array('optional'=>true));
-        //$mform->setAdvanced('timedue');
 
-        
+        $mform->addElement('date_time_selector', 'timeavailable',
+                get_string('availablefrom', 'peerassessment'),
+                array('optional' => true)
+        );
+        $mform->addElement('date_time_selector', 'timedue',
+                get_string('submissiondate', 'peerassessment'),
+                array('optional' => true)
+        );
+
         $mform->setAdvanced('advancedsettings');
-        $mform->addElement('text','lowerbound',get_string('lowerbound','peerassessment'),array('value'=>'2.5'));
-        $mform->setHelpButton('lowerbound',array('bounds',get_string('lowerbound','peerassessment'),'peerassessment'));
-        $mform->addElement('text','upperbound',get_string('upperbound','peerassessment'),array('value'=>'3.5'));
-        $mform->setHelpButton('upperbound',array('bounds',get_string('upperbound','peerassessment'),'peerassessment'));
+        $mform->addElement('text', 'lowerbound', get_string('lowerbound', 'peerassessment'), array('value' => '2.5'));
+        $mform->addHelpButton('lowerbound', 'lowerbound', 'peerassessment');
+        $mform->addElement('text', 'upperbound', get_string('upperbound', 'peerassessment'), array('value' => '3.5'));
+        $mform->addHelpButton('upperbound', 'upperbound', 'peerassessment');
 
-        $mform->addRule('lowerbound','Must be numeric','numeric',null,'client');
-        //$mform->addRule('lower_bound','Must be between less than or equal to 5','compare',array(,'client');
-        $mform->addRule('upperbound','Must be numeric','numeric',null,'client');
+        $mform->addRule('lowerbound', 'Must be numeric', 'numeric', null, 'client');
+        $mform->addRule('upperbound', 'Must be numeric', 'numeric', null, 'client');
 
+        $this->standard_coursemodule_elements();
 
-        $this->standard_coursemodule_elements(array('groups'=>true, 'groupmembersonly'=>true, 'gradecat'=>true));
-		
-//		$mform->disabledIf();
-
-        $this->add_action_buttons();        
-  }
-  
-  function definition_after_data() {
-  		global $CFG,$COURSE;
-  		parent::definition_after_data();
-        $mform =& $this->_form;
-  		//get_string('associatedassignmentdoesntexist','peerassessment'));
-  		$assId = array_pop($mform->getElement('assignment')->getSelected());
-  		
-  		$assignments = array();
-  		if ($raw_assignments = get_coursemodules_in_course('assignment',$COURSE->id)) {
-          foreach($raw_assignments as $a) {
-            $assignments[$a->id] = $a->name;
-          }
-        }
-  		
-  		$notice = $mform->getElement('associatedassignmentdoesntexist');
-  		if (!is_null($assId) && !array_key_exists($assId,$assignments)) {
-  			$notice->setValue(get_string('associatedassignmentdoesntexist','peerassessment'));
-  		}
-  }
+        $this->add_action_buttons();
+    }
 }
