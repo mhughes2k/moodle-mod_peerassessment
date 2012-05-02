@@ -24,6 +24,7 @@ function peerassessment_get_types() {
         $type = new stdclass;
         $type->type='peerassessment';
         $type->typestr=get_string('modulename', 'peerassessment');
+        $type->modclass = MOD_CLASS_ACTIVITY;
         return array($type);
     }
     return array();
