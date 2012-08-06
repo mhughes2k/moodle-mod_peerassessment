@@ -8,7 +8,7 @@ $capabilities = array(
                     'manager' => CAP_ALLOW,
                     'teacher' => CAP_ALLOW,
                     )
-    )
+    ),
     'mod/peerassessment:usepeerassessment' => array(
       'riskbitmask' =>  0,
       'captype'     =>  'read',
