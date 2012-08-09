@@ -1,13 +1,13 @@
-<?php
+c<?php
 $capabilities = array(
     'mod/peerassessment:addinstance' => array(
-            'riskbitmask' => 0,
-            'captype' => 'write',
-            'context_level' => CONTEXT_MODULE,
-            'archetypes' => array(
-                    'manager' => CAP_ALLOW,
-                    'teacher' => CAP_ALLOW,
-                    )
+        'riskbitmask' => 0,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+                'manager' => CAP_ALLOW,
+                'teacher' => CAP_ALLOW,
+                )
     ),
     'mod/peerassessment:usepeerassessment' => array(
       'riskbitmask' =>  0,
