@@ -17,6 +17,7 @@ define('PA_ONE_WEEK', 604800);
  *
  * Returns a list of "types" which are displayed in the add fields.
  */
+/*
 function peerassessment_get_types() {
     global $DB, $USER, $COURSE;
     $context =  get_context_instance(CONTEXT_COURSE, $COURSE->id);
@@ -29,7 +30,7 @@ function peerassessment_get_types() {
     }
     return array();
 }
-
+*/
 function peerassessment_add_instance($pa) {
     global $DB, $USER;
     if (!$returnid = $DB->insert_record('peerassessment', $pa)) {
