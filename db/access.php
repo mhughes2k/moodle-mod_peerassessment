@@ -1,4 +1,4 @@
-c<?php
+<?php
 $capabilities = array(
     'mod/peerassessment:addinstance' => array(
         'riskbitmask' => 0,

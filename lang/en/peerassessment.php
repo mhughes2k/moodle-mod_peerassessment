@@ -77,3 +77,8 @@ $string['viewreport'] ='View Report';
 $string['viewreportgroup']='View Report for Group:';
 $string['weeklyfrequency'] = 'Weekly';
 
+$string['peerassessment:addinstance'] = '';
+$string['peerassessment:deleteratings'] = '';
+$string['peerassessment:recordrating'] = '';
+$string['peerassessment:usepeerassessment'] = '';
+$string['peerassessment:viewreport'] = '';
