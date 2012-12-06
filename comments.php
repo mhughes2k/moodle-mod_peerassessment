@@ -42,7 +42,7 @@ if ($p) {
 $params['userid'] = $userid;
 $PAGE->set_url('/mod/peerassessment/comment.php', $params);
 
-$context = context_course::instance($cm->id);
+$context = context_course::instance($cm->course);
 require_capability('mod/peerassessment:viewreport', $context);
 $ratings = $DB->get_records('peerassessment_ratings', array('peerassessment'=>$peerassessment->id));
 
