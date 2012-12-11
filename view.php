@@ -231,7 +231,9 @@ $groupmode = false;
 $group_context=false;
 if ($peerassessment->assignment) {
     if (!$assignment_cm = get_coursemodule_from_id('assignment', $peerassessment->assignment)) {
-        die('Couldn\'t get cm for assignment');
+    	notice(get_string('noassignment', 'peerassessment'));
+        echo $OUTPUT->footer($course);
+        exit();
     }
     $groupmode = groups_get_activity_groupmode($assignment_cm, $course);
     $groupid = groups_get_activity_group($assignment_cm);
