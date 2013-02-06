@@ -64,7 +64,7 @@ There are 2 modes that the PAA module can be used:
 </div>';
 $string['peerassessmentactivityheading'] = 'Peer Assessment Activity: {$a->peerassessmentname}';
 $string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity: {$a->peerassessmentname} for Group {$a->groupname}';
-$string['peerassessmentreportheading'] = 'Peer Assessment Activity Report: $a->name';
+$string['peerassessmentreportheading'] = 'Peer Assessment Activity Report: {$a->name}';
 $string['recordrating'] ='Record a Rating';
 $string['scheduling'] = 'Frequency';
 $string['submissiondate'] = 'Submission date';

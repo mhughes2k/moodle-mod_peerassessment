@@ -56,7 +56,7 @@ $name = "{$m->lastname}, {$m->firstname}";// ({$m->id})";
 $navigation = build_navigation('', $cm);
 print_header_simple(format_string($peerassessment->name), '', $navigation,
                       '', '', true, '', navmenu($course, $cm));
-//$OUTPUT->header()
+
 echo $OUTPUT->heading(get_string('peerassessmentreportheading', 'peerassessment', $peerassessment));
 
 
