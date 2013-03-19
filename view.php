@@ -148,7 +148,7 @@ if ($data) {
             }
         }
         if ($comments !='') {
-            $co = $DB->get_record('peerassessment_comments', array('userid' => $USER->id, 'peerassessment' => $peerassessment->id));
+/*            $co = $DB->get_record('peerassessment_comments', array('userid' => $USER->id, 'peerassessment' => $peerassessment->id));
             $co->timemodified= $submittime;
             $co->studentcomment=$comments;
             if (!$DB->update_record('peerassessment_comments', $co)) {
@@ -157,6 +157,32 @@ if ($data) {
                 print_error('failedtosaverating', 'peerassessment');
                 echo $OUTPUT->footer();
                 exit();
+            }
+*/            $co = $DB->get_record('peerassessment_comments', array('userid' => $USER->id, 'peerassessment' => $peerassessment->id));
+            if (!$co) {
+            	$co->userid=$USER->id;
+            	$co->peerassessment=$peerassessment->id;
+            	$co->timecreated= time();
+            	$co->timemodified= $submittime;
+            	$co->studentcomment=$comments;
+            	if (!$DB->insert_record('peerassessment_comments', $co)) {
+            		$PAGE->set_url('/mod/peerassessment/view.php');
+            		echo $OUTPUT->header();
+            		print_error('failedtosaverating', 'peerassessment');
+            		echo $OUTPUT->footer();
+            		exit();
+            	}
+            	 
+            } else {
+            	$co->timemodified= $submittime;
+            	$co->studentcomment=$comments;
+	            if (!$DB->update_record('peerassessment_comments', $co)) {
+	                $PAGE->set_url('/mod/peerassessment/view.php');
+	                echo $OUTPUT->header();
+	                print_error('failedtosaverating', 'peerassessment');
+	                echo $OUTPUT->footer();
+	                exit();
+	            }
             }
         }
     } else if (!$alreadycompleted) {
@@ -314,6 +340,7 @@ foreach ($lt as $column) {
 
           break;
         case 'middle':
+	  echo "<td>";
           {
             if ($peerassessment->intro != '') {
                 echo $OUTPUT->box_start();
@@ -506,6 +533,7 @@ foreach ($lt as $column) {
                 }
             }
         } echo '<!--end middle//-->';
+	echo "</td>";
         break;
         case 'right':
             break;
