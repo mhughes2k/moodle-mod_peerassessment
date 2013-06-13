@@ -2,7 +2,8 @@
 
 require('../../config.php');
 require_once("lib.php");
-require_once('pagelib.php');
+//require_once($CFG->libdir.'/pagelib.php');
+//require_once($CFG->dirroot.'/mod/peerassessment/pagelib.php');
 
 require_once($CFG->dirroot.'/lib/grouplib.php');
 

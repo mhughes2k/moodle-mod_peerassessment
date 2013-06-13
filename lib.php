@@ -163,8 +163,97 @@ function peerassessment_grade_item_update($pa, $grades=null) {
     return $r;
 }
 
-function peerassessment_reset_gradebook() {
+/**
+ * We only allow a full reset of everything!
+ * @param unknown $mform
+ */
+function peerassessment_reset_course_form_definition(&$mform) {
+	$mform->addElement('header', 'peerassessmentheader', get_string('modulenameplural', 'peerassessment'));
 
+	$mform->addElement('checkbox', 'reset_peerassessment_all', get_string('resetpeerassessmentall', 'peerassessment'));
+}
+
+/**
+ * Course reset form defaults.
+ * @return array
+ */
+function peerassessment_reset_course_form_defaults($course) {
+	return array('reset_peerassessment_all'=>1);
+}
+
+/**
+ * Resets the peer assessment activites
+ * 
+ * This deletes the comments and ratings content.
+ * 
+ * If any deletion fails whilst processing the course then whole thing fails.
+ * @param unknown $data
+ */
+function peerassessment_reset_userdata($data) {
+	global $DB;
+	$comstr = get_string('modulename', 'peerassessment');
+	$result_ratings = false;
+	$result_comments = false;
+	$result_gradebook = false;
+	$overall = true;
+	$error_str  = '';
+	if (!empty($data->reset_peerassessment_all)) {
+		$pasql = "SELECT pa.id 
+					   FROM {peerassessment} pa  
+					  WHERE pa.course = ?";
+
+		$params = array($data->courseid);//implode(',',$pas);
+		//delete the ratings
+		$result_ratings = $DB->delete_records_select('peerassessment_ratings',
+				"peerassessment IN ($pasql)",
+				$params
+				);
+		if (!$result_ratings) {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove ratings', 'error' => 'Unable to delete ratings');
+			$overall = $overall & false;
+		} else {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove ratings', 'error' => false);
+			$overall = $overall & true;
+		}
+		
+		//delete the comments
+		$result_comments = $DB->delete_records_select('peerassessment_comments',
+				"peerassessment IN ($pasql)",
+				$params
+				);
+		if (!$result_comments) {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove comments', 'error' => 'Unable to delete comments');
+			$overall = $overall & false;
+		} else {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove comments', 'error' => false);
+			$overall = $overall & true;
+		}
+		
+		//reset grades
+		peerassessment_reset_gradebook($data->courseid);
+		if ($overall) {
+			$status[]  =  array('component' => $comstr, 'item' => 'Reset Peer Assessments', 'error' => false);
+		} else {
+			//$status[]  =  array('component' => $comstr, 'item' => 'Reset Peer Assessments', 'error' => $error_str);
+		}
+	}
+	return $status;
+}
+/**
+ * Resets the grade boook data.
+ * @param unknown $courseid
+ * @param string $type
+ */
+function peerassessment_reset_gradebook($courseid, $type='') {
+	global $CFG, $DB;
+	
+	$pas = $DB->get_records('peerassessment', array('course' => $courseid));
+	
+	foreach($pas as $pa) {
+		peerassessment_grade_item_update($pa, 'reset');	
+	}
+	
+	
 }
 
 
@@ -274,11 +363,13 @@ function peerassessment_get_table_single_frequency($peerassessment, $group) {
 function peerassessment_get_table_weekly_frequency($peerassessment, $group, $showdetails=true) {
     global $CFG, $DB;
     $cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id);
-    $context = context_course::instance($cm->id);
+//print_r($cm);
+    $context = context_course::instance($cm->course);
     $user_can_delete_ratings = has_capability('mod/peerassessment:deleteratings', $context);
 
     $members = $members = groups_get_members($group->id);
-    $table=new stdClass;
+//    $table=new stdClass;
+    $table = new html_table();
     $table->head = array();
     $recieved_totals = array();
     $recieved_counts = array();
@@ -302,7 +393,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment, $group, $sho
                   FROM {$CFG->prefix}peerassessment_ratings
                  WHERE  peerassessment ={$peerassessment->id}";
 
-    $last_rs = get_record_sql($last_sql);
+    $last_rs = $DB->get_record_sql($last_sql);
     $last_date =strtotime("next sunday", $last_rs->timemodifed);
 
     $duration_secs = $last_date -$earliest_date; //gives number of seconds entries have been made over
@@ -316,7 +407,7 @@ function peerassessment_get_table_weekly_frequency($peerassessment, $group, $sho
         $offset="+ ".PA_ONE_WEEK .' seconds';
         $enddate = strtotime($offset, $startdate); //this is the sunday/monday midnight
         $entries_for_week_sql ="SELECT * FROM {$CFG->prefix}peerassessment_ratings
-        WHERE peerassessment={$peerassessment->id} AND timemodified >= $startDate and timemodified<=$enddate";
+        WHERE peerassessment={$peerassessment->id} AND timemodified >= $startdate and timemodified<=$enddate";
         $entries = $DB->get_records_sql($entries_for_week_sql);
         $entries_for_week[$startdate] = array();//
         if ($entries) {
