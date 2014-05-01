@@ -58,8 +58,11 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
         $mform->setAdvanced('advancedsettings');
         $mform->addElement('text', 'lowerbound', get_string('lowerbound', 'peerassessment'), array('value' => '2.5'));
+	$mform->setType('lowerbound', PARAM_RAW);
         $mform->addHelpButton('lowerbound', 'lowerbound', 'peerassessment');
         $mform->addElement('text', 'upperbound', get_string('upperbound', 'peerassessment'), array('value' => '3.5'));
+	$mform->setType('upperbound', PARAM_RAW);
+
         $mform->addHelpButton('upperbound', 'upperbound', 'peerassessment');
 
         $mform->addRule('lowerbound', 'Must be numeric', 'numeric', null, 'client');
