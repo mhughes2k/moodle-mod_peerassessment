@@ -406,7 +406,7 @@ foreach ($lt as $column) {
                     print_simple_box_end();
                 } else {
                     if ($canrecordrating && $group) {
-                        print_container_start();
+			echo $OUTPUT->container_start();
                         echo '<form  method="post">';
                         echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
                         echo '<table id="members">';
@@ -526,7 +526,7 @@ foreach ($lt as $column) {
                         echo "</td></tr>";
                         echo '</table>';
                         echo '</form>';
-                        print_container_end();
+			echo $OUTPUT->container_end();
                     } else {
                         if (!$group) {
                             echo $OUTPUT->box(get_string('nogroup', 'peerassessment'));

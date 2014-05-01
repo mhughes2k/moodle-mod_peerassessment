@@ -50,7 +50,9 @@ require_course_login($course, true, $cm);
 
 $PAGE->set_url('/mod/peerassessment/report.php', $params);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+//$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
+
 require_capability('mod/peerassessment:viewreport', $context);
 $ratings = $DB->get_records('peerassessment_ratings', array('peerassessment' => $peerassessment->id));
 
@@ -125,11 +127,12 @@ if ($peerassessment->frequency > PA_FREQ_ONCE) {
 }
 */
 
-$navigation = build_navigation('', $cm);
-print_header_simple(format_string($peerassessment->name), '', $navigation,
+/*print_header_simple(format_string($peerassessment->name), '', $navigation,
                       '', '', true, '', navmenu($course, $cm));
+*/
+echo $OUTPUT->header();
 
-$OUTPUT->heading(get_string('peerassessmentreportheading', 'peerassessment', $peerassessment));
+echo $OUTPUT->heading(get_string('peerassessmentreportheading', 'peerassessment', $peerassessment));
 echo '<div class="reportlink">';
 print_string('displaygroup', 'peerassessment');
 print_report_select_form($id, $groups, $groupid);

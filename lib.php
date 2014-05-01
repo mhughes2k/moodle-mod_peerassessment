@@ -563,7 +563,7 @@ function peerassessment_get_average_rating_by_student($peerassessment, $userid) 
 function print_delete_attempt_form($peerassessment, $group, $userid, $rating=null, $timemodified=null, $return = true) {
     global $CFG, $USER;
     $cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id);
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
     if (!has_capability('mod/peerassessment:deleteratings', $context)) {
         return '';  //don't return a form
     }
