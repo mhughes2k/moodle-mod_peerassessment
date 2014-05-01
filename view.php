@@ -264,7 +264,8 @@ if ($peerassessment->assignment) {
     }
     $groupmode = groups_get_activity_groupmode($assignment_cm, $course);
     $groupid = groups_get_activity_group($assignment_cm);
-    $group_context = get_context_instance(CONTEXT_MODULE, $assignment_cm->id);
+//    $group_context = get_context_instance(CONTEXT_MODULE, $assignment_cm->id);
+    $group_context = context_module::instance($assignment_cm->id);
     if ($groupmode == NOGROUPS) {
         if (has_capability('moodle/course:manageactivities', $context, $USER->id)) {
             notice(get_string('associatedactivitynogroupsstaff', 'peerassessment'));
@@ -276,8 +277,8 @@ if ($peerassessment->assignment) {
 } else {
     $groupmode = groups_get_activity_groupmode($cm);
     $groupid = groups_get_activity_group($cm, true);
-    $group_context = get_context_instance(CONTEXT_MODULE, $cm->id);
-
+//    $group_context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $group_context = context_module::instance($cm->id);
 }
 
 $canrecordrating = has_capability('mod/peerassessment:recordrating', $context, $USER->id);
