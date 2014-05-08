@@ -30,7 +30,7 @@ $string['lowerbound'] ='Lower Bound';
 $string['lowerbound_help'] ='This is the value <strong>below</strong> which the average rating will be highlighted.';
 $string['mustbestudent']='<p>You cannot perform this activity as staff, you must be in a student role.</p><p><a href=\'report.php?id=$a\'>View report</p>';
 $string['name'] = 'Name';
-$string['noassignment'] = 'Associated Assignment no longer exists, it may have been deleted. Please check the configuration of this activity.';
+$string['noassignment'] = 'No assignment';//Associated Assignment no longer exists, it may have been deleted. Please check the configuration of this activity.';
 
 $string['nogroup'] = 'You are not a member of a group.';
 $string['nogroups']='No groups appear to be set up';
