@@ -393,17 +393,19 @@ foreach ($lt as $column) {
                 ) {
                     //and !has_capability('mod/assignment:grade', $this->context)      // grading user can see it anytime
                     //and $this->assignment->var3) {                                   // force hiding before available date
-                    print_simple_box_start('center', '', '', 0, 'generalbox', 'intro');
+                    echo $OUTPUT->box_start();
+//			print_simple_box_start('center', '', '', 0, 'generalbox', 'intro');
                     print_string('notavailableyet', 'peerassessment');
-                    print_simple_box_end();
+		    echo $OUTPUT->box_end();
+//                    print_simple_box_end();
                 } else if (
                         $peerassessment->timedue!=0
                         && $peerassessment->timedue < time()
                         && !has_capability('mod/peerassessment:viewreport', $context)
                 ) {
-                    print_simple_box_start('center', '', '', 0, 'generalbox', 'intro');
+                    echo $OUTPUT->box_start('center', '', '', 0, 'generalbox', 'intro');
                     print_string('expired', 'peerassessment');
-                    print_simple_box_end();
+                    echo $OUTPUT->box_end();
                 } else {
                     if ($canrecordrating && $group) {
 			echo $OUTPUT->container_start();
