@@ -72,9 +72,6 @@ $data = data_submitted();
 
 if ($data) {
     if (!empty($data->delete)) {
-        //add_to_log('requested deletion of rating')
-        //echo "deleting a rating\n";
-        //if ($rating = $DB->get_records('peerassessment_ratings', array('id' => $data->ratingid))) {
         if ($rating = $DB->get_records('peerassessment_ratings', array('id' => $data->ratingid))) {
             if (!$DB->delete_records('peerassessment_ratings', array('id' => $rating->id))) {
                 notice("Could not delete rating");
