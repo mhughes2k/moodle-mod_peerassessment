@@ -2,8 +2,6 @@
 
 require('../../config.php');
 require_once("lib.php");
-//require_once($CFG->libdir.'/pagelib.php');
-//require_once($CFG->dirroot.'/mod/peerassessment/pagelib.php');
 
 require_once($CFG->dirroot.'/lib/grouplib.php');
 
@@ -173,7 +171,7 @@ if ($data) {
             		echo $OUTPUT->footer();
             		exit();
             	}
-            	 
+
             } else {
             	$co->timemodified= $submittime;
             	$co->studentcomment=$comments;
@@ -248,7 +246,7 @@ $PAGE->set_url('/mod/peerassessment/view.php', $params);
 $ratings = false;
 echo $OUTPUT->header();
 
-add_to_log($course->id, 'peerassessment', 'view', "view.php?id=$cm->id", $peerassessment->id, $cm->id);
+\mod_peerassessment\event\peerassessment_viewed::create(['context' => $context])->trigger();
 
 // Initialize $PAGE, compute blocks
 
