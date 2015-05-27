@@ -17,7 +17,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
             $mform->setType('name', PARAM_CLEAN);
         }
         $mform->addRule('name', null, 'required', null, 'client');
-
+/*
         $assignments = array();
         $assignments[0] = get_string('noassignment', 'peerassessment');
         if ($raw_assignments = get_coursemodules_in_course('assignment', $COURSE->id)) {
@@ -32,7 +32,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
                 array('optional' => true)
         );
         $mform->addHelpButton('assignment', 'assignment', 'peerassessment');
-
+*/
         $this->add_intro_editor(true, get_string('introduction', 'peerassessment'));
 
         $mform->addElement('selectyesno', 'canedit', get_string('canedit', 'peerassessment'));

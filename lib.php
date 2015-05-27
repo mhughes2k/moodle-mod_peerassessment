@@ -33,6 +33,9 @@ function peerassessment_get_types() {
 */
 function peerassessment_add_instance($pa) {
     global $DB, $USER;
+    if (empty($pa->assignment)) {
+    	$pa->assignment = 0;	//we may consider dropping this in a future version.
+    }
     if (!$returnid = $DB->insert_record('peerassessment', $pa)) {
         return false;
     }
