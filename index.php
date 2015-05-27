@@ -18,16 +18,14 @@ $strpas = get_string('modulenameplural', 'peerassessment');
 $strpa  = get_string('modulename', 'peerassessment');
 /* output stuff now */
 
-$navlinks = array();
-$navlinks[] = array('name' => $strpas, 'link' => '', 'type' => 'activity');
-$navigation = build_navigation($navlinks);
-print_header_simple('', '', $navigation, '', '', true, '', navmenu($course));
-
+$PAGE->set_url(new moodle_url('/mod/peerassessessment', array('id' => $id)));
+echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('modulenameplural', 'peerassessment'));
 
 echo $OUTPUT->box_start();
-$table=new stdClass;
-$table->head = array('Peer Assessment Activity', 'Associated Assignment', 'Frequency');
+$table = new html_table();
+
+$table->head = array('Peer Assessment Activity', 'Frequency');
 if ( $activities = $DB->get_records('peerassessment', array('course'=>$course->id))) {
 
     foreach ($activities as $a) {
@@ -35,27 +33,11 @@ if ( $activities = $DB->get_records('peerassessment', array('course'=>$course->i
         $viewreport = false;
 
         if ($cm = get_coursemodule_from_instance('peerassessment', $a->id)) {
-            $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $context = context_module::instance($cm->id);
             $viewreport = has_capability('mod/peerassessment:viewreport', $context);
         }
         $e[]= "<A href='{$CFG->wwwroot}/mod/peerassessment/view.php?p={$a->id}'>$a->name</a>";
-        if ($a->assignment) {
-            $ass_cm = get_coursemodule_from_id('assignment', $a->assignment);
 
-            if (!$ass_cm) {
-                $table->data[]= array("Could not get course module from id {$a->id}");
-            }
-            $ass = get_record('assignment', 'id', $ass_cm->instance);
-            if (
-              $ass_cm
-            &&
-              $ass
-            ) {
-                $e[] = $ass->name;
-            }
-        } else {
-            $e[] ='No Associated Assignment';
-        }
         switch($a->frequency) {
             case PA_FREQ_WEEKLY:
                 $e[] = 'Weekly';
@@ -72,7 +54,7 @@ if ( $activities = $DB->get_records('peerassessment', array('course'=>$course->i
         }
         $table->data[] = $e;
     }
-    print_table($table);
+    echo html_writer::table($table);
 } else {
     p('No activities found');
 }
