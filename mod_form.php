@@ -33,7 +33,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         );
         $mform->addHelpButton('assignment', 'assignment', 'peerassessment');
 */
-        $this->add_intro_editor(true, get_string('introduction', 'peerassessment'));
+        $this->standard_intro_elements(get_string('introduction', 'peerassessment'));
 
         $mform->addElement('selectyesno', 'canedit', get_string('canedit', 'peerassessment'));
         $mform->addElement('header', 'additionalinfo', get_string('additionalinfoheader', 'peerassessment'));
