@@ -186,9 +186,9 @@ function peerassessment_reset_course_form_defaults($course) {
 
 /**
  * Resets the peer assessment activites
- * 
+ *
  * This deletes the comments and ratings content.
- * 
+ *
  * If any deletion fails whilst processing the course then whole thing fails.
  * @param unknown $data
  */
@@ -200,9 +200,11 @@ function peerassessment_reset_userdata($data) {
 	$result_gradebook = false;
 	$overall = true;
 	$error_str  = '';
+	$status = array();
+
 	if (!empty($data->reset_peerassessment_all)) {
-		$pasql = "SELECT pa.id 
-					   FROM {peerassessment} pa  
+		$pasql = "SELECT pa.id
+					   FROM {peerassessment} pa
 					  WHERE pa.course = ?";
 
 		$params = array($data->courseid);//implode(',',$pas);
@@ -218,7 +220,7 @@ function peerassessment_reset_userdata($data) {
 			$status[] =  array('component' => $comstr, 'item' => 'Remove ratings', 'error' => false);
 			$overall = $overall & true;
 		}
-		
+
 		//delete the comments
 		$result_comments = $DB->delete_records_select('peerassessment_comments',
 				"peerassessment IN ($pasql)",
@@ -231,7 +233,7 @@ function peerassessment_reset_userdata($data) {
 			$status[] =  array('component' => $comstr, 'item' => 'Remove comments', 'error' => false);
 			$overall = $overall & true;
 		}
-		
+
 		//reset grades
 		peerassessment_reset_gradebook($data->courseid);
 		if ($overall) {
@@ -249,14 +251,14 @@ function peerassessment_reset_userdata($data) {
  */
 function peerassessment_reset_gradebook($courseid, $type='') {
 	global $CFG, $DB;
-	
+
 	$pas = $DB->get_records('peerassessment', array('course' => $courseid));
-	
+
 	foreach($pas as $pa) {
-		peerassessment_grade_item_update($pa, 'reset');	
+		peerassessment_grade_item_update($pa, 'reset');
 	}
-	
-	
+
+
 }
 
 
