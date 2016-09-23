@@ -51,7 +51,21 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
         // classcatalogue savepoint reached
         upgrade_mod_savepoint(true, 2010120304, 'peerassessment');
     }
-
+    if ($oldversion < 2016092300) {
+    
+    	// Define field groupid to be added to peerassessment_ratings.
+    	$table = new xmldb_table('peerassessment_ratings');
+    	$field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'ratedby');
+    
+    	// Conditionally launch add field groupid.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Peerassessment savepoint reached.
+    	upgrade_mod_savepoint(true, 2016092300, 'peerassessment');
+    }
+    
     return $result;
 
 }
