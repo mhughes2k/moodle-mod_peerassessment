@@ -37,7 +37,10 @@ class backup_peerassessment_activity_structure_step extends backup_activity_stru
 			$comments->set_source_table('peerassessment_comments', array('peerassessment' => backup::VAR_PARENTID));
 		}
 		// Define id annotations
+		$rating->annotate_ids('user', 'userid');
+		$rating->annotate_ids('user', 'ratedby');
 		
+		$comment->annotate_ids('user', 'userid');
 		// Define file annotations
 		
 		// Return the root element (choice), wrapped into standard activity structure

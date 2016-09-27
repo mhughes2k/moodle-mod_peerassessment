@@ -1,4 +1,5 @@
 <?php
+require_once($CFG->dirroot . '/mod/peerassessment/backup/moodle2/backup_peerassessment_stepslib.php');
 /**
  * 
  */
