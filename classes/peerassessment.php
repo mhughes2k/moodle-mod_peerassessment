@@ -128,16 +128,46 @@ class peerassessment {
 	
 	/**
 	 * Get the average rating for a given student.
+	 * @param bool $includeself Include ratings use has made of themself.
 	 */
-	public function get_student_average_rating($userid) {
+	public function get_student_average_rating($userid, $includeself = false) {
 		global $DB;
 		
 		$sql = "SELECT AVG(rating) AS average 
 				FROM {peerassessment_ratings}
 				WHERE peerassessment = ? 
 				AND userid = ?
+				AND groupid = ? ";
+		$params = array($this->instance->id, $userid, $this->group->id);
+		if (!$includeself) {
+			debugging('Excluding self', DEBUG_DEVELOPER);
+			$sql .= "AND ratedby <> ?";
+			$params += $userid;
+		}
+		$rs = $DB->get_record_sql($sql, $params);
+		debugging("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
+		return $rs->average;
+	}
+	
+	/**
+	 * Get the average rating *given* by a student.
+	 * @param int $userid ID of the user giving the rating.
+	 * @param bool $includeself Include ratings use has made of themself.
+	 */
+	public function get_student_average_rating_awarded($userid, $includeself = false) {
+		global $DB;
+		$sql = "SELECT AVG(rating) AS average
+				FROM {peerassessment_ratings}
+				WHERE peerassessment = ?
+				AND ratedby = ?
 				AND groupid = ?";
-		$rs = $DB->get_record_sql($sql, array($this->instance->id, $userid, $this->group->id));
+		$params =array($this->instance->id, $userid, $this->group->id);
+		if (!$includeself) {
+			debugging('Excluding self', DEBUG_DEVELOPER);
+			$sql .= "AND userid <> ?";
+			$params += $userid;
+		}
+		$rs = $DB->get_record_sql($sql, $params);
 		debugging("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
 		return $rs->average;
 	}

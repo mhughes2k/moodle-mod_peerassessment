@@ -1,5 +1,10 @@
 <?php
- 
+/**
+ * This is a test script that runs a backup
+ * 
+ * It should be removed after development has been completed.
+ * @var unknown
+ */
 define('CLI_SCRIPT', 1);
 require_once('../../../config.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
