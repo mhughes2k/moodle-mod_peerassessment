@@ -18,7 +18,8 @@
         <FIELD NAME="lowerbound" TYPE="number" LENGTH="3" NOTNULL="false" UNSIGNED="true" DEFAULT="2.5" SEQUENCE="false" DECIMALS="2" PREVIOUS="canedit" NEXT="upperbound"/>
         <FIELD NAME="upperbound" TYPE="number" LENGTH="3" NOTNULL="false" UNSIGNED="true" DEFAULT="3.5" SEQUENCE="false" DECIMALS="2" PREVIOUS="lowerbound" NEXT="intro"/>
         <FIELD NAME="intro" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" COMMENT="introductory text" PREVIOUS="upperbound" NEXT="introformat"/>
-        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="intro"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="intro" NEXT="ratingscale"/>
+        <FIELD NAME="ratingscale" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="introformat""/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

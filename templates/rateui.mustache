@@ -1,0 +1,26 @@
+{{!
+@template mod_peerassessment/rateui
+Displays UI for recording a user's peer ratings
+}}
+<form>
+<table border="1" class='mod_peerassessment ratingtable'>
+<thead>
+<tr><th colspan="2">Rate</th><th colspan="{{scalecount}}">TODO: SCALE NAME</th></tr>
+<tr><th colspan="2">Name</th>
+</thead>
+<tbody>
+{{#members}} 
+<tr>
+<td>{{{userpicture}}}</td>
+<th>{{lastname}}, {{firstname}}</th>
+{{#scaleitems}}
+<td>
+SCALE FORM ELEMENT
+</td>
+{{/scaleitems}}
+</tr>
+{{/members}}
+<tr>
+</tbody>
+</table>
+</form>

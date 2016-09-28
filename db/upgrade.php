@@ -62,6 +62,12 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
     		$dbman->add_field($table, $field);
     	}
     
+    	$field = new xmldb_field('ratingscale', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'ratedby');
+    	
+    	// Conditionally launch add field groupid.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
     	// Peerassessment savepoint reached.
     	upgrade_mod_savepoint(true, 2016092300, 'peerassessment');
     }
