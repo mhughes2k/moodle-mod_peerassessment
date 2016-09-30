@@ -1,0 +1,19 @@
+{{!
+@template mod_peerassessment/scalevalues
+Displays the numeric values for each scale item
+}}
+<h3>Scale Values</h3>
+This shows how the scale items map on to numeric values.
+<table class="table-responsive mod_peerassessment ratingtable">
+<tr>
+{{#scaleitems}}
+<th>{{name}}</th>
+{{/scaleitems}}
+</tr>
+<tr>
+{{#scaleitems}}
+<td class="ratingcell">{{rating}}</td>
+{{/scaleitems}}
+</tr>
+
+</table>

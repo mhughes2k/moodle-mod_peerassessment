@@ -1,0 +1,22 @@
+{{!
+@template mod_peerassessment/ratings
+Displays Ratings table
+}}
+<table class='table-responsive mod_peerassessment ratingtable'>
+<thead>
+<tr><th colspan="2">Name</th><th>Rated</th></tr>
+</thead>
+<tbody>
+{{#myratings}} 
+<tr>
+<td>{{{userpicture}}}</td>
+<th>{{lastname}}, {{firstname}}</th>
+<td class='ratingcell'>{{rating}}</td>
+</tr>
+{{/myratings}}
+<tr>
+<th colspan="2">Average Given</th>
+<td class='ratingcell'>{{averagerating_given}}</td>
+</tr>
+</tbody>
+</table>
