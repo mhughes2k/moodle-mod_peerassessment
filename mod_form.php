@@ -43,7 +43,8 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
         $mform->setAdvanced('advancedsettings');
         
-        $mform->addElement('modgrade', 'ratingscale', get_string('scale'), $gradeoptions);
+        $ratingscaleoptions = array();
+        $mform->addElement('modgrade', 'ratingscale', get_string('scale'), $ratingscaleoptions);
         //$mform->disabledIf('ratingscale', 'assessed', 'eq', 0);
         $mform->addHelpButton('ratingscale', 'ratingscale', 'peerassessment');
         //$mform->setDefault('ratingscale', $CFG->gradepointdefault);

@@ -1,4 +1,6 @@
 @CHARSET "UTF-8";
-td.mod_peerassessment.ratingtable {
+td .mod_peerassessment .ratingtable,
+.ratingcell,
+.ratingcell  {
 	text-align:center;
 } 

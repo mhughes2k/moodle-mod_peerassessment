@@ -2,7 +2,7 @@
 @template mod_peerassessment/ratings
 Displays Ratings table
 }}
-<table border="1" class='mod_peerassessment ratingtable'>
+<table class='table-responsive mod_peerassessment ratingtable'>
 <thead>
 <tr><th colspan="2">V Awarded To </th><th colspan="{{membercount}}">Awarded By</th></tr>
 <tr><th colspan="2">Name</th>
@@ -19,17 +19,17 @@ Displays Ratings table
 <td>{{{userpicture}}}</td>
 <th>{{lastname}}, {{firstname}}</th>
 {{#ratings}}
-<td>
+<td class='ratingcell'>
 {{{rating}}}
 </td>
 {{/ratings}}
-<td>{{averagerating_received}}</td>
+<td class='ratingcell'>{{averagerating_received}}</td>
 </tr>
 {{/members}}
 <tr>
 <th colspan="2">Average Given</th>
 {{#members}}
-<td>{{averagerating_given}}</td>
+<td class='ratingcell'>{{averagerating_given}}</td>
 {{/members}}
 </tr>
 </tbody>

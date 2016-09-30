@@ -2,20 +2,26 @@
 @template mod_peerassessment/rateui
 Displays UI for recording a user's peer ratings
 }}
-<form>
-<table border="1" class='mod_peerassessment ratingtable'>
+<form method="post">
+<input type="hidden" name="id" value="{{id}}"/>
+<input type="hidden" name="groupid" value="{{groupid}}"/>
+<input type="hidden" name="sesskey" value="{{sesskey}}"/>
+<table class='table-responsive mod_peerassessment ratingtable'>
 <thead>
-<tr><th colspan="2">Rate</th><th colspan="{{scalecount}}">TODO: SCALE NAME</th></tr>
+<tr><th colspan="2">Rate</th><th colspan="{{scalecount}}">{{scalename}}</th></tr>
 <tr><th colspan="2">Name</th>
+{{#scaleitems}}
+<th>{{name}}</th>
+{{/scaleitems}}
 </thead>
 <tbody>
 {{#members}} 
 <tr>
 <td>{{{userpicture}}}</td>
-<th>{{lastname}}, {{firstname}}</th>
+<th>{{lastname}}, {{firstname}} ({{userid}})</th>
 {{#scaleitems}}
-<td>
-SCALE FORM ELEMENT
+<td class='mod_peerassessment rateui ratingcell'>
+<input type="radio" name="rating_{{rater}}|{{ratee}}" value="{{rating}}"></input>
 </td>
 {{/scaleitems}}
 </tr>
@@ -23,4 +29,5 @@ SCALE FORM ELEMENT
 <tr>
 </tbody>
 </table>
+<input type="submit" value="Submit Ratings"/>
 </form>

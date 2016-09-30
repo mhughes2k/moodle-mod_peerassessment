@@ -46,7 +46,7 @@ class peerassessment {
 	
 	public function __get($name) {
 		if (!isset($this->$name)) {
-			debugging("Loading $name for the first time", DEBUG_DEVELOPER);
+			peerassessment_trace("Loading $name for the first time", DEBUG_DEVELOPER);
 			$loadfunc = "get_{$name}";
 			$this->$name = $this->$loadfunc();
 		}
@@ -60,18 +60,21 @@ class peerassessment {
 	 */
 	protected function get_ratings() {
 		global $DB;
-		debugging("Loading Ratings for PA: {$this->instance->id}, group {$this->group->id}", DEBUG_DEVELOPER);
+		peerassessment_trace("Loading Ratings for PA: {$this->instance->id}, group {$this->group->id}", DEBUG_DEVELOPER);
 		$memberids = array_keys($this->get_members());
 			
-		debugging("Member ids: ". implode(',', $memberids), DEBUG_DEVELOPER);
-		
+		if (empty($memberids)) {
+			peerassessment_trace("No members found for group {$this->group->id}", DEBUG_DEVELOPER);
+			$this->ratings = array();
+			return $this->ratings;
+		}
+		peerassessment_trace("Member ids: ". implode(',', $memberids), DEBUG_DEVELOPER);
 		list($uselect, $uparams) = $DB->get_in_or_equal($memberids);
 		$select = "userid {$uselect} AND groupid = ? AND peerassessment = ?";
 		$params = array_merge($uparams, array($this->group->id, $this->instance->id));
 		
 		$dbratings = $DB->get_records_select('peerassessment_ratings', $select, $params);
 
-		var_dump($dbratings);
 		$tmpratings = array();
 		foreach($dbratings as $r){
 			$key = "{$r->userid}:{$r->ratedby}";
@@ -79,21 +82,70 @@ class peerassessment {
 				$tmpratings[$key] = $r;
 			}
 		}
-		var_dump($tmpratings);
+		// Check that every member has a rating record or null
+		foreach($memberids as $mid) {
+			foreach($memberids as $mid2) {
+				$key = "{$mid}:{$mid2}";	
+				if (!isset($tmpratings[$key])) {
+					$tmpratings[$key] = null;
+				}
+			}
+		}
 		$this->ratings = $tmpratings;
 		return $this->ratings;
 	}	
 	
+	/**
+	 * Returns array of ratings awarded by $userid, indexed by the ratee userid.
+	 * 
+	 * @params int $userid
+	 */
+	public function get_myratings($userid) {
+		global $DB;
+		$myratings = $DB->get_records('peerassessment_ratings', array(
+			'peerassessment' => $this->instance->id,
+			'ratedby' => $userid,
+			'groupid' => $this->group->id
+		));
+		$o = array();
+		foreach($myratings as $r) {
+			$o[$r->userid] = $r;
+		}
+		return $o;
+	}
 	/**
 	 * Fetch the members in the Peer Assessment Rating
 	 * @return \mod_peerassessment\unknown
 	 */
 	protected function get_members() {
 		if (!isset($this->members)) {
-			debugging("Loading members", DEBUG_DEVELOPER);
+			peerassessment_trace("Loading members", DEBUG_DEVELOPER);
 			$this->members = groups_get_members($this->group->id);
+			peerassessment_trace(count($this->members) .' members loaded');
 		}
 		return $this->members;
+	}
+	
+	/**
+	 * DB Transaction for rating action
+	 * @var \moodle_transaction
+	 */
+	private $rating_transaction;
+	public function start_rating() {
+		global $DB;
+		if (is_null($this->rating_transaction)) {
+			$this->rating_transaction = $DB->start_delegated_transaction();
+		} else {
+			peerassessment_trace("Rating transaction already in progress", DEBUG_DEVELOPER);
+		}
+	}
+	public function end_rating() {
+		global $DB;
+		if (!is_null($this->rating_transaction)) {
+			$this->rating_transaction->allow_commit();
+		} else {
+			peerassessment_trace('No Rating Transaction in progress', DEBUG_DEVELOPER);
+		}
 	}
 	/**
 	 * Record a peer assessment for a user (in a current group)
@@ -108,18 +160,27 @@ class peerassessment {
 			$ratedbyuserid = $USER->id; 
 		};
 		
+		if (!in_array($ratedbyuserid, array_keys($this->get_members()))) {
+			throw new \moodle_exception('notmemberofgroup', 'peerassessment', '',
+				(object)array(
+					'rater' => $ratedbyuserid,
+					'memberids' => array_keys($this->get_members())
+				)
+			);
+		}
+		
 		if (!isset($this->ratings)) {
-			debugging("Ratings not yet loaded", DEBUG_DEVELOPER);
+			peerassessment_trace("Ratings not yet loaded", DEBUG_DEVELOPER);
 			$this->get_ratings();
 		}
 		
 		$key = "{$userid}:{$ratedbyuserid}";
-		debugging("Attempting to rate {$key}", DEBUG_DEVELOPER);
+		peerassessment_trace("Attempting to rate {$key} : {$value}", DEBUG_DEVELOPER);
 		if (isset($this->ratings[$key])) {
-			debugging("Rating found for {$key}", DEBUG_DEVELOPER);
+			peerassessment_trace("Rating found for {$key}", DEBUG_DEVELOPER);
 			$r = $this->ratings[$key];
 		} else {
-			debugging("Rating not found for {$key}", DEBUG_DEVELOPER);
+			peerassessment_trace("Rating not found for {$key}", DEBUG_DEVELOPER);
 			$r = new \stdClass();
 			$r->peerassessment = $this->instance->id;
 			$r->userid = $userid;
@@ -132,16 +193,16 @@ class peerassessment {
 
 		try {
 			if (empty($r->id)) {
-				debugging('Inserting new rating', DEBUG_DEVELOPER);
+				peerassessment_trace('Inserting new rating', DEBUG_DEVELOPER);
 				$r->id = $DB->insert_record('peerassessment_ratings', $r);
 			} else {
-				debugging('Updating existing rating', DEBUG_DEVELOPER);
+				peerassessment_trace('Updating existing rating', DEBUG_DEVELOPER);
 				$DB->update_record('peerassessment_ratings', $r);
 			}
 			$this->ratings[$key] = $r;
 		}
 		catch (\dml_exception $ex) {
-		//	debugging($ex->getMessage() . $ex->errorcode);
+		//	peerassessment_trace($ex->getMessage() . $ex->errorcode);
 		throw $ex;
 		}
 	}
@@ -159,7 +220,7 @@ class peerassessment {
 			'ratedby' => $touserid,
 			'groupid' => $this->group->id
 		));
-		if ($given == 0) {
+		if ($given != 0) {
 			return true;
 		} 
 		return false;
@@ -170,6 +231,31 @@ class peerassessment {
 	 */
 	public function get_student_average_rating_received($userid, $includeself = false) {
 		global $DB;
+		$memberids = array_keys($this->get_members());
+		list($uselect, $uparams) = $DB->get_in_or_equal($memberids);
+		$sql = "SELECT AVG(rating) AS average
+			FROM {peerassessment_ratings} pa
+			JOIN {groups_members} gm ON gm.groupid = pa.groupid
+			WHERE peerassessment = ?
+			AND pa.userid = ? 
+			AND pa.groupid = ?
+			AND pa.ratedby {$uselect}";
+
+		$params =array($this->instance->id, $userid, $this->group->id);
+		$params = array_merge($params, $uparams);
+		if (!$includeself) {
+			peerassessment_trace('Excluding self', DEBUG_DEVELOPER);
+			$sql .= "AND pa.ratedby <> ?";
+			$params[] = $userid;
+		}
+		$rs = $DB->get_record_sql($sql, $params);
+		peerassessment_trace("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
+		return $rs->average;
+		
+		
+		/*
+		
+		global $DB;
 		
 		$sql = "SELECT AVG(rating) AS average 
 				FROM {peerassessment_ratings}
@@ -178,13 +264,13 @@ class peerassessment {
 				AND groupid = ? ";
 		$params = array($this->instance->id, $userid, $this->group->id);
 		if (!$includeself) {
-			debugging('Excluding self', DEBUG_DEVELOPER);
+			peerassessment_trace('Excluding self', DEBUG_DEVELOPER);
 			$sql .= "AND ratedby <> ?";
 			$params += $userid;
 		}
 		$rs = $DB->get_record_sql($sql, $params);
-		debugging("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
-		return $rs->average;
+		peerassessment_trace("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
+		return $rs->average;*/
 	}
 	
 	/**
@@ -194,21 +280,63 @@ class peerassessment {
 	 */
 	public function get_student_average_rating_given($userid, $includeself = false) {
 		global $DB;
+		$memberids = array_keys($this->get_members());
+		list($uselect, $uparams) = $DB->get_in_or_equal($memberids);
+		
+		// Average of ratings given by $userid to users currently in the group 
 		$sql = "SELECT AVG(rating) AS average
-				FROM {peerassessment_ratings}
+				FROM {peerassessment_ratings} pa
 				WHERE peerassessment = ?
-				AND ratedby = ?
-				AND groupid = ?";
+				AND pa.ratedby = ?
+				AND pa.groupid = ?
+				AND pa.userid {$uselect}
+				";
 		$params =array($this->instance->id, $userid, $this->group->id);
+		$params = array_merge($params, $uparams);
 		if (!$includeself) {
-			debugging('Excluding self', DEBUG_DEVELOPER);
-			$sql .= "AND userid <> ?";
-			$params += $userid;
+			peerassessment_trace('Excluding self', DEBUG_DEVELOPER);
+			$sql .= "AND pa.userid <> ?";
+			$params[] = $userid;
 		}
+
 		$rs = $DB->get_record_sql($sql, $params);
-		debugging("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
+		peerassessment_trace("User {$userid} gave an average rating of : {$rs->average}", DEBUG_DEVELOPER);
 		return $rs->average;
 	}
 	
-	
+	/**
+	 * Instead of returning an associative array, return an array with the items
+	 * as objects;
+	 * @param unknown $list
+	 * @param string $separator
+	 * @return \stdClass[]
+	 */
+	static function make_ratings_for_template_from_list($list, $separator=',') {
+		//$array = array_reverse(explode($separator, $list), true);
+		$array = explode($separator, $list);
+		$outarray = array();
+		foreach ($array as $key => $item) {
+			$r = new \mod_peerassessment\rating\ratingelement();
+			$r->rating = $key + 1;
+			$r->name = $item;
+			$outarray[$key] = $r;
+		}
+		return $outarray;
+	}
+	/**
+	 * Extracts the rater and ratee from a string that fits the form "rating_X|Y"
+	 * @param unknown $string
+	 * @return \mod_peerassessment\rating\ratingelement|NULL
+	 */
+	static function extract_rating_values($key) {
+		if (substr(strtolower($key),0,7) =='rating_') {
+			$target = substr(strtolower($key),7);
+			list($rater, $ratee) = explode("|",$target);
+			$r = new \mod_peerassessment\rating\ratingelement();
+			$r->rater = $rater;
+			$r->ratee = $ratee;
+			return $r;
+		}
+		return null;
+	}
 }

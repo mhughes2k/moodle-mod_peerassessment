@@ -53,7 +53,6 @@ function peerassessment_update_instance($data, $mform) {
 	global $DB;
 	$data->id = $data->instance;
 	$cmid = $data->coursemodule;
-	
 	unset($data->introformat);
 	if (!$returnid = $DB->update_record('peerassessment', $data)) {
 		return false;
@@ -96,4 +95,52 @@ function peerassessment_grade_item_update($peerassessment, $grades = null) {
 	if (!function_exists('grade_update')) {
 		require_once("{$CFG->libdir}/gradelib.php");
 	}	
+}
+
+/**
+ * Trace function
+ * @param string $message Message to output
+ * @param int $level Unused at the moment
+ */
+function peerassessment_trace($message, $level = DEBUG_DEVELOPER) {
+	global $CFG, $USER;
+	if (debugging('', DEBUG_DEVELOPER) && !empty($message)) {		
+		
+		$forcedebug = false;
+		if (!empty($CFG->debugusers) && $USER) {
+			$debugusers = explode(',', $CFG->debugusers);
+			$forcedebug = in_array($USER->id, $debugusers);
+		}
+		
+		if (!$forcedebug and (empty($CFG->debug) || ($CFG->debug != -1 and $CFG->debug < $level))) {
+			return false;
+		}
+		
+		if (!isset($CFG->debugdisplay)) {
+			$CFG->debugdisplay = ini_get_bool('display_errors');
+		}
+		$backtrace = debug_backtrace();
+		$from = format_backtrace($backtrace, CLI_SCRIPT || NO_DEBUG_DISPLAY);
+		if (PHPUNIT_TEST) {
+			// NOP do nothing with this.
+		} else if (NO_DEBUG_DISPLAY) {
+            // Script does not want any errors or debugging in output,
+            // we send the info to error log instead.
+            error_log('Debugging: ' . $message . ' in '. PHP_EOL . $from);
+
+        } else if ($forcedebug or $CFG->debugdisplay) {
+            if (!defined('DEBUGGING_PRINTED')) {
+                define('DEBUGGING_PRINTED', 1); // Indicates we have printed something.
+            }
+            if (CLI_SCRIPT) {
+                echo "++ $message ++\n$from";
+            } else {
+                echo '<div class="notifytiny debuggingmessage" data-rel="debugging">' , $message , $from , '</div>';
+            }
+
+        } else {
+            trigger_error($message . $from, E_USER_NOTICE);
+        }
+		
+	}
 }

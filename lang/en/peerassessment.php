@@ -7,5 +7,6 @@ $string['pluginadministration'] = 'Peer Assessment';
 $string['alreadyrated'] = 'You have already rated your peers.';
 $string['cantrate'] = 'You are not able to rate your peers. Please check with your lecturer that you are in a group.';
 $string['norating'] = '-';
+$string['selectgroup'] = 'Select a group';
 /* Errors */
 $string['unabletoloadgroups'] = 'Unable to load groups';
