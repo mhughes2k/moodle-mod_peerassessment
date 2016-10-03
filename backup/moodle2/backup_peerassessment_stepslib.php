@@ -11,7 +11,7 @@ class backup_peerassessment_activity_structure_step extends backup_activity_stru
 		// Define each element separated
 		$pa = new backup_nested_element('peerassessment', array('id'), array(
 				'name','intro', 'timeavailable','timedue','canedit','lowerbound','upperbound',
-				'timemodified','frequency'
+				'timemodified','frequency','completionratings'
 		));
 		
 		$ratings = new backup_nested_element('ratings');

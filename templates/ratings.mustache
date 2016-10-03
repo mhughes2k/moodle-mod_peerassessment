@@ -2,15 +2,15 @@
 @template mod_peerassessment/ratings
 Displays Ratings table
 }}
-<table class='table-responsive mod_peerassessment ratingtable'>
+<table class='table-responsive mod_peerassessment ratingtable generaltable'>
 <thead>
-<tr><th colspan="2">V Awarded To </th><th colspan="{{membercount}}">Awarded By</th></tr>
+<tr><th colspan="2">Awarded To </th><th colspan="{{membercount}}" class='ratingcell'>Awarded By</th></tr>
 <tr><th colspan="2">Name</th>
 {{! TODO loop through the values and display a header for each one }}
 {{#members}}
-<th>{{lastname}}, {{firstname}}</th>
+<th class='ratingcell'>{{lastname}}, {{firstname}}</th>
 {{/members}}
-<th>Average Received</th>
+<th class='ratingcell'>Average Received</th>
 </tr>
 </thead>
 <tbody>
@@ -20,7 +20,8 @@ Displays Ratings table
 <th>{{lastname}}, {{firstname}}</th>
 {{#ratings}}
 <td class='ratingcell'>
-{{{rating}}}
+{{#rating}}{{{rating}}}{{/rating}}
+{{^rating}}-{{/rating}}
 </td>
 {{/ratings}}
 <td class='ratingcell'>{{averagerating_received}}</td>

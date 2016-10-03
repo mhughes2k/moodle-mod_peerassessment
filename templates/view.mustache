@@ -1,0 +1,30 @@
+{{!
+@template mod_peerassessment/view
+Template for view.php
+}}
+<h2>{{name}} {{groupname}}</h2>
+{{#group}}
+	{{#intro}}
+		{{{intro}}}
+	{{/intro}}
+	{{#readonly}}
+		{{>mod_peerassessment/userratings}}
+	{{/readonly}}
+	{{^readonly}}
+		{{#canrate}}
+			{{>mod_peerassessment/rateui}}
+		{{/canrate}}
+		{{^canrate}}
+			<div class="bg-info">
+			{{#hasrated}}{{#str}}alreadyrated, peerassessment{{/str}}{{/hasrated}}
+			</div>
+			{{>mod_peerassessment/userratings}}
+		{{/canrate}}
+	{{/readonly}}
+{{/group}}
+{{^group}}
+<P>You are not a member of a  group.</p>
+{{#canmanage}}
+<p class="bg-info">You can access the reports for this activity via the "View Report" button in the top right of this screen.</p>
+{{/canmanage}}
+{{/group}}

@@ -8,7 +8,7 @@
  * @author Michael Hughes
  * @author Viktor Dorfler
  */
-$plugin->version  = 2016092302;
+$plugin->version  = 2016092304;
 $plugin->requires = 2010112400;
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->component = 'mod_peerassessment';

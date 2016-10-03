@@ -104,6 +104,7 @@ function peerassessment_grade_item_update($peerassessment, $grades = null) {
  */
 function peerassessment_trace($message, $level = DEBUG_DEVELOPER) {
 	global $CFG, $USER;
+	return; 
 	if (debugging('', DEBUG_DEVELOPER) && !empty($message)) {		
 		
 		$forcedebug = false;
@@ -143,4 +144,38 @@ function peerassessment_trace($message, $level = DEBUG_DEVELOPER) {
         }
 		
 	}
+	
+}
+
+function peerassessment_get_completion_state($course, $cm, $userid, $type) {
+	global $DB, $CFG;
+	if (!($pa = $DB->get_record('peerassessment', array('id' => $cm->instance)))) {
+		throw new \moodle_exception("Can't find peer assessment {$cm->instance}");
+	}
+	if($pa->completionrating) {
+		$usergroups = groups_get_activity_allowed_groups($cm, $userid);
+		$usergroupids = array_keys($usergroups);
+		list($ugsql, $ugparams) = $DB->get_in_or_equal($usergroupids);
+		$completionssql = "SELECT count(distinct groupid) 
+				FROM {peerassessment_ratings} 
+				WHERE userid = ?";
+		//$completions = $DB->get_records_sql($completionssql, array($userid));
+		$completions = $DB->count_records_sql($completionssql, array($userid));
+		
+		if ($pa->completionrating == 1) {
+			$expected = count($usergroupids);
+			if ($completions == $expected) {
+				return true;
+			} else {
+				return false;
+			}
+		} else if ($pa->completionrating == 2) {
+			if ($completions > 0) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+	return $type;
 }

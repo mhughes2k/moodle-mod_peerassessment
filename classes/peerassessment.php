@@ -107,6 +107,7 @@ class peerassessment {
 			'ratedby' => $userid,
 			'groupid' => $this->group->id
 		));
+		
 		$o = array();
 		foreach($myratings as $r) {
 			$o[$r->userid] = $r;

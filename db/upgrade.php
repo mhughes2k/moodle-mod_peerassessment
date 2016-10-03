@@ -51,6 +51,9 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
         // classcatalogue savepoint reached
         upgrade_mod_savepoint(true, 2010120304, 'peerassessment');
     }
+    /*
+     * All of the subsequent updates can be rolled in to a single update later.
+     */
     if ($oldversion < 2016092300) {
     
     	// Define field groupid to be added to peerassessment_ratings.
@@ -73,6 +76,17 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
     	}
     	// Peerassessment savepoint reached.
     	upgrade_mod_savepoint(true, 2016092302, 'peerassessment');
+    }
+    if ($oldversion < 2016092304) {
+    	$table = new xmldb_table('peerassessment');
+    	$field = new xmldb_field('completionrating', XMLDB_TYPE_INTEGER, '1', null, null, null, 0, 'ratingscale');
+    	 
+    	// Conditionally launch add field groupid.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    	// Peerassessment savepoint reached.
+    	upgrade_mod_savepoint(true, 2016092304, 'peerassessment');
     }
     
     return $result;

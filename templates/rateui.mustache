@@ -3,7 +3,7 @@
 Displays UI for recording a user's peer ratings
 }}
 <form method="post">
-<input type="hidden" name="id" value="{{id}}"/>
+<input type="hidden" name="id" value="{{cmid}}"/>
 <input type="hidden" name="groupid" value="{{groupid}}"/>
 <input type="hidden" name="sesskey" value="{{sesskey}}"/>
 <table class='table-responsive mod_peerassessment ratingtable'>
@@ -11,7 +11,7 @@ Displays UI for recording a user's peer ratings
 <tr><th colspan="2">Rate</th><th colspan="{{scalecount}}">{{scalename}}</th></tr>
 <tr><th colspan="2">Name</th>
 {{#scaleitems}}
-<th>{{name}}</th>
+<th class='ratingcell'>{{name}}</th>
 {{/scaleitems}}
 </thead>
 <tbody>

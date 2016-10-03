@@ -66,4 +66,23 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
         $this->add_action_buttons();
     }
+    
+    function add_completion_rules() {
+    	$mform = & $this->_form;
+    	
+    	$group = array();
+    	$group[] = & $mform->createElement('checkbox', 'completionratingenabled', ' ', get_string('completionratings', 'peerassessment'));
+    	$completionoptions = array(1 => 'Rated All Groups', '2' => 'Rated Any Group');
+    	$group[] = & $mform->createElement('select', 'completionrating', ' ', $completionoptions );
+    	$mform->setType('completionrating', PARAM_INT);
+    	$mform->addGroup($group, 'completionratinggroup', get_string('completionratinggroups', 'peerassessment'), array(' '), false);
+    	//$mform->addHelpButton('completionratingsgroup', array('completion', get_string('completionratings', 'peerassessment'), 'peerassessment'));
+    	
+    	$mform->disabledIf('completionrating', 'completionratingenabled', 'notchecked');
+    	return array('completionratinggroups');
+    }
+    
+    function completion_rule_enabled($data) {
+    	return (!empty($data['completionratingenabled']) && $data['completionrating']!=0);
+    }
 }
