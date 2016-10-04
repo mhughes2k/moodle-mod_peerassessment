@@ -122,6 +122,40 @@ if($delete === 'delete') {
 	redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
 	exit();
 }
+// Deal with broken setups really early, not using templates
+$problems = array();
+
+if ($cm->groupmode == 0) {
+	$problems[] = 'Activity requires Group mode to be set to either Separate or Visible groups';
+}
+if ($pa->ratingscale == 0) {
+	$problems[] = "Rating Scale Type is to None. This means there will be no options for the students to rate against.";
+}
+if(count($problems) >0) {
+	$PAGE->set_url('/mod/peerassessment/view.php', array('id' => $id));
+	$editlink = new moodle_url('/course/modedit.php', array('update'=> $id, 'return'=>1));
+	$btn = $OUTPUT->single_button($editlink, get_string('editsettings'));
+	$PAGE->set_button($btn);
+	echo $OUTPUT->header();
+	echo $OUTPUT->heading($pa->name);
+	if ($canmanage) {
+		echo $OUTPUT->box_start('generalbox bg-danger');
+		echo html_writer::tag('p',get_string('issues_staff', 'peerassessment'));
+		echo html_writer::start_tag('ol');
+		foreach($problems as $p) {
+			echo html_writer::tag('li', $p);
+		}
+		echo html_writer::end_tag('ol');
+		echo $btn;
+		echo $OUTPUT->box_end();
+	} else {
+		echo $OUTPUT->box(get_string('issues_student', 'peerassessment'), 'generalbox bg-warning');
+	}
+	echo $OUTPUT->footer();
+	exit();
+	
+} 
+
 /**
  * Peer Assessment Instance
  * @var peerassessment $pa_instance

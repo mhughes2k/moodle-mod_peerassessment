@@ -21,9 +21,10 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $this->standard_intro_elements(get_string('introduction', 'peerassessment'));
 
         $mform->addElement('selectyesno', 'canedit', get_string('canedit', 'peerassessment'));
-        $mform->addElement('header', 'additionalinfo', get_string('additionalinfoheader', 'peerassessment'));
+        /* $mform->addElement('header', 'additionalinfo', get_string('additionalinfoheader', 'peerassessment'));
         $mform->addElement('html', get_string('additionalinfo', 'peerassessment'));
-
+ */
+        
         $mform->addElement('header', 'advancedsettings', 'Advanced');
         $options=array();
         $options[0]  = get_string('oncefrequency', 'peerassessment');
@@ -32,6 +33,9 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
         $mform->addElement('select', 'frequency', get_string('frequency', 'peerassessment'), $options);
 
+        /*
+         * Removing as Restrict access can do this better.
+         
         $mform->addElement('date_time_selector', 'timeavailable',
                 get_string('availablefrom', 'peerassessment'),
                 array('optional' => true)
@@ -39,31 +43,37 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'timedue',
                 get_string('submissiondate', 'peerassessment'),
                 array('optional' => true)
-        );
+        );*/
 
-        $mform->setAdvanced('advancedsettings');
+        //$mform->setAdvanced('advancedsettings');
         
         $ratingscaleoptions = array();
-        $mform->addElement('modgrade', 'ratingscale', get_string('scale'), $ratingscaleoptions);
+        $mform->addElement('modgrade', 'ratingscale', get_string('ratingscale', 'peerassessment'), $ratingscaleoptions);
         //$mform->disabledIf('ratingscale', 'assessed', 'eq', 0);
         $mform->addHelpButton('ratingscale', 'ratingscale', 'peerassessment');
         //$mform->setDefault('ratingscale', $CFG->gradepointdefault);
         
+        // TODO Decide if we're keeping upper/lower bound highlighting.
+        /*
         $mform->addElement('text', 'lowerbound', get_string('lowerbound', 'peerassessment'), array('value' => '2.5'));
-	$mform->setType('lowerbound', PARAM_RAW);
+		$mform->setType('lowerbound', PARAM_RAW);
         $mform->addHelpButton('lowerbound', 'lowerbound', 'peerassessment');
         $mform->addElement('text', 'upperbound', get_string('upperbound', 'peerassessment'), array('value' => '3.5'));
-	$mform->setType('upperbound', PARAM_RAW);
+		$mform->setType('upperbound', PARAM_RAW);
 
         $mform->addHelpButton('upperbound', 'upperbound', 'peerassessment');
 
         $mform->addRule('lowerbound', 'Must be numeric', 'numeric', null, 'client');
         $mform->addRule('upperbound', 'Must be numeric', 'numeric', null, 'client');
-
-        $this->standard_grading_coursemodule_elements();
+		*/
+        // Decide if we're making this a gradable activity!
+        
+        //$this->standard_grading_coursemodule_elements();
         
         $this->standard_coursemodule_elements();
 
+        $mform->setExpanded('modstandardelshdr');// Forces common module settings open so we can see the group modes!
+        $mform->setDefault('groupmode', 1); // AKA SEPARATEGROUPS
         $this->add_action_buttons();
     }
     
@@ -71,15 +81,15 @@ class mod_peerassessment_mod_form extends moodleform_mod {
     	$mform = & $this->_form;
     	
     	$group = array();
-    	$group[] = & $mform->createElement('checkbox', 'completionratingenabled', ' ', get_string('completionratings', 'peerassessment'));
-    	$completionoptions = array(1 => 'Rated All Groups', '2' => 'Rated Any Group');
+    	$group[] = & $mform->createElement('checkbox', 'completionratingenabled', ' ', get_string('completionrating', 'peerassessment'));
+    	$completionoptions = array(1 => get_string('ratedallgroups', 'peerassessment'), '2' => get_string('ratedanygroups', 'peerassessment'));
     	$group[] = & $mform->createElement('select', 'completionrating', ' ', $completionoptions );
     	$mform->setType('completionrating', PARAM_INT);
-    	$mform->addGroup($group, 'completionratinggroup', get_string('completionratinggroups', 'peerassessment'), array(' '), false);
+    	$mform->addGroup($group, 'completionratinggroup', get_string('completionratinggroup', 'peerassessment'), array(' '), false);
     	//$mform->addHelpButton('completionratingsgroup', array('completion', get_string('completionratings', 'peerassessment'), 'peerassessment'));
     	
     	$mform->disabledIf('completionrating', 'completionratingenabled', 'notchecked');
-    	return array('completionratinggroups');
+    	return array('completionratinggroup');
     }
     
     function completion_rule_enabled($data) {
