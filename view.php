@@ -33,8 +33,9 @@ $PAGE->set_title($pa->name);
 $PAGE->set_heading($course->fullname);
 
 $context = context_module::instance($cm->id);
-$canmanage = has_capability('mod/peerassessment:viewreport', $context);
-$canrate = has_capability('mod/peerassessment:recordrating', $context);
+$canmanage = has_capability('mod/peerassessment:viewreport', $context, $USER);
+$isadmin = false; //in_array($USER->id, array_keys(get_admins()));
+$canrate = has_capability('mod/peerassessment:recordrating', $context, $USER, false);
 if (!$canmanage) {
 	$mode = MOD_PEERASSESSMENT_MODE_VIEW;
 } 
@@ -43,6 +44,7 @@ if (!$canmanage) {
 // Handle data entry
 $data = data_submitted();
 if ($data) {	
+	require_sesskey();
 	if (!$canrate) {
 		// user doesn't hold the capability to rate in this assignment
 		print_error('cantrate', 'peerassessment');
@@ -66,34 +68,60 @@ if ($data) {
 	if ($pa_instance->has_rated($USER->id)) {
 		print_error('alreadyrated', 'peerassessment');
 	}
+
+	if ($data->rate) {
+		// Now we're good to go!
+		// extract rating_{rater|ratee} items
+		$ratingstostore = array();
+		foreach($data as $key=>$value) {
+			if (!is_null($r = \mod_peerassessment\peerassessment::extract_rating_values($key))) {
+				// it is a rating!
+				$r->rating = $value;
+				$ratingstostore[] = $r;
+			}
+		}
+		//var_dump($ratingstostore);
 	
-	// Now we're good to go!
-	// extract rating_{rater|ratee} items
-	$ratingstostore = array();
-	foreach($data as $key=>$value) {
-		if (!is_null($r = \mod_peerassessment\peerassessment::extract_rating_values($key))) {
-			// it is a rating!
-			$r->rating = $value;
-			$ratingstostore[] = $r;
+		$pa_instance->start_rating();
+		foreach($ratingstostore as $r2s) {
+			$pa_instance->rate($r2s->ratee, $r2s->rating, $USER->id);
+		}
+		$pa_instance->comment($USER->id, $data->comment);
+		$pa_instance->end_rating();
+		
+		$completion = new completion_info($course);
+		if ($completion->is_enabled($cm) && $pa->completionrating) {
+			$completion->update_state($cm, COMPLETION_COMPLETE);
 		}
 	}
-	//var_dump($ratingstostore);
-
-	$pa_instance->start_rating();
-	foreach($ratingstostore as $r2s) {
-		$pa_instance->rate($r2s->ratee, $r2s->rating, $USER->id);
-	}
-	$pa_instance->end_rating();
-	
-	$completion = new completion_info($course);
-	if ($completion->is_enabled($cm) && $pa->completionrating) {
-		debugging('Updating completion state');
-		$completion->update_state($cm, COMPLETION_COMPLETE);
-	}
-	
-	redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid)));	
+	redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));	
 	exit();
 } 
+$delete = optional_param('delete', false, PARAM_TEXT);
+if($delete === 'delete') {
+	require_sesskey();
+	// 	Validate this 
+	$groupid = required_param('groupid', PARAM_INT);
+
+	// Check user is member of the group
+	$group = groups_get_group($groupid);
+	if (!$group) {
+		// Fail as group trying to rate for doesn't exist
+		print_error('groupdoesnotexist', 'peerassessment');
+	}
+	/*if (!groups_is_member($groupid, $USER->id)) {
+		print_error('notamemberofgroupspecified', 'peerassessment');
+	}*/
+	if (!$canmanage) {
+		print_error('onlystaffcandeletearating', 'peerassessment');
+		exit();
+	}
+	$ratedbyid = required_param('ratedby', PARAM_INT);
+	$pa_instance = new \mod_peerassessment\peerassessment($pa, $groupid);
+	$pa_instance->delete_ratings($ratedbyid);
+	redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
+	exit();
+}
 /**
  * Peer Assessment Instance
  * @var peerassessment $pa_instance
@@ -110,8 +138,17 @@ if ($groupid == false && count($groups) >0 ) {
 $group = false;
 if ($groupid) {
 	$group = groups_get_group($groupid);
-	if (!$canmanage && !groups_is_member($group->id, $USER->id)) {
-		print_error("notamemberofgroup", "peerassessment");
+	
+	if (!$canmanage & !groups_is_member($group->id, $USER->id)) {
+		$PAGE->set_url(new moodle_url('/mod/peerassessment/view.php', array('id' =>$id, 'groupid'=>$groupid)));
+		echo $OUTPUT->header();
+		echo $OUTPUT->heading($pa->name);
+		echo $OUTPUT->box_start();
+		echo $OUTPUT->error_text(get_string("notamemberofgroup", "peerassessment"));
+		echo $OUTPUT->box_end();
+		//print_error
+		echo $OUTPUT->footer();
+		exit();
 	} else {
 
 	}
@@ -154,12 +191,16 @@ if ($group) {
 		$scalename = "Points";
 	}
 	$hasrated = $pa_instance->has_rated($USER->id);
+	$deleteratingurl = new moodle_url('/mod/peerassessment/view.php', array(
+		'id' => $id, 'groupid'=>$groupid, 'delete' => 'delete', 'sesskey' => sesskey(), 'ratedby'=> false, 'mode' => $mode)
+	);
 	
-	$tdata['canrate'] = $canrate & !$hasrated;
+	$tdata['canrate'] = $canrate & groups_is_member($group->id, $USER->id) & !$hasrated ;
 	$tdata['hasrated'] = $hasrated;
+	$tdata['isadmin'] = $isadmin;
 	$tdata['ratings'] = array();
 	$tdata['members'] = array();//array_values($pa_instance->members);
-	$tdata['ratings'] = $pa_instance->ratings;
+	$tdata['ratings'] = $pa_instance->get_ratings();
 	
 	$tdata['isscale'] = ($scaleid < 0);
 	$tdata['scaleitems'] = array_values($scaleitems);
@@ -169,7 +210,8 @@ if ($group) {
 	$tdata['group'] = $group;
 	$tdata['groupid'] = $groupid;
 	$tdata['groupname'] = $group->name;
-	$tdata['membercount'] = count($pa_instance->members);
+	$tdata['membercount'] = count($pa_instance->get_members());
+	$tdata['comment'] = $pa_instance->get_comment();
 	/* Group Jump box */
 	$tdata['groupselect'] = '';
 	if(count($groups) > 1) {
@@ -187,26 +229,40 @@ if ($group) {
 				$attributes = array('label' => get_string('switchgroups', 'peerassessment'))
 				);
 	}
-	 
-	foreach($pa_instance->members as $mid => $member) {
+	
+	foreach($pa_instance->get_members() as $mid => $member) {
+		
 		$mdata = array(
 			'userid' => $member->id,
 			'lastname' => $member->lastname,
 			'firstname' => $member->firstname,
 			'userpicture' => $OUTPUT->user_picture($member),
 			'ratings' => array(),
-			
-			'scaleitems' => array()
+			'scaleitems' => array(),
+			'comment'=> $pa_instance->get_comment($member->id),
+			'deletelink' => ''
 		);
+		if ($pa_instance->has_rated($member->id)) {
+			$mdata['deletelink'] = $OUTPUT->action_link($deleteratingurl->out(false, array('ratedby' => $member->id)),
+				$OUTPUT->pix_icon('t/delete',get_string('delete')),
+				new confirm_action(get_string('confirmdelete', 'peerassessment'))
+			);
+		}
 		peerassessment_trace("Ratings awarded to {$member->id}", DEBUG_DEVELOPER);
-		foreach($pa_instance->members as $mid2 => $member2) {
+		foreach($pa_instance->get_members() as $mid2 => $member2) {
 			$key = "{$mid}:{$mid2}";
-			if ($scaleid < 0 && isset($pa_instance->ratings[$key])) {
-				$scalekey = ($pa_instance->ratings[$key]->rating) - 1;
-				peerassessment_trace("Rating:{$pa_instance->ratings[$key]->rating}, Scalekey: $scalekey, Name:{$scaleitems[$scalekey]->name}");
-				$mdata['ratings'][] = array('rating' => $scaleitems[$scalekey]->name . " ({$pa_instance->ratings[$key]->rating})");
+			$rating = $pa_instance->get_ratings()[$key];
+			if ($scaleid < 0 && isset($rating)) {
+				$scalekey = ($rating->rating) - 1;
+				peerassessment_trace("Rating:{$rating->rating}, Scalekey: $scalekey, Name:{$scaleitems[$scalekey]->name}");
+				$mdata['ratings'][] = array('rating' => get_string('scaledisplayformat', 'peerassessment',
+					array(
+						'text' => $scaleitems[$scalekey]->name,
+						'value'=> $rating->rating
+					))
+				);
 			} else {
-				$mdata['ratings'][] = $pa_instance->ratings[$key];
+				$mdata['ratings'][] = $pa_instance->get_ratings()[$key];
 			}
 			$mdata['averagerating_received'] = $pa_instance->get_student_average_rating_received($mid, true);
 			
@@ -241,6 +297,7 @@ if ($group) {
 			$r->ratee = $mid;
 			$mdata['scaleitems'][] = $r;
 		}
+
 		$tdata['members'][] = $mdata;
 	}
 	
@@ -249,7 +306,7 @@ if ($group) {
 	
 	// Ouput data about the current user's ratings that they've made
 	$tdata['myratings'] = array();
-	foreach($pa_instance->members as $mid => $member) {
+	foreach($pa_instance->get_members() as $mid => $member) {
 		
 		$r = array(
 			'userid' => $member->id,
@@ -283,18 +340,11 @@ if ($group) {
 		}
 		//$scaleitems[$averagescalekey]->name. " ({$avgiven})";
 	}
-	if (!$force_readonly && $canrate) {
-		$readonly = false;
-	}
-	
-	if ($readonly) {
-		// Any stuff that is read only
-	} else {
-		// Prepare the rateui
-		
-	}
 }
 
+if ($mode == MOD_PEERASSESSMENT_MODE_VIEW && !$canrate & $canmanage) {
+	$mode = MOD_PEERASSESSMENT_MODE_REPORT;
+}
 
 $url = new moodle_url('/mod/peerassessment/view.php', array(
 	'id' => $id, 
@@ -307,9 +357,11 @@ $showscalevalues = true;
 if ($mode == MOD_PEERASSESSMENT_MODE_VIEW) {
 	if ($canmanage) {
 		$reporturl = new moodle_url($PAGE->url, array('mode' => MOD_PEERASSESSMENT_MODE_REPORT));
-		$PAGE->set_button($OUTPUT->action_link($reporturl, get_string('viewreport', 'peerassessment'), null,
+		$viewreportbutton = $OUTPUT->action_link($reporturl, get_string('viewreport', 'peerassessment'), null,
 			array('class' => 'btn btn-primary')
-		));
+		);
+		$PAGE->set_button($viewreportbutton);
+		$tdata['viewreportbutton'] = $viewreportbutton;
 	} else {
 		$PAGE->set_button($tdata['groupselect']);
 	}
@@ -319,9 +371,7 @@ if ($mode == MOD_PEERASSESSMENT_MODE_VIEW) {
 /* Render the actual page */
 if(isset($tdata['group'])) {
 	$PAGE->set_title($pa->name .": ". $group->name);
-} else {
-	$PAGE->set_title($pa->name);
-}
+} 
 
 echo $OUTPUT->header();
 if ($mode == MOD_PEERASSESSMENT_MODE_REPORT) {

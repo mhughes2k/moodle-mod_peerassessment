@@ -8,7 +8,7 @@ Displays Ratings table
 <tr><th colspan="2">Name</th>
 {{! TODO loop through the values and display a header for each one }}
 {{#members}}
-<th class='ratingcell'>{{lastname}}, {{firstname}}</th>
+<th class='ratingcell'>{{lastname}}, {{firstname}} {{{deletelink}}}</th>
 {{/members}}
 <th class='ratingcell'>Average Received</th>
 </tr>
@@ -33,5 +33,12 @@ Displays Ratings table
 <td class='ratingcell'>{{averagerating_given}}</td>
 {{/members}}
 </tr>
+<tr>
+<th colspan="2">Comment</th>
+{{#members}}
+<td class=''>{{comment.studentcomment}}</td>
+{{/members}}
+</tr>
+
 </tbody>
 </table>

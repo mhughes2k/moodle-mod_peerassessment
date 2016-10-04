@@ -18,7 +18,15 @@ Template for view.php
 			<div class="bg-info">
 			{{#hasrated}}{{#str}}alreadyrated, peerassessment{{/str}}{{/hasrated}}
 			</div>
-			{{>mod_peerassessment/userratings}}
+			{{#hasrated}}
+				{{>mod_peerassessment/userratings}}
+			{{/hasrated}}
+			{{#canmanage}}
+				<div class='well'>
+				You are a member of staff. Use the "View Report' button to view.
+				{{{viewreportbutton}}}
+				</div>
+			{{/canmanage}}
 		{{/canrate}}
 	{{/readonly}}
 {{/group}}

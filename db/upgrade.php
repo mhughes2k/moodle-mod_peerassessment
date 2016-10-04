@@ -89,6 +89,18 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
     	upgrade_mod_savepoint(true, 2016092304, 'peerassessment');
     }
     
+    if ($oldversion < 2016092305) {
+    
+    	// Define field groupid to be added to peerassessment_ratings.
+    	$table = new xmldb_table('peerassessment_comments');
+    	$field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'studentcomment');
+    
+    	// Conditionally launch add field groupid.
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    	upgrade_mod_savepoint(true, 2016092305, 'peerassessment');
+    }
     return $result;
 
 }

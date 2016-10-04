@@ -95,6 +95,105 @@ function peerassessment_grade_item_update($peerassessment, $grades = null) {
 	if (!function_exists('grade_update')) {
 		require_once("{$CFG->libdir}/gradelib.php");
 	}	
+	// TODO Implement once I understand it.	
+}
+
+function peerassessment_reset_userdata($data) {
+	global $DB;
+	$comstr = get_string('modulename', 'peerassessment');
+	$result_ratings = false;
+	$result_comments = false;
+	$result_gradebook = false;
+	$overall = true;
+	$error_str  = '';
+	$status = array();
+	
+	if (!empty($data->reset_peerassessment_all)) {
+		$pasql = "SELECT pa.id
+					   FROM {peerassessment} pa
+					  WHERE pa.course = ?";
+	
+		$params = array($data->courseid);//implode(',',$pas);
+		//delete the ratings
+		$result_ratings = $DB->delete_records_select('peerassessment_ratings',
+				"peerassessment IN ($pasql)",
+				$params
+				);
+		if (!$result_ratings) {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove ratings', 'error' => 'Unable to delete ratings');
+			$overall = $overall & false;
+		} else {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove ratings', 'error' => false);
+			$overall = $overall & true;
+		}
+	
+		//delete the comments
+		$result_comments = $DB->delete_records_select('peerassessment_comments',
+				"peerassessment IN ($pasql)",
+				$params
+				);
+		if (!$result_comments) {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove comments', 'error' => 'Unable to delete comments');
+			$overall = $overall & false;
+		} else {
+			$status[] =  array('component' => $comstr, 'item' => 'Remove comments', 'error' => false);
+			$overall = $overall & true;
+		}
+	
+		//reset grades
+		peerassessment_reset_gradebook($data->courseid);
+		if ($overall) {
+			$status[]  =  array('component' => $comstr, 'item' => 'Reset Peer Assessments', 'error' => false);
+		} else {
+			//$status[]  =  array('component' => $comstr, 'item' => 'Reset Peer Assessments', 'error' => $error_str);
+		}
+	}
+	return $status;
+}
+
+/**
+ * We only allow a full reset of everything!
+ * @param unknown $mform
+ */
+function peerassessment_reset_course_form_definition(&$mform) {
+	$mform->addElement('header', 'peerassessmentheader', get_string('modulenameplural', 'peerassessment'));
+
+	$mform->addElement('checkbox', 'reset_peerassessment_all', get_string('resetpeerassessmentall', 'peerassessment'));
+}
+
+/**
+ * Course reset form defaults.
+ * @return array
+ */
+function peerassessment_reset_course_form_defaults($course) {
+	return array('reset_peerassessment_all'=>1);
+}
+
+/**
+ * Resets the grade boook data.
+ * @param unknown $courseid
+ * @param string $type
+ */
+function peerassessment_reset_gradebook($courseid, $type='') {
+	global $CFG, $DB;
+
+	$wheresql = '';
+	$params = array($courseid);
+	/*
+	 if ($type) {
+	 $wheresql = "AND pa.type=?";
+	 $params[] = $type;
+	 }*/
+
+	$sql = "SELECT pa.*, cm.idnumber as cmidnumber, pa.course as courseid
+	FROM {peerassessment} pa, {course_modules} cm, {modules} m
+	WHERE m.name='peerassessment' AND m.id=cm.module AND cm.instance=pa.id AND pa.course=? $wheresql";
+
+	if ($forums = $DB->get_records_sql($sql, $params)) {
+		foreach ($forums as $forum) {
+			// peerassessment_grade_item_update($forum, 'reset');
+		}
+	}
 }
 
 /**

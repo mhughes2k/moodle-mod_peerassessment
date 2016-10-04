@@ -1,0 +1,20 @@
+{{!
+@template mod_peerassessment/report
+Report Template for view.php
+}}
+
+<h2>{{name}} - {{groupname}} Peer Assessment Report</h2>
+{{#isadmin}}
+<div class="bg-danger">
+You are an admin, you cannot do this activity without switching to a "Student" type role.
+</div>
+{{/isadmin}}
+{{#intro}}
+	{{{intro}}}
+{{/intro}}
+<div>
+</div>
+{{>mod_peerassessment/ratings}}
+
+<h3>Grading</h3>
+<p class="bg-danger">TODO Allow staff to award a grade to either all members or some members.</p>

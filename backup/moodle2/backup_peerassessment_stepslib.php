@@ -10,19 +10,29 @@ class backup_peerassessment_activity_structure_step extends backup_activity_stru
 		$userinfo = $this->get_setting_value('userinfo');
 		// Define each element separated
 		$pa = new backup_nested_element('peerassessment', array('id'), array(
-				'name','intro', 'timeavailable','timedue','canedit','lowerbound','upperbound',
-				'timemodified','frequency','completionratings'
+				'name','intro', 'introformat', 'timeavailable', 'timedue',
+				'canedit','lowerbound','upperbound',
+				'timemodified','frequency','ratingscale',
+				'completionrating',
+				'grade'
 		));
 		
 		$ratings = new backup_nested_element('ratings');
 		
 		$rating = new backup_nested_element('rating', array('id'), array(
-				'userid','rating','timemodified','ratedby', 'groupid'
+				'userid',
+				'rating',
+				'timemodified',
+				'ratedby',
+				'groupid'
 		));
 		
 		$comments = new backup_nested_element('comments');
 		$comment = new backup_nested_element('comment', array('id'), array(
-			'userid','timemodified','timecreated', 'studentcomment'	
+			'userid',
+			'timemodified',
+			'timecreated', 
+			'studentcomment'	
 		));
 		// Build the tree
 		$pa->add_child($ratings);

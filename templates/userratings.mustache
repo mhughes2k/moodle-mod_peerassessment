@@ -2,6 +2,7 @@
 @template mod_peerassessment/ratings
 Displays Ratings table
 }}
+<div style="max-width:50%;min-width:30%;margin-right:10px;float:left">
 <table class='table-responsive mod_peerassessment ratingtable'>
 <thead>
 <tr><th colspan="2">Name</th><th class='ratingcell'>Rated</th></tr>
@@ -20,3 +21,16 @@ Displays Ratings table
 </tr>
 </tbody>
 </table>
+</div>
+
+{{#comment}}
+<div style="float-left; width:45%;margin-left:15px;">
+<h3>{{#str}}comment, peerassessment{{/str}}</h3>
+<div class="" style="">
+{{studentcomment}}
+</div>
+</div>
+{{/comment}}
+<div class="clearfix"></div>
+
+

@@ -4,6 +4,7 @@ Displays UI for recording a user's peer ratings
 }}
 <form method="post">
 <input type="hidden" name="id" value="{{cmid}}"/>
+<input type="hidden" name="rate" value="rate"/>
 <input type="hidden" name="groupid" value="{{groupid}}"/>
 <input type="hidden" name="sesskey" value="{{sesskey}}"/>
 <table class='table-responsive mod_peerassessment ratingtable'>
@@ -29,5 +30,9 @@ Displays UI for recording a user's peer ratings
 <tr>
 </tbody>
 </table>
-<input type="submit" value="Submit Ratings"/>
+<div class="form-group">
+<label for="comment">Comment</label>
+<textarea class="form-control" name="comment" rows="4" cols="30"></textarea>
+</div>
+<input type="submit" value="Submit Ratings" class="btn btn-default"/>
 </form>

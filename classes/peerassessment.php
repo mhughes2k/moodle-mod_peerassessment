@@ -44,6 +44,7 @@ class peerassessment {
 		$this->group = $group;
 	}
 	
+	/*
 	public function __get($name) {
 		if (!isset($this->$name)) {
 			peerassessment_trace("Loading $name for the first time", DEBUG_DEVELOPER);
@@ -51,14 +52,14 @@ class peerassessment {
 			$this->$name = $this->$loadfunc();
 		}
 		return $this->$name;
-	}
+	}*/
 	
 	/**
 	 * Fetch the ratings for this group's instance (from the DB if necessary);
 	 * Array is indexed by the *target* of the rating, not who rated them.
 	 * @return \mod_peerassessment\unknown
 	 */
-	protected function get_ratings() {
+	public function get_ratings() {
 		global $DB;
 		peerassessment_trace("Loading Ratings for PA: {$this->instance->id}, group {$this->group->id}", DEBUG_DEVELOPER);
 		$memberids = array_keys($this->get_members());
@@ -118,7 +119,7 @@ class peerassessment {
 	 * Fetch the members in the Peer Assessment Rating
 	 * @return \mod_peerassessment\unknown
 	 */
-	protected function get_members() {
+	public function get_members() {
 		if (!isset($this->members)) {
 			peerassessment_trace("Loading members", DEBUG_DEVELOPER);
 			$this->members = groups_get_members($this->group->id);
@@ -209,10 +210,75 @@ class peerassessment {
 	}
 	
 	/**
+	 * Deletes ratings by specified userid.
+	 * @param int $byuserid ID of user whose ratings to remove.
+	 */
+	public function delete_ratings($byuserid) {
+		global $DB;
+		$DB->delete_records('peerassessment_ratings', array(
+			'peerassessment' => $this->instance->id,
+			'ratedby' => $byuserid,
+			'groupid' => $this->group->id
+		));
+		unset($this->ratings);
+	}
+	/**
+	 * Saves a comment by userid against the PA activity
+	 * @param int $userid Moodle ID of user making the comment
+	 * @param string $commenttext Comment text entered by the user.
+	 */
+	public function comment($userid, $commenttext) {
+		global $DB;
+		if ($comment = $DB->get_record('peerassessment_comments', array(
+			'userid' => $userid,
+			'groupid' => $this->group->id
+		))){ 
+			// Should we save a copy?
+		} else {
+			$comment = new \stdClass();
+			$comment->userid = $userid;
+			$comment->peerassessment = $this->instance->id;
+			$t = time();
+			$comment->timemodified = $t;
+			$comment->timecreated = $t;
+			$comment->groupid = $this->group->id;
+		}
+		$comment->studentcomment = $commenttext;
+		if (empty($comment->id)) {
+			$DB->insert_record('peerassessment_comments', $comment);
+		} else {
+			$DB->update_record('peerassessment_comments', $comment);		
+		}
+	}
+	private $comments;
+	/**
+	 * Returns the comment made by user in the activity 
+	 */
+	public function get_comment($userid = false) {
+		global $DB, $USER;
+		if ($userid === false) {
+			$userid = $USER->id;
+		}
+		if (!isset($this->comments)) {
+			$comments = $DB->get_records('peerassessment_comments', array(
+					'groupid' => $this->group->id
+			));
+			$this->comments = array();
+			foreach($comments as $cid=>$c) {
+				$this->comments[$c->userid] = $c;
+			}
+		}
+		if (isset($this->comments[$userid])) {
+			return $this->comments[$userid];
+		}
+		return null;
+	}
+	
+	/**
 	 * Check if the PAInstance is available to a given user.
 	 * 
 	 * It is available if the $touserid *hasn't* given a rating to any 
-	 * @param unknown $touserid
+	 * @param int $touserid User id of user to check if they have given a rating.
 	 */
 	public function has_rated($touserid) {
 		global $DB;
@@ -303,6 +369,34 @@ class peerassessment {
 		$rs = $DB->get_record_sql($sql, $params);
 		peerassessment_trace("User {$userid} gave an average rating of : {$rs->average}", DEBUG_DEVELOPER);
 		return $rs->average;
+	}
+	
+	const RATING_POINTS = 0;
+	const RATING_SCALE = 1;
+	private $scale;
+	public function get_rating_method() {
+		global $DB;
+		$scaleid = -($this->instance->ratingscale);
+		if ($scale = $DB->get_record('scale', array('id' => $scaleid))) {
+			$this->scale = $scale;			
+		}
+	}
+	private $RatingMethodType;
+	/**
+	 * Returns what sort of rating method is being used
+	 */
+	public function get_rating_method_type() {
+		$scaleid = (int)$this->instance->ratingscale;
+		if ($scaleid < 0) {
+			return peerassessment::RATING_SCALE;
+		} else {
+			return peerassessment::RATING_SCALE;
+		}
+	}
+	
+	private $scaleitems;
+	public function get_scaleitems() {
+		
 	}
 	
 	/**

@@ -250,15 +250,25 @@ function peerassessment_reset_userdata($data) {
  * @param string $type
  */
 function peerassessment_reset_gradebook($courseid, $type='') {
-	global $CFG, $DB;
+    global $CFG, $DB;
 
-	$pas = $DB->get_records('peerassessment', array('course' => $courseid));
+    $wheresql = '';
+    $params = array($courseid);
+    /*
+    if ($type) {
+        $wheresql = "AND pa.type=?";
+        $params[] = $type;
+    }*/
 
-	foreach($pas as $pa) {
-		peerassessment_grade_item_update($pa, 'reset');
-	}
+    $sql = "SELECT pa.*, cm.idnumber as cmidnumber, pa.course as courseid
+              FROM {peerassessment} pa, {course_modules} cm, {modules} m
+             WHERE m.name='peerassessment' AND m.id=cm.module AND cm.instance=pa.id AND pa.course=? $wheresql";
 
-
+    if ($forums = $DB->get_records_sql($sql, $params)) {
+        foreach ($forums as $forum) {
+            // peerassessment_grade_item_update($forum, 'reset');
+        }
+    }
 }
 
 
