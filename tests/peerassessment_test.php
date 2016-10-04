@@ -77,12 +77,12 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 		$group = $this->testGroups[0];	// use the 1st group
 		$pai = new \mod_peerassessment\peerassessment($instance, $group->id);
 		// For first group everyone rates everyone "1"
-		foreach($pai->members as $mid => $member1) {
-			foreach($pai->members as $mid2 => $member2) {
+		foreach($pai->get_members() as $mid => $member1) {
+			foreach($pai->get_members() as $mid2 => $member2) {
 				$pai->rate($mid2, 1, $mid);
 			}
 		}
-		foreach($pai->members as $mid => $member1) {
+		foreach($pai->get_members() as $mid => $member1) {
 			$this->assertEquals(1, $pai->get_student_average_rating_received($mid),"Calculated Average Rating Received incorrect");
 			$this->assertEquals(1, $pai->get_student_average_rating_given($mid),"Calculated Average Rating Given incorrect");
 		}
@@ -90,12 +90,12 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 		$group = $this->testGroups[1];	// use the 2nd group
 		$pai = new \mod_peerassessment\peerassessment($instance, $group->id);
 		// For first group everyone rates everyone "5"
-		foreach($pai->members as $mid => $member1) {
-			foreach($pai->members as $mid2 => $member2) {
+		foreach($pai->get_members() as $mid => $member1) {
+			foreach($pai->get_members() as $mid2 => $member2) {
 				$pai->rate($mid2, 5, $mid);
 			}
 		}
-		foreach($pai->members as $mid => $member1) {
+		foreach($pai->get_members() as $mid => $member1) {
 			$this->assertEquals(5, $pai->get_student_average_rating_received($mid),"Calculated Average Rating Received incorrect");
 			$this->assertEquals(5, $pai->get_student_average_rating_given($mid),"Calculated Average Rating Given incorrect");
 		}
@@ -121,7 +121,7 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 		// For first group everyone rates everyone "5"
 		$exceptioncount = 0;
 		
-		foreach($pai->members as $mid => $member1) {
+		foreach($pai->get_members() as $mid => $member1) {
 			try {
 				$pai->rate($mid, 5, $randomuser->id);
 			}catch (\moodle_exception $e) {
