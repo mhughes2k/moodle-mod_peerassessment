@@ -17,6 +17,7 @@ $string['issues_student'] = 'This activity has not been configured correctly, pl
 $string['scaledisplayformat'] = '{$a->text} ({$a->value})';
 $string['norating'] = '-';
 $string['notamemberofgroup'] = 'You do not belong to a group. Please contact your lecturer / tutor.';
+$string['notamemberofgroup_warning'] = '{$a->affecteduserid} is not a member of the group {$a->groupid}';
 $string['ratedallgroups'] = 'Rated all groups';
 $string['ratedanygroup'] = 'Rated any group';
 $string['ratingscale'] = 'Scale to rate peers against';
@@ -30,3 +31,6 @@ $string['switchgroups'] = 'Switch Group';
 $string['viewreport'] = 'View Report';
 /* Errors */
 $string['unabletoloadgroups'] = 'Unable to load groups';
+$string['raternotingroup'] = 'Rater {$a->rater} is not in the group {$a->groupname}.';
+$string['rateenotingroup'] = 'Ratee {$a->ratee} is not in the group {$a->groupname}.';
+$string['targetsnotingroup'] = 'Neither rater {$a->rater} or ratee {$a->ratee} are in the group {$a->groupname}';

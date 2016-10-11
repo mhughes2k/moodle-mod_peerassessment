@@ -3,6 +3,16 @@
 Template for view.php
 }}
 <h2>{{name}} {{groupname}}</h2>
+{{#errors}}
+<div class="errormessage bg-danger">
+<p>The following errors were found.</p>
+<div>
+<ul>
+<li>{{{.}}}</li>
+</ul>
+</div>
+</div>
+{{/errors}}
 {{#group}}
 	{{#intro}}
 		{{{intro}}}

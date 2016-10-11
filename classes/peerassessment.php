@@ -1,6 +1,8 @@
 <?php
 namespace mod_peerassessment;
-
+use mod_peerassessment\exception;
+use mod_peerassessment\exception\security_exception;
+use mod_peerassessment\exception\invalid_rating_exception;
 /**
  * Manages all of the responses and calculation of peer assessment ratings
  * for a particular group.
@@ -21,8 +23,8 @@ class peerassessment {
 	private $group;
 	
 	/**
-	 * 
-	 * @var unknown
+	 * Array of group members indexed by user id.
+	 * @var array[int] 
 	 */
 	private $members;
 	/**
@@ -129,32 +131,56 @@ class peerassessment {
 	}
 	
 	/**
-	 * DB Transaction for rating action
-	 * @var \moodle_transaction
+	 * Used to hold ratings prior to insertion to DB.
+	 * This is indexed by rater|ratee so that it should never hold more than 1 rating
+	 * @var unknown
 	 */
-	private $rating_transaction;
-	public function start_rating() {
+	private $dbratings;
+	
+	/**
+	 * 
+	 * @throws dml_exception
+	 */
+	public function save_ratings() {
 		global $DB;
-		if (is_null($this->rating_transaction)) {
-			$this->rating_transaction = $DB->start_delegated_transaction();
-		} else {
-			peerassessment_trace("Rating transaction already in progress", DEBUG_DEVELOPER);
+		$rating_transaction = $DB->start_delegated_transaction();
+		if (!empty($this->dbratings)) {
+			foreach($this->dbratings as $r) {
+				$this->validate_rating($r);	
+				if (empty($r->id)) {
+					 peerassessment_trace('Inserting new rating', DEBUG_DEVELOPER);
+					 $r->id = $DB->insert_record('peerassessment_ratings', $r);
+				} else {
+					 peerassessment_trace('Updating existing rating', DEBUG_DEVELOPER);
+					 $DB->update_record('peerassessment_ratings', $r);
+				}
+				$key = "{$r->ratedby}:{$r->userid}";
+				$this->ratings[$key] = $r;
+			}
 		}
+		if (isset($this->dbcomment)) {
+			if (empty($comment->id)) {
+				$DB->insert_record('peerassessment_comments', $this->dbcomment);
+			} else {
+				$DB->update_record('peerassessment_comments', $this->dbcomment);
+			}
+		}
+		$rating_transaction->allow_commit();
+		$this->clear_rating_queue();
 	}
-	public function end_rating() {
-		global $DB;
-		if (!is_null($this->rating_transaction)) {
-			$this->rating_transaction->allow_commit();
-		} else {
-			peerassessment_trace('No Rating Transaction in progress', DEBUG_DEVELOPER);
-		}
+	public function clear_rating_queue() {
+		$this->dbratings = array(); // reset the items waiting for update / insert
+		$this->dbcomment = null;
 	}
 	/**
-	 * Record a peer assessment for a user (in a current group)
+	 * Record a peer assessment for a user (in a current group).
+	 * 
+	 * This can be called as many timesas you like, the data is only persisted to the DB
+	 * when save_ratings() is called.
 	 * @param int $userid
 	 * @param unknown $value
 	 * @param string $ratedbyuserid
-	 * @throws dml_exception
+	 * @throws \peer_assessment\exception\invalid_rating_exception Thrown if the rating isn't valid (e.g. users aren't in the group);
 	 */
 	public function rate($userid, $value, $ratedbyuserid = false) {
 		global $USER, $DB;
@@ -162,14 +188,6 @@ class peerassessment {
 			$ratedbyuserid = $USER->id; 
 		};
 		
-		if (!in_array($ratedbyuserid, array_keys($this->get_members()))) {
-			throw new \moodle_exception('notmemberofgroup', 'peerassessment', '',
-				(object)array(
-					'rater' => $ratedbyuserid,
-					'memberids' => array_keys($this->get_members())
-				)
-			);
-		}
 		
 		if (!isset($this->ratings)) {
 			peerassessment_trace("Ratings not yet loaded", DEBUG_DEVELOPER);
@@ -192,21 +210,9 @@ class peerassessment {
 		}
 		$r->rating = $value;
 		$r->timemodified = time();
-
-		try {
-			if (empty($r->id)) {
-				peerassessment_trace('Inserting new rating', DEBUG_DEVELOPER);
-				$r->id = $DB->insert_record('peerassessment_ratings', $r);
-			} else {
-				peerassessment_trace('Updating existing rating', DEBUG_DEVELOPER);
-				$DB->update_record('peerassessment_ratings', $r);
-			}
-			$this->ratings[$key] = $r;
-		}
-		catch (\dml_exception $ex) {
-		//	peerassessment_trace($ex->getMessage() . $ex->errorcode);
-		throw $ex;
-		}
+		$key = "{$ratedbyuserid}|{$userid}";
+		$this->validate_rating($r);
+		$this->dbratings[$key] = $r;
 	}
 	
 	/**
@@ -222,6 +228,40 @@ class peerassessment {
 		));
 		unset($this->ratings);
 	}
+	
+	/**
+	 * Validates a rating record against the DB.
+	 * @param unknown $rating
+	 */
+	public function validate_rating($rating) {
+		// Check that the person doing the rating is a member of the group
+		if (!in_array($rating->ratedby, array_keys($this->get_members()))) {
+			throw new invalid_rating_exception('notamemberofgroup_warning', 'peerassessment', '',
+				(object)array(
+						'affecteduserid' => $rating->ratedby,
+						'memberids' => array_keys($this->get_members()),
+						'groupid' => $this->group->id
+				)
+			);
+		}
+		
+		// Check that the person being rated is a member of the group
+		if (!in_array($rating->userid, array_keys($this->get_members()))) {
+			throw new invalid_rating_exception('notamemberofgroup_warning', 'peerassessment', '',
+				(object)array(
+						'affecteduserid' => $rating->userid,
+						'memberids' => array_keys($this->get_members()),
+						'groupid' => $this->group->id
+				)
+			);
+				
+		}
+		
+		// TODO check that rating is a valid value on the scale / points
+		
+
+	}
+	private $dbcomment;
 	/**
 	 * Saves a comment by userid against the PA activity
 	 * @param int $userid Moodle ID of user making the comment
@@ -229,10 +269,11 @@ class peerassessment {
 	 */
 	public function comment($userid, $commenttext) {
 		global $DB;
+		// save the comment
 		if ($comment = $DB->get_record('peerassessment_comments', array(
-			'userid' => $userid,
-			'groupid' => $this->group->id
-		))){ 
+				'userid' => $userid,
+				'groupid' => $this->group->id
+		))){
 			// Should we save a copy?
 		} else {
 			$comment = new \stdClass();
@@ -244,11 +285,7 @@ class peerassessment {
 			$comment->groupid = $this->group->id;
 		}
 		$comment->studentcomment = $commenttext;
-		if (empty($comment->id)) {
-			$DB->insert_record('peerassessment_comments', $comment);
-		} else {
-			$DB->update_record('peerassessment_comments', $comment);		
-		}
+		$this->dbcomment = $comment;
 	}
 	private $comments;
 	/**
@@ -318,26 +355,6 @@ class peerassessment {
 		$rs = $DB->get_record_sql($sql, $params);
 		peerassessment_trace("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
 		return $rs->average;
-		
-		
-		/*
-		
-		global $DB;
-		
-		$sql = "SELECT AVG(rating) AS average 
-				FROM {peerassessment_ratings}
-				WHERE peerassessment = ? 
-				AND userid = ?
-				AND groupid = ? ";
-		$params = array($this->instance->id, $userid, $this->group->id);
-		if (!$includeself) {
-			peerassessment_trace('Excluding self', DEBUG_DEVELOPER);
-			$sql .= "AND ratedby <> ?";
-			$params += $userid;
-		}
-		$rs = $DB->get_record_sql($sql, $params);
-		peerassessment_trace("User {$userid} average rating awarded: {$rs->average}", DEBUG_DEVELOPER);
-		return $rs->average;*/
 	}
 	
 	/**

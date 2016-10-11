@@ -22,7 +22,7 @@ Displays UI for recording a user's peer ratings
 <th>{{lastname}}, {{firstname}} ({{userid}})</th>
 {{#scaleitems}}
 <td class='mod_peerassessment rateui ratingcell'>
-<input type="radio" name="rating_{{rater}}|{{ratee}}" value="{{rating}}"></input>
+<input type="radio" name="rating_{{rater}}|{{ratee}}" value="{{rating}}" required></input>
 </td>
 {{/scaleitems}}
 </tr>
@@ -32,7 +32,7 @@ Displays UI for recording a user's peer ratings
 </table>
 <div class="form-group">
 <label for="comment">Comment</label>
-<textarea class="form-control" name="comment" rows="4" cols="30"></textarea>
+<textarea class="form-control" name="comment" rows="4" cols="30" required></textarea>
 </div>
 <input type="submit" value="Submit Ratings" class="btn btn-default"/>
 </form>

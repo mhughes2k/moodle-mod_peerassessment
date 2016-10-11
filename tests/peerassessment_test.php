@@ -82,6 +82,8 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 				$pai->rate($mid2, 1, $mid);
 			}
 		}
+		$pai->save_ratings();
+		
 		foreach($pai->get_members() as $mid => $member1) {
 			$this->assertEquals(1, $pai->get_student_average_rating_received($mid),"Calculated Average Rating Received incorrect");
 			$this->assertEquals(1, $pai->get_student_average_rating_given($mid),"Calculated Average Rating Given incorrect");
@@ -95,6 +97,7 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 				$pai->rate($mid2, 5, $mid);
 			}
 		}
+		$pai->save_ratings();
 		foreach($pai->get_members() as $mid => $member1) {
 			$this->assertEquals(5, $pai->get_student_average_rating_received($mid),"Calculated Average Rating Received incorrect");
 			$this->assertEquals(5, $pai->get_student_average_rating_given($mid),"Calculated Average Rating Given incorrect");
@@ -124,20 +127,14 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 		foreach($pai->get_members() as $mid => $member1) {
 			try {
 				$pai->rate($mid, 5, $randomuser->id);
-			}catch (\moodle_exception $e) {
-				if ($e->errorcode == 'notmemberofgroup') {
+			 } catch (mod_peerassessment\exception\invalid_rating_exception $e) {
+				if ($e->errorcode == 'notamemberofgroup_warning') {
 					$exceptioncount++;
 				}
-			}
+			} 
 		}
 		$this->assertEquals(5, $exceptioncount, "Expected 5 not a member exceptions");
-		
-		/*
-		 foreach($pai->members as $mid => $member1) {
-		 $this->assertEquals(5, $pai->get_student_average_rating_received($mid),"Calculated Average Rating Received incorrect");
-		 $this->assertEquals(5, $pai->get_student_average_rating_given($mid),"Calculated Average Rating Given incorrect");
-		 }*/
-		
+			
 	}
 	/**
 	 * Check has_rated() method.
@@ -159,8 +156,11 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 		
 		$pa->rate($ratee->id, 1, $rater->id);
 		
-		$this->assertTrue($pa->has_rated($rater->id), "Rater should have a rating in activity");
+		$this->assertFalse($pa->has_rated($rater->id), "Rater should not have a rating in activity before save_ratings()");
 		
+		$pa->save_ratings();
+		
+		$this->assertTrue($pa->has_rated($rater->id), "Rater should have a rating in activity");
 		
 		
 	}
