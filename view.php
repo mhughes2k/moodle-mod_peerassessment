@@ -257,12 +257,8 @@ if ($group) {
         //we have a points system.
         peerassessment_trace("Rating is via Points");
         $scalename = "Points";
-        
-        debugging("point scale");
-        // We have an invalid scale
-        //print_error('scalenotfound', 'peerassessment');
+
         $scaleitems = array();
-        //for ($i=$scaleid; $i>=0; $i--) {
         for ($i=1; $i<=$scaleid; $i++) {
             $r = new \mod_peerassessment\rating\ratingelement();
             $r->rating = $i;
@@ -321,7 +317,8 @@ if ($group) {
             'ratings' => array(),
             'scaleitems' => array(),
             'comment'=> $pa_instance->get_comment($member->id),
-            'deletelink' => ''
+            'deletelink' => '',
+            'self' => $member->id == $USER->id
         );
         if ($pa_instance->has_rated($member->id)) {
             $mdata['deletelink'] = $OUTPUT->action_link($deleteratingurl->out(false, array('ratedby' => $member->id)),
@@ -361,8 +358,15 @@ if ($group) {
             $ratingitems = array();        
         }
         $mdata['averagerating_given'] = $pa_instance->get_student_average_rating_given($mid, true);
+        $avggiven = $mdata['averagerating_given'];
+        if (empty($avggiven)) {
+            $mdata['averagerating_given_bound'] = '';
+        } else if ($avggiven < $pa->lowerbound) {
+            $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
+        } else if ($avggiven > $pa->upperbound) {
+            $mdata['averagerating_given_bound'] = 'exceedupperbounds';
+        } 
         if ($scaleid < 0) {
-            $avggiven = $mdata['averagerating_given'];
             $averagescalekey = abs($avggiven) - 1;
             if (abs($avggiven)) {    // Only display if we've gotten to a sensible value.
                 $mdata['averagerating_given'] = get_string('scaledisplayformat', 'peerassessment', 
@@ -394,7 +398,7 @@ if ($group) {
             'lastname' => $member->lastname,
             'firstname' => $member->firstname,
             'userpicture' => $OUTPUT->user_picture($member),
-            'rating' => isset($myratings[$member->id]) ? $myratings[$member->id] : null
+            'rating' => isset($myratings[$member->id]) ? $myratings[$member->id]->rating : null
         );
         
         if ($scaleid < 0 && isset($r['rating'])) {
@@ -460,33 +464,5 @@ if ($mode == MOD_PEERASSESSMENT_MODE_REPORT) {
 } else {
     echo $OUTPUT->render_from_template("mod_peerassessment/view", $tdata);
 }
-/*
-if (!empty($pa->intro)) {
-    echo $OUTPUT->box(format_module_intro('peerassessment', $pa, $cm->id));
-}
 
-if ($force_readonly) {
-    echo $OUTPUT->render_from_template('mod_peerassessment/ratings', $tdata);
-} else {
-    
-    if ($canmanage) {
-        // Staff typically can't rate but can manage
-        echo $OUTPUT->render_from_template('mod_peerassessment/ratings', $tdata);
-        
-        echo $OUTPUT->render_from_template('mod_peerassessment/scalevalues', array('scale'=>$scale, 'scaleitems' => $scaleitems));
-            
-    } 
-    if (groups_is_member($groupid) && $canrate) {
-        // Can rate and not read only so display the rating UI
-        if ($pa_instance->has_rated($USER->id)) {
-            echo $OUTPUT->box(get_string('alreadyrated', 'peerassessment'));
-            echo $OUTPUT->render_from_template('mod_peerassessment/userratings', $tdata);
-        } else{
-            
-            echo $OUTPUT->render_from_template('mod_peerassessment/rateui', $tdata);
-        }
-    }
-}
-
-*/
 echo $OUTPUT->footer();

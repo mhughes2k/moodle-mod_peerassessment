@@ -10,3 +10,15 @@ th .ratingcell {
 	padding:3px;
 	
 }
+
+.mod_peerassessment .self {
+    font-weight:bolder;
+}
+
+.ratingcell .exceedlowerbounds {
+    color: red;
+}
+
+.ratingcell .exceedupperbounds {
+    color: green;
+}

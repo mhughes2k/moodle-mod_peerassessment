@@ -1,6 +1,8 @@
 <?php
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
+MoodleQuickForm::registerElementType('pagrade', $CFG->dirroot.'/mod/peerassessment/classes/output/pagrade.php', '\mod_peerassessment\output\pagrade');
+
 class mod_peerassessment_mod_form extends moodleform_mod {
 
     public function definition() {
@@ -24,6 +26,11 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         /* $mform->addElement('header', 'additionalinfo', get_string('additionalinfoheader', 'peerassessment'));
         $mform->addElement('html', get_string('additionalinfo', 'peerassessment'));
  */
+        $ratingscaleoptions = array();
+        $mform->addElement('pagrade', 'ratingscale', get_string('ratingscale', 'peerassessment'), $ratingscaleoptions);
+        //$mform->disabledIf('ratingscale', 'assessed', 'eq', 0);
+        $mform->addHelpButton('ratingscale', 'ratingscale', 'peerassessment');
+        //$mform->setDefault('ratingscale', $CFG->gradepointdefault);
         
         $mform->addElement('header', 'advancedsettings', 'Advanced');
         $options=array();
@@ -33,43 +40,21 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
         $mform->addElement('select', 'frequency', get_string('frequency', 'peerassessment'), $options);
 
-        /*
-         * Removing as Restrict access can do this better.
-         
-        $mform->addElement('date_time_selector', 'timeavailable',
-                get_string('availablefrom', 'peerassessment'),
-                array('optional' => true)
-        );
-        $mform->addElement('date_time_selector', 'timedue',
-                get_string('submissiondate', 'peerassessment'),
-                array('optional' => true)
-        );*/
-
-        //$mform->setAdvanced('advancedsettings');
-        
-        $ratingscaleoptions = array();
-        $mform->addElement('modgrade', 'ratingscale', get_string('ratingscale', 'peerassessment'), $ratingscaleoptions);
-        //$mform->disabledIf('ratingscale', 'assessed', 'eq', 0);
-        $mform->addHelpButton('ratingscale', 'ratingscale', 'peerassessment');
-        //$mform->setDefault('ratingscale', $CFG->gradepointdefault);
-        
         // TODO Decide if we're keeping upper/lower bound highlighting.
-        /*
         $mform->addElement('text', 'lowerbound', get_string('lowerbound', 'peerassessment'), array('value' => '2.5'));
-		$mform->setType('lowerbound', PARAM_RAW);
+        $mform->setType('lowerbound', PARAM_RAW);
         $mform->addHelpButton('lowerbound', 'lowerbound', 'peerassessment');
         $mform->addElement('text', 'upperbound', get_string('upperbound', 'peerassessment'), array('value' => '3.5'));
-		$mform->setType('upperbound', PARAM_RAW);
+        $mform->setType('upperbound', PARAM_RAW);
 
         $mform->addHelpButton('upperbound', 'upperbound', 'peerassessment');
 
         $mform->addRule('lowerbound', 'Must be numeric', 'numeric', null, 'client');
         $mform->addRule('upperbound', 'Must be numeric', 'numeric', null, 'client');
-		*/
+
         // Decide if we're making this a gradable activity!
-        
         //$this->standard_grading_coursemodule_elements();
-        
+
         $this->standard_coursemodule_elements();
 
         $mform->setExpanded('modstandardelshdr');// Forces common module settings open so we can see the group modes!

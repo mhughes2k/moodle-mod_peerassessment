@@ -29,6 +29,18 @@ If you select **Point**, then there will be a single option for each integer val
 $string['resetpeerassessmentall'] = 'Delete All Peer Ratings';
 $string['switchgroups'] = 'Switch Group';
 $string['viewreport'] = 'View Report';
+
+/* Strings from pagrade form element */
+$string['pagradeerrorbadpoint'] = 'Invalid Grade Value. This must be an integer between 1 and {$a}';
+$string['pagradeerrorbadscale'] = 'Invalid scale selected. Please make sure you select a scale from the selections below.';
+$string['pagrade'] = 'Grade';
+$string['pagrade_help'] = 'Select the type of grading used for this activity. If "scale" is chosen, you can then choose the scale from the "scale" dropdown. If using "point" grading, you can then enter the maximum grade available for this activity.';
+$string['pagrademaxgrade'] = 'Maximum points';
+$string['pagradetype'] = 'Type';
+$string['pagradetypenone'] = 'None';
+$string['pagradetypepoint'] = 'Point';
+$string['pagradetypescale'] = 'Scale';
+
 /* Errors */
 $string['unabletoloadgroups'] = 'Unable to load groups';
 $string['raternotingroup'] = 'Rater {$a->rater} is not in the group {$a->groupname}.';
