@@ -343,9 +343,15 @@ if ($group) {
                 $mdata['ratings'][] = $pa_instance->get_ratings()[$key];
             }
             $mdata['averagerating_received'] = $pa_instance->get_student_average_rating_received($mid, true);
-            
+            $avgrec = $mdata['averagerating_received'];
+            if (empty($avgrec)) {
+                $mdata['averagerating_received_bound'] = '';
+            } else if ($avgrec <= $pa->lowerbound) {
+                $mdata['averagerating_received_bound'] = 'exceedlowerbounds';
+            } else if ($avgrec >= $pa->upperbound) {
+                $mdata['aaveragerating_received_bound'] = 'exceedupperbounds';
+            }
             if ($scaleid < 0) {
-                $avgrec = $mdata['averagerating_received'];
                 $averagescalekey = abs($avgrec) - 1 ;
                 if(abs($avgrec)) {
                     $mdata['averagerating_received'] = get_string('scaledisplayformat', 'peerassessment', 
@@ -361,9 +367,9 @@ if ($group) {
         $avggiven = $mdata['averagerating_given'];
         if (empty($avggiven)) {
             $mdata['averagerating_given_bound'] = '';
-        } else if ($avggiven < $pa->lowerbound) {
+        } else if ($avggiven <= $pa->lowerbound) {
             $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
-        } else if ($avggiven > $pa->upperbound) {
+        } else if ($avggiven >= $pa->upperbound) {
             $mdata['averagerating_given_bound'] = 'exceedupperbounds';
         } 
         if ($scaleid < 0) {
