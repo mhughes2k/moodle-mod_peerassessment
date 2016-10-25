@@ -63,21 +63,21 @@ class mod_peerassessment_mod_form extends moodleform_mod {
     }
     
     function add_completion_rules() {
-    	$mform = & $this->_form;
-    	
-    	$group = array();
-    	$group[] = & $mform->createElement('checkbox', 'completionratingenabled', ' ', get_string('completionrating', 'peerassessment'));
-    	$completionoptions = array(1 => get_string('ratedallgroups', 'peerassessment'), '2' => get_string('ratedanygroups', 'peerassessment'));
-    	$group[] = & $mform->createElement('select', 'completionrating', ' ', $completionoptions );
-    	$mform->setType('completionrating', PARAM_INT);
-    	$mform->addGroup($group, 'completionratinggroup', get_string('completionratinggroup', 'peerassessment'), array(' '), false);
-    	//$mform->addHelpButton('completionratingsgroup', array('completion', get_string('completionratings', 'peerassessment'), 'peerassessment'));
-    	
-    	$mform->disabledIf('completionrating', 'completionratingenabled', 'notchecked');
-    	return array('completionratinggroup');
+        $mform = & $this->_form;
+        
+        $group = array();
+        $group[] = & $mform->createElement('checkbox', 'completionratingenabled', ' ', get_string('completionrating', 'peerassessment'));
+        $completionoptions = array(1 => get_string('ratedallgroups', 'peerassessment'), '2' => get_string('ratedanygroups', 'peerassessment'));
+        $group[] = & $mform->createElement('select', 'completionrating', ' ', $completionoptions );
+        $mform->setType('completionrating', PARAM_INT);
+        $mform->addGroup($group, 'completionratinggroup', get_string('completionratinggroup', 'peerassessment'), array(' '), false);
+        //$mform->addHelpButton('completionratingsgroup', array('completion', get_string('completionratings', 'peerassessment'), 'peerassessment'));
+        
+        $mform->disabledIf('completionrating', 'completionratingenabled', 'notchecked');
+        return array('completionratinggroup');
     }
     
     function completion_rule_enabled($data) {
-    	return (!empty($data['completionratingenabled']) && $data['completionrating']!=0);
+        return (!empty($data['completionratingenabled']) && $data['completionrating']!=0);
     }
 }
