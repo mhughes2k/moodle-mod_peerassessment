@@ -255,8 +255,8 @@ class pagrade /* MoodleQuickForm_pagrade */ extends \MoodleQuickForm_group{
                     return true;
                 };
 
-                $maxgradeexceeded = get_string('modgradeerrorbadpoint', 'mod_peerassessment', get_config('core', 'gradepointmax'));
-                $invalidscale = get_string('modgradeerrorbadscale', 'mod_peerassessment');
+                $maxgradeexceeded = get_string('pagradeerrorbadpoint', 'mod_peerassessment', get_config('core', 'gradepointmax'));
+                $invalidscale = get_string('pagradeerrorbadpoint', 'mod_peerassessment');
                 // When creating the rules the sixth arg is $force, we set it to true because otherwise the form
                 // will attempt to validate the existence of the element, we don't want this because the element
                 // is being created right now and doesn't actually exist as a registered element yet.

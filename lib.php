@@ -17,7 +17,7 @@ function peerassessment_supports($feature) {
 		case FEATURE_COMPLETION_TRACKS_VIEWS:
 			return true;
 		case FEATURE_GRADE_HAS_GRADE:
-			return false;	// TODO to be decided.
+			return true;	// TODO to be decided.
 		case FEATURE_COMPLETION_HAS_RULES:
 			return true;
 		case FEATURE_GRADE_OUTCOMES:
@@ -28,6 +28,9 @@ function peerassessment_supports($feature) {
 			return true;
 		case FEATURE_RATE:
 			return false;
+		case FEATURE_ADVANCED_GRADING:
+		    return false;
+	    	
 		default:
 			return null;
 	}
@@ -42,7 +45,7 @@ function peerassessment_add_instance($data, $mform) {
 		return false;
 	}
 	$data->id=$returnid;
-	//                 peerassessment_grade_item_update($data);
+    peerassessment_grade_item_update($data);
 	return $returnid;
 }
 
@@ -57,7 +60,7 @@ function peerassessment_update_instance($data, $mform) {
 	if (!$returnid = $DB->update_record('peerassessment', $data)) {
 		return false;
 	}
-	//peerassessment_grade_item_update($data);
+	peerassessment_grade_item_update($data);
 	return $returnid;
 }
 
@@ -84,18 +87,44 @@ function peerassessment_delete_instance($id) {
 	//peerassessment_grade_item_delete($data);
 	return $result;
 }
+/*
+function peerassessment_grading_areas_list() {
+    return array('rating'=>get_string('peerassignment', 'peerassignment'));
+}*/
 
 /**
  * Create grade item for given peer assessment
- * @param unknown $peerassessment
+ * @param unknown $data
  * @param unknown $grades
  */
-function peerassessment_grade_item_update($peerassessment, $grades = null) {
+function peerassessment_grade_item_update($data, $grades = null) {
 	global $CFG;
 	if (!function_exists('grade_update')) {
 		require_once("{$CFG->libdir}/gradelib.php");
 	}	
-	// TODO Implement once I understand it.	
+    // based on the data module implementation..
+    $params = array('itemname'=>$data->name, 'idnumber'=>$data->cmidnumber);
+    if ($data->grade == 0) {
+        // No grading
+        $params['gradetype'] = GRADE_TYPE_NONE;
+        
+    } else if ($data->grade > 0) {
+        // Grade Type value
+        $params['gradetype'] = GRADE_TYPE_VALUE;
+        $params['grademax']  = $data->grade;
+        $params['grademin']  = 0;
+        
+    } else if ($data->grade < 0) {
+        // Grade type scale
+        $params['gradetype'] = GRADE_TYPE_SCALE;
+        $params['scaleid']   = -$data->grade;
+    }
+    if ($grades === 'reset') {
+        $params['reset'] =  true;
+        $grades = null;
+    }
+    
+    return grade_update('mod/peerassessment', $data->course, 'mod', 'peerassessment', $data->id, 0, $grades, $params);
 }
 
 function peerassessment_reset_userdata($data) {

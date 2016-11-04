@@ -14,8 +14,26 @@ $string['confirmdelete'] = 'Are you sure you want to delete this user\'s ratings
 $string['introduction'] = 'Introduction';
 $string['issues_staff'] = 'The following problems were identified:';
 $string['issues_student'] = 'This activity has not been configured correctly, please ask your lecturer to access this page and a list of identified issues for them to address will be displayed.';
+$string['lowerbound'] = 'Lower bound';
+$string['lowerbound_help'] = 'Highlight average ratings equal or less than this value';
+$string['upperbound'] = 'Upper bound';
+$string['upperbound_help'] = 'Highlight average ratings equal or greater than this value';
 $string['scaledisplayformat'] = '{$a->text} ({$a->value})';
 $string['norating'] = '-';
+$string['grade'] = 'Grade';
+$string['nogradeinfo'] = 'Grading Peer Assessments';
+$string['nogradeinfo_text'] = '**Grading is disabled by default.** (See the help icon for further information).
+
+There is **no** grading interface within the Peer Assessment activity, you must enter grades via the grade book.';
+$string['nogradeinfo_help'] ='As it is not possible to determine if you would be wanting to give the grade
+to a student on the basis of the ratings they\'ve given or on the basis of the ratings they have recieved grading is disabled by default.
+
+If you wish to be able to give a grade to a user (for what ever reason you choose) you may enable grading. This will create a grade item in the 
+gradebook for this activity.
+        
+It is then up to you to decide what the grade represents to the student.
+';
+$string['grade_help'] ='Select the type of grading used for this activity. If "scale" is chosen, you can then choose the scale from the "scale" dropdown. If using "point" grading, you can then enter the maximum grade available for this activity.';
 $string['notamemberofgroup'] = 'You do not belong to a group. Please contact your lecturer / tutor.';
 $string['notamemberofgroup_warning'] = '{$a->affecteduserid} is not a member of the group {$a->groupid}';
 $string['ratedallgroups'] = 'Rated all groups';
@@ -31,6 +49,7 @@ $string['switchgroups'] = 'Switch Group';
 $string['viewreport'] = 'View Report';
 
 /* Strings from pagrade form element */
+
 $string['pagradeerrorbadpoint'] = 'Invalid Grade Value. This must be an integer between 1 and {$a}';
 $string['pagradeerrorbadscale'] = 'Invalid scale selected. Please make sure you select a scale from the selections below.';
 $string['pagrade'] = 'Grade';

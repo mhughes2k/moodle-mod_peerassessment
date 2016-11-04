@@ -8,7 +8,6 @@ class mod_peerassessment_mod_form extends moodleform_mod {
     public function definition() {
         global $CFG, $COURSE;
         $mform =& $this->_form;
-
         //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
@@ -53,12 +52,21 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addRule('upperbound', 'Must be numeric', 'numeric', null, 'client');
 
         // Decide if we're making this a gradable activity!
-        //$this->standard_grading_coursemodule_elements();
-
+        $this->standard_grading_coursemodule_elements();
+        //$mform->setDefault('grade', null);
+        /*
+        $mform->addHelpButton('grade', 'grade', 'peerassessment');
+        // Insert a note about no grade by default
+        $nogradeinfo = $mform->createElement('static', 'nogradeinfo', get_string('nogradeinfo', 'peerassessment'), markdown_to_html(get_string('nogradeinfo_text', 'peerassessment')));
+        
+        $mform->insertElementBefore($nogradeinfo, 'grade');
+        $mform->addHelpButton('nogradeinfo', 'nogradeinfo', 'peerassessment');
+        */
         $this->standard_coursemodule_elements();
 
         $mform->setExpanded('modstandardelshdr');// Forces common module settings open so we can see the group modes!
         $mform->setDefault('groupmode', 1); // AKA SEPARATEGROUPS
+        $this->apply_admin_defaults();
         $this->add_action_buttons();
     }
     
