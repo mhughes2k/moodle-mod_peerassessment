@@ -9,9 +9,7 @@
  * This step will primarily convert these to have a *points* rating of 1-5 (not a scale).
  * @param unknown $dbmanager
  */
-function mod_peerassessment_upgrade_to_2016092305(&$dbman) {
-    $result = true;
-    $upgradeSql = "UPDATE {$CFG->prefix}peerassessment SET ratingscale = 5 WHERE ratingscale = 0";
-    $result = $result && $dbman->executeSql($updateSql);
-    return $result;
+function mod_peerassessment_upgrade_to_2016092305() {
+    global $DB;
+    return $DB->set_field_select('peerassessment', 'ratingscale', 5, 'ratingscale IS NULL or ratingscale = 0');
 }
