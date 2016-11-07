@@ -83,6 +83,9 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
+        // Migrate all "old" peer assessments to use simple 5 point ratings
+        require_once("{$CFG->dirroot}/mod/peerassessment/db/upgradelib.php");
+        mod_peerassessment_upgrade_to_2016092305($dbman);
         upgrade_mod_savepoint(true, 2016092305, 'peerassessment');
     }
     return $result;
