@@ -1,6 +1,16 @@
 <?php 
 $string['modulename'] = 'Peer Assessment';
 $string['modulenameplural'] = 'Peer Assessments';
+
+$string['modulename_help'] = 'The Peer Assessment activity allows members of groups to rate their peers against a scale. 
+
+It may be used to solicit feedback on:
+
+* Group dynamic
+* Contribution to group work
+
+Or any scenario where a value judgement is being made on peers.'; 
+
 $string['pluginname'] = 'Peer Assessment';
 $string['pluginadministration'] = 'Peer Assessment';
 
