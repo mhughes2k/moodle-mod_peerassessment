@@ -25,7 +25,7 @@ Template for view.php
 			{{>mod_peerassessment/rateui}}
 		{{/canrate}}
 		{{^canrate}}
-			<div class="bg-info">
+			<div class="alert alert-block alert-info">
 			{{#hasrated}}{{#str}}alreadyrated, peerassessment{{/str}}{{/hasrated}}
 			</div>
 			{{#hasrated}}
