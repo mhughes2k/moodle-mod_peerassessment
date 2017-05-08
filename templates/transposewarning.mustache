@@ -1,0 +1,14 @@
+<div class="alert alert-warning alert-block fade in  mod_peerassessment transposewarning notification">
+    <span class="glyphicon glyphicon-remove pull-right mod_peerassessment suppresstransposewarning" aria-hidden="true" title="Hide this message in the future"></span>
+    <p>Please note that the Awarded To and Awarded By have swapped positions from previous version.</p>
+</div>
+
+{{#js}} 
+require(['jquery'], function($) {
+    $('.mod_peerassessment.suppresstransposewarning').on('click', function(e) {
+        console.debug("Suppressing transposition warning");
+        M.util.set_user_preference('mod_peerassessment/showtransposewarning', false);
+        $('.mod_peerassessment.transposewarning').fadeOut();
+    });
+});
+{{/js}}
