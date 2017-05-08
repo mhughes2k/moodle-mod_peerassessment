@@ -298,6 +298,7 @@ class peerassessment {
 		}
 		if (!isset($this->comments)) {
 			$comments = $DB->get_records('peerassessment_comments', array(
+                'peerassessment' => $this->instance->id,
                 'groupid' => $this->group->id
 			));
 			$this->comments = array();
