@@ -51,21 +51,43 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
         // classcatalogue savepoint reached
         upgrade_mod_savepoint(true, 2010120304, 'peerassessment');
     }
-    if ($oldversion < 2016092300) {
+    /*
+     * All of the subsequent updates can be rolled in to a single update later.
+     */
+    if ($oldversion < 2016092305) {
     
-    	// Define field groupid to be added to peerassessment_ratings.
-    	$table = new xmldb_table('peerassessment_ratings');
-    	$field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'ratedby');
+        // Define field groupid to be added to peerassessment_ratings.
+        $table = new xmldb_table('peerassessment_ratings');
+        $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'ratedby');
     
-    	// Conditionally launch add field groupid.
-    	if (!$dbman->field_exists($table, $field)) {
-    		$dbman->add_field($table, $field);
-    	}
-    
-    	// Peerassessment savepoint reached.
-    	upgrade_mod_savepoint(true, 2016092300, 'peerassessment');
+        // Conditionally launch add field groupid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $table = new xmldb_table('peerassessment');
+        $field = new xmldb_field('ratingscale', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, 0, 'introformat');
+        // Conditionally launch add field groupid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('completionrating', XMLDB_TYPE_INTEGER, '1', null, null, null, 0, 'ratingscale');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+   
+        // Define field groupid to be added to peerassessment_ratings.
+        $table = new xmldb_table('peerassessment_comments');
+        $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null, 'studentcomment');
+        // Conditionally launch add field groupid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Migrate all "old" peer assessments to use simple 5 point ratings
+        require_once("{$CFG->dirroot}/mod/peerassessment/db/upgradelib.php");
+        mod_peerassessment_upgrade_to_2016092305($dbman);
+        upgrade_mod_savepoint(true, 2016092305, 'peerassessment');
     }
-    
     return $result;
 
 }

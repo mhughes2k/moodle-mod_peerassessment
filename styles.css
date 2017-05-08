@@ -1,23 +1,27 @@
-/* CSS Document */
-.cavgrecieved {
-  font-weight:bold;
-}
-.cavggiven {
-//  border-left:thin solid black;
-}
-/*
-.lastrow {
-  border-top:thick double #eee;
-}
-*/
-.peerassessment_row {
-    border-top:1px solid grey;
-    border-bottom:1px solid grey;
-}
-.peerassessment_center {
+@CHARSET "UTF-8";
+
+td .mod_peerassessment .ratingtable,
+.ratingcell,
+.ratingcell  {
     text-align:center;
-    width: 50px;
+    padding:7px;
+} 
+
+th .ratingcell {
+    padding:3px;
 }
-.peerassessment_fullwidth {
-width:100%;
+
+.mod_peerassessment .self {
+    font-weight:bolder;
+}
+
+.ratingcell .exceedlowerbounds {
+    color: red;
+}
+
+.ratingcell .exceedupperbounds {
+    color: green;
+}
+.mod_peerassessment.suppresstransposewarning {
+    cursor:pointer;
 }

@@ -1,0 +1,44 @@
+{{!
+@template mod_peerassessment/ratings
+Displays Ratings table
+}}
+<table class='table-responsive mod_peerassessment ratingtable generaltable'>
+<thead>
+<tr><th colspan="2">Awarded To </th><th colspan="{{membercount}}" class='ratingcell'>Awarded By</th></tr>
+<tr><th colspan="2">Name</th>
+{{! TODO loop through the values and display a header for each one }}
+{{#members}}
+<th class='ratingcell'>{{lastname}}, {{firstname}} {{{deletelink}}}</th>
+{{/members}}
+<th class='ratingcell'>Average Received</th>
+</tr>
+</thead>
+<tbody>
+{{#members}} 
+<tr>
+<td>{{{userpicture}}}</td>
+<th>{{lastname}}, {{firstname}}</th>
+{{#ratings}}
+<td class='ratingcell'>
+{{#rating}}{{{rating}}}{{/rating}}
+{{^rating}}-{{/rating}}
+</td>
+{{/ratings}}
+<td class='ratingcell {{averagerating_received_bound}}'>{{averagerating_received}}</td>
+</tr>
+{{/members}}
+<tr>
+<th colspan="2">Average Given</th>
+{{#members}}
+<td class='ratingcell {{averagerating_given_bound}}'>{{averagerating_given}}</td>
+{{/members}}
+</tr>
+<tr>
+<th colspan="2">Comment</th>
+{{#members}}
+<td class=''>{{comment.studentcomment}}</td>
+{{/members}}
+</tr>
+
+</tbody>
+</table>

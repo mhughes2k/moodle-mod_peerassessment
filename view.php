@@ -1,545 +1,476 @@
 <?php
 
+//use mod_peerassessment;
+use mod_peerassessment\exception;
+
 require('../../config.php');
-require_once("lib.php");
+//require_once("{$CFG->dirroot}/mod/peerassessment/locallib.php");
+//set_debugging(DEBUG_NORMAL);
+$id      = required_param('id', PARAM_INT);             // Course Module ID
 
-require_once($CFG->dirroot.'/lib/grouplib.php');
+$cm = get_coursemodule_from_id('peerassessment', $id, 0, false, MUST_EXIST);
+$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+$pa = $DB->get_record('peerassessment', array('id' => $cm->instance), '*', MUST_EXIST);
+require_login($course, false, $cm);
 
-$id = optional_param('id', 0, PARAM_INT);      //course module id;
-$p = optional_param('p', 0, PARAM_INT);     /*  allows this page to work if we get
-                                              the peer assessment id rather than
-                                              cmid.
-                                          */
+const MOD_PEERASSESSMENT_MODE_VIEW = 0 ;
+const MOD_PEERASSESSMENT_MODE_REPORT = 1;
+$mode = optional_param('mode', MOD_PEERASSESSMENT_MODE_VIEW, PARAM_INT);
 
-if ($id) {
-    if (!$cm = get_coursemodule_from_id('peerassessment', $id)) {
-        error("Course Module ID was incorrect");
-    }
+/**
+ * Any error messages to display
+ * @var array $errors
+ */
+$errors = array();
+/**
+ * Exceptions thrown that we've caught (ie we can handle)
+ * @var array $exceptions
+ */
+$exceptions = array();
+/** 
+ * Can the user modify their ratings or make them in the 1st place.
+ * @var bool $force_readonly
+ */
+$force_readonly = false;
 
-    if (!$course = $DB->get_record('course', array('id'=>$cm->course))) {
-        error("Course is misconfigured");
-    }
+/**
+ * Template Data
+ * @var array $tdata
+ */
+$tdata = array();
 
-    if (!$peerassessment =  $DB->get_record(PA_TABLE, array('id'=>$cm->instance))) {
-        error("Course module is incorrect");
-    }
+// Mark as viewed
+$completion = new completion_info($course);
+$completion->set_module_viewed($cm);
 
-} else {
-
-    if (! $peerassessment =  $DB->get_record('peerassessment', array('id'=>$p))) {
-        print_error('Course module is incorrect');
-    }
-    if (! $course = $DB->get_record('course', array('id'=>$peerassessment->course))) {
-        print_error('Course is misconfigured');
-    }
-    if (! $cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id, $course->id)) {
-        print_error('Course Module ID was incorrect');
-    }
-    $id=$cm->id;
-}
-
-require_course_login($course, true, $cm);
+$PAGE->set_title($pa->name);
+$PAGE->set_heading($course->fullname);
 
 $context = context_module::instance($cm->id);
-
-// show some info for guests
-if (isguestuser()) {
-    $navigation = build_navigation('', $cm);
-    echo $OUTPUT->header(format_string($peerassessment->name));
-
-    $wwwroot = $CFG->wwwroot.'/login/index.php';
-    if (!empty($CFG->loginhttps)) {
-        $wwwroot = str_replace('http:', 'https:', $wwwroot);
-    }
-
-    notice_yesno(get_string('noguests', 'chat').'<br /><br />'.get_string('liketologin'),
-            $wwwroot, $CFG->wwwroot.'/course/view.php?id='.$course->id);
-
-    echo $OUTPUT->footer($course);
-    exit;
-
-}
-
-$alreadycompleted = false;
-
-$comparetime = time();
-switch($peerassessment->frequency) {
-    case PA_FREQ_ONCE:
-        //find out if the user has completed this acitivy AT ALL
-        if (
-            $ratings = $DB->get_records_select('peerassessment_ratings',
-            "ratedby = {$USER->id} AND peerassessment={$peerassessment->id}")
-        ) {
-            $alreadycompleted = PA_COMPLETED;
-        }
-        break;
-    case PA_FREQ_WEEKLY:
-        $oneweekago =$comparetime - PA_ONE_WEEK;
-        //find out if the user has completed this acitivy within the last week
-        if ($ratings = $DB->get_records_select('peerassessment_ratings',
-                "timemodified>{$oneweekago} AND peerassessment={$peerassessment->id}")
-        ) {
-            //we've got a rating record(s) that are were modified more recenly than a week ago
-            $alreadycompleted = PA_COMPLETED_THIS_WEEK;
-        }
-        break;
-    case PA_FREQ_UNLIMITED:
-    break;
-}
+$canmanage = has_capability('mod/peerassessment:viewreport', $context, $USER);
+$isadmin = false; //in_array($USER->id, array_keys(get_admins()));
+$canrate = has_capability('mod/peerassessment:recordrating', $context, $USER, false);
+if (!$canmanage) {
+    $mode = MOD_PEERASSESSMENT_MODE_VIEW;
+} 
 
 
+// Handle data entry
 $data = data_submitted();
-if ($data) {
-    if (!empty($data->cancel)) {
-        //user clicked on the cancel button;
-        redirect($CFG->wwwroot.'/course/view.php?id='.$course->id);
-        exit();
+if ($data) {    
+    require_sesskey();
+    if (!$canrate) {
+        // user doesn't hold the capability to rate in this assignment
+        print_error('cantrate', 'peerassessment');
     }
-    require_capability('mod/peerassessment:recordrating', $context);
-    if ($alreadycompleted && $peerassessment->canedit) {
-        //we probably have to do an update on each of the existing ratings
-        $comments = $data->comments;
-        $submittime = time();
-        foreach ((array)$data as $name => $value) {
+    
+    // Validate this 
+    $groupid = required_param('groupid', PARAM_INT);
 
-            if (substr(strtolower($name), 0, 7) =='rating_') {
-                //have a user rating
-                //fetch the existing rating
-                $userid = substr($name, 7);
-                $select = "SELECT *
-                             FROM {$CFG->prefix}peerassessment_ratings
-                            WHERE peerassessment = {$peerassessment->id}
-                              AND ratedby = {$USER->id} AND userid={$userid}";
-                $ratings = $DB->get_records_sql($select);
-                if ($ratings === false) {
-                    //we have a form but for a user that we' haven't got a previous rating for so we need to insert it.
-                    echo 'Inserting rating for a new member to group.';
-                    $ins = new stdClass;
-                    $ins->ratedby = $USER->id;
-                    $ins->peerassessment = $peerassessment->id;
-                    $ins->userid=$userid;
-                    $ins->rating = $value;
-                    $ins->timemodified = $submittime;
-                    if (!$result = $DB->insert_record('peerassessment_ratings', $ins)) {
-                        $PAGE->set_url('/mod/peerassessment/view.php');
-                        echo $OUTPUT->header();
-                        print_error('failedtosaverating', 'peerassessment');
-                        echo $OUTPUT->footer();
-                        exit();
-                    }
-                } else {
-                    echo 'Updating existing';
-                    foreach ($ratings as $rating) {
-
-                        $ins = new stdClass;
-                        $ins->id = $rating->id;
-                        $ins->rating = $value;
-                        $ins->timemodified = $submittime;
-                        if (!$result = $DB->update_record('peerassessment_ratings', $ins)) {
-                            $PAGE->set_url('/mod/peerassessment/view.php');
-                            echo $OUTPUT->header();
-                            print_error('failedtosaverating', 'peerassessment');
-                            echo $OUTPUT->footer();
-                            exit();
-                        }
-                    }
-                }
-            }
-        }
-        if ($comments !='') {
-/*            $co = $DB->get_record('peerassessment_comments', array('userid' => $USER->id, 'peerassessment' => $peerassessment->id));
-            $co->timemodified= $submittime;
-            $co->studentcomment=$comments;
-            if (!$DB->update_record('peerassessment_comments', $co)) {
-                $PAGE->set_url('/mod/peerassessment/view.php');
-                echo $OUTPUT->header();
-                print_error('failedtosaverating', 'peerassessment');
-                echo $OUTPUT->footer();
-                exit();
-            }
-*/            $co = $DB->get_record('peerassessment_comments', array('userid' => $USER->id, 'peerassessment' => $peerassessment->id));
-            if (!$co) {
-            	$co->userid=$USER->id;
-            	$co->peerassessment=$peerassessment->id;
-            	$co->timecreated= time();
-            	$co->timemodified= $submittime;
-            	$co->studentcomment=$comments;
-            	if (!$DB->insert_record('peerassessment_comments', $co)) {
-            		$PAGE->set_url('/mod/peerassessment/view.php');
-            		echo $OUTPUT->header();
-            		print_error('failedtosaverating', 'peerassessment');
-            		echo $OUTPUT->footer();
-            		exit();
-            	}
-
-            } else {
-            	$co->timemodified= $submittime;
-            	$co->studentcomment=$comments;
-	            if (!$DB->update_record('peerassessment_comments', $co)) {
-	                $PAGE->set_url('/mod/peerassessment/view.php');
-	                echo $OUTPUT->header();
-	                print_error('failedtosaverating', 'peerassessment');
-	                echo $OUTPUT->footer();
-	                exit();
-	            }
-            }
-        }
-    } else if (!$alreadycompleted) {
-        $comments = $data->comments;            //TODO WE NEED SAVE THIS
-        $success = true;
-        $submittime = time();// so the ratings are all at the same time
-        foreach ((array)$data as $name => $value) {
-            if (substr(strtolower($name), 0, 7) == 'rating_') {
-                //have a user rating
-                $userid = substr($name, 7);
-                $ins = new stdClass;
-                $ins->ratedby = $USER->id;
-                $ins->peerassessment = $peerassessment->id;
-                $ins->userid=$userid;
-                $ins->rating = $value;
-                $ins->timemodified = $submittime;
-                //$ins->studentcomment  = $comments;  //this will overwrite
-                $result = $DB->insert_record('peerassessment_ratings', $ins);
-                if (!$result) {
-                    $PAGE->set_url('/mod/peerassessment/view.php');
-                    echo $OUTPUT->header();
-                    print_error('failedtosaverating', 'peerassessment');
-                    echo $OUTPUT->footer();
-                    exit();
-                }
-            }
-        }
-        if ($comments !='') {
-            $co = new stdClass;
-            $co->userid=$USER->id;
-            $co->peerassessment=$peerassessment->id;
-            $co->timecreated= $submittime;
-            $co->timemodified= $submittime;
-            $co->studentcomment=$comments;
-            if (!$co_result = $DB->insert_record('peerassessment_comments', $co)) {
-                $PAGE->set_url('/mod/peerassessment/view.php');
-                echo $OUTPUT->header();
-                print_error('failedtosaverating', 'peerassessment');
-                echo $OUTPUT->footer();
-                exit();
-            }
-        }
+    // Check user is member of the group
+    $group = groups_get_group($groupid);
+    if (!$group) {
+        // Fail as group trying to rate for doesn't exist
+        print_error('groupdoesnotexist', 'peerassessment');
     }
-    /*
-     * else we are already completed but can't edit we really shoulnd't do anything
-    */
-    peerassessment_update_grades($peerassessment);
-    //mark as completed
-    $completion = new completion_info($course);
-    //get the cm for the peer assessment
-    $completion_cm = get_coursemodule_from_instance('peerassessment', $peerassessment->id);
-    $completion->set_module_viewed($completion_cm);
-    redirect($CFG->wwwroot."/course/view.php?id={$course->id}");
-    exit();
-}
-
-
-$params = array();
-$PAGE->set_title($course->shortname.': ' .$course->fullname);
-$PAGE->set_url('/mod/peerassessment/view.php', $params);
-//check what frequency this is running at and if it should be displayed for the user.
-$ratings = false;
-echo $OUTPUT->header();
-
-\mod_peerassessment\event\peerassessment_viewed::create(['context' => $context])->trigger();
-
-// Initialize $PAGE, compute blocks
-
-$assignment_cm = false;
-$group = false;
-$groupmode = false;
-$group_context=false;
-if ($peerassessment->assignment) {
-    if (!$assignment_cm = get_coursemodule_from_id('assignment', $peerassessment->assignment)) {
-    	notice(get_string('noassignment', 'peerassessment'));
-        echo $OUTPUT->footer($course);
-        exit();
+    if (!groups_is_member($groupid, $USER->id)) {
+        print_error('notamemberofgroupspecified', 'peerassessment');
     }
-    $groupmode = groups_get_activity_groupmode($assignment_cm, $course);
-    $groupid = groups_get_activity_group($assignment_cm);
-//    $group_context = get_context_instance(CONTEXT_MODULE, $assignment_cm->id);
-    $group_context = context_module::instance($assignment_cm->id);
-    if ($groupmode == NOGROUPS) {
-        if (has_capability('moodle/course:manageactivities', $context, $USER->id)) {
-            notice(get_string('associatedactivitynogroupsstaff', 'peerassessment'));
+    
+    // Construct a PA instance
+    $pa_instance = new \mod_peerassessment\peerassessment($pa, $groupid);
+    if ($pa_instance->has_rated($USER->id)) {
+        print_error('alreadyrated', 'peerassessment');
+    }
+    
+    if ($data->rate) {
+        $oktorate = false;
+        // Now we're good to go!
+        // extract rating_{rater|ratee} items
+        $ratingstostore = array();
+        $memberids = array_keys($pa_instance->get_members());
+        foreach($data as $key=>$value) {
+            if (!is_null($r = \mod_peerassessment\peerassessment::extract_rating_values($key))) {
+                // it is a rating!
+                $r->rating = $value;
+                $ratingstostore[] = $r;
+            }
+        }
+        
+        try {
+            foreach($ratingstostore as $r2s) {
+                $pa_instance->rate($r2s->ratee, $r2s->rating, $USER->id);
+            }
+            $pa_instance->comment($USER->id, $data->comment);
+        }
+        catch (mod_peerassessment\exception\security_exception $ex) {
+            // This is a more serious attempt to bypass things
+            throw $ex;
+        }
+        catch (mod_peerassessment\exception\invalid_rating_exception $ex) {
+            $exceptions[] = $ex;
+        }
+        catch (mod_peerassessment\exception\peerassessment_exception $ex) {
+            $exceptions[] = $ex;
+        }
+        if (empty($exceptions)) {
+            $pa_instance->save_ratings();
+            $completion = new completion_info($course);
+            if ($completion->is_enabled($cm) && $pa->completionrating) {
+                $completion->update_state($cm, COMPLETION_COMPLETE);
+            }
+            redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
+            exit();
         } else {
-            notice(get_string('associatedactivitynogroups', 'peerassessment'));
+            var_dump($exceptions);
         }
-        echo $OUTPUT->footer($course);
+        // We fall through to displaying the form again
     }
-} else {
-    $groupmode = groups_get_activity_groupmode($cm);
-    $groupid = groups_get_activity_group($cm, true);
-//    $group_context = get_context_instance(CONTEXT_MODULE, $cm->id);
-    $group_context = context_module::instance($cm->id);
-}
+} 
 
-$canrecordrating = has_capability('mod/peerassessment:recordrating', $context, $USER->id);
-$canviewreport = has_capability('mod/peerassessment:viewreport', $context, $USER->id);
+$delete = optional_param('delete', false, PARAM_TEXT);
+if($delete === 'delete') {
+    require_sesskey();
+    //     Validate this 
+    $groupid = required_param('groupid', PARAM_INT);
 
-if (!$group = groups_get_group($groupid)  ) {
-    if (!$canviewreport) {
-        notice(get_string('nogroup', 'peerassessment'));
-
-        echo $OUTPUT->footer($course);
+    // Check user is member of the group
+    $group = groups_get_group($groupid);
+    if (!$group) {
+        // Fail as group trying to rate for doesn't exist
+        print_error('groupdoesnotexist', 'peerassessment');
         exit();
     }
-}
-/*
- *  else we couldn't get a group
- *  This could be due to the fact that we've got "DOANYTHING" rights
- *  or we're just not in a group
-*/
-if (!$canrecordrating & !$canviewreport) {
-    $a = new stdClass;
-    $a->id = $cm->id;
-    notice(get_string('mustbestudent', 'peerassessment', $cm->id));
-    echo $OUTPUT->footer($course);
+
+    if (!$canmanage) {
+        print_error('onlystaffcandeletearating', 'peerassessment');
+        exit();
+    }
+    $ratedbyid = required_param('ratedby', PARAM_INT);
+    $pa_instance = new \mod_peerassessment\peerassessment($pa, $groupid);
+    $pa_instance->delete_ratings($ratedbyid);
+    redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
     exit();
 }
+// Deal with broken setups really early, not using templates
+$problems = array();
 
-if ($members = groups_get_members($groupid)) {
-    if (is_array($members) && !in_array($USER->id, array_keys($members))) {//$USER->id)) {
-        notice(get_string('usernotactuallyingroup', 'peerassessment'));
-        add_to_log($course->id, '
-                peerassessment',
-                'rate other',
-                "",
-                "Attempted to record attempt for group user wasn't a member of.",
-                $cm->id
-        );
-        echo $OUTPUT->footer($course);
-        exit();
-    }
+if ($cm->groupmode == 0) {
+    $problems[] = 'Activity requires Group mode to be set to either Separate or Visible groups';
 }
-if ($group) {
-    $a = new stdClass();
-    $a->peerassessmentname = $peerassessment->name;
-    $a->groupname = "";
-    if (substr(strtolower($group->name), 0, 6) == 'group ') {
-        $a->groupname =substr($group->name, 6);
+if ($pa->ratingscale == 0) {
+    $problems[] = "Rating Scale Type is to None. This means there will be no options for the students to rate against.";
+}
+if(count($problems) >0) {
+    $PAGE->set_url('/mod/peerassessment/view.php', array('id' => $id));
+    $editlink = new moodle_url('/course/modedit.php', array('update'=> $id, 'return'=>1));
+    $btn = $OUTPUT->single_button($editlink, get_string('editsettings'));
+    $PAGE->set_button($btn);
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading($pa->name);
+    if ($canmanage) {
+        echo $OUTPUT->box_start('generalbox bg-danger');
+        echo html_writer::tag('p',get_string('issues_staff', 'peerassessment'));
+        echo html_writer::start_tag('ol');
+        foreach($problems as $p) {
+            echo html_writer::tag('li', $p);
+        }
+        echo html_writer::end_tag('ol');
+        echo $btn;
+        echo $OUTPUT->box_end();
     } else {
-        $a->groupname =$group->name;
+        echo $OUTPUT->box(get_string('issues_student', 'peerassessment'), 'generalbox bg-warning');
     }
-    echo $OUTPUT->heading(get_string('peerassessmentactivityheadingforgroup', 'peerassessment', $a));
-} else {
-    echo $OUTPUT->heading(get_string('modulename', 'peerassessment'));
-}
+    echo $OUTPUT->footer();
+    exit();
+    
+} 
 
+/**
+ * Peer Assessment Instance
+ * @var peerassessment $pa_instance
+ */
+$pa_instance = null;
 $groups = groups_get_activity_allowed_groups($cm);
-echo '<table id="layout-table"><tr>';
-$lt = (empty($THEME->layouttable)) ? array('left', 'middle', 'right') : $THEME->layouttable;
-foreach ($lt as $column) {
-    switch ($column) {
-        case 'left':
+$groupid = optional_param('groupid', false, PARAM_INT);
+if ($groupid == false && count($groups) >0 ) {
+    $groupid = groups_get_activity_group($cm);
+    // Choose the "active" one
+    $group = array_values($groups)[0];
+    $groupid = $group->id;    
+}
+$group = false;
+if ($groupid) {
+    $group = groups_get_group($groupid);
+    
+    if (!$canmanage & !groups_is_member($group->id, $USER->id)) {
+        $PAGE->set_url(new moodle_url('/mod/peerassessment/view.php', array('id' =>$id, 'groupid'=>$groupid)));
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading($pa->name);
+        echo $OUTPUT->box_start();
+        echo $OUTPUT->error_text(get_string("notamemberofgroup", "peerassessment"));
+        echo $OUTPUT->box_end();
+        //print_error
+        echo $OUTPUT->footer();
+        exit();
+    } else {
 
-          break;
-        case 'middle':
-	  echo "<td>";
-          {
-            if ($peerassessment->intro != '') {
-                echo $OUTPUT->box_start();
-                echo format_text($peerassessment->intro, $peerassessment->introformat);
-                echo $OUTPUT->box_end();
-            }
-            if ($canviewreport) {
-                if (!$group) {
-                    echo $OUTPUT->box_start();
-                    print_report_select_form($id, $groups, $groupid);
-                    echo $OUTPUT->box_end();
-                } else {
-                    echo '<div class="reportlink">';
-                    print_report_select_form($id, $groups, $groupid);
-                    echo '</div>';
-                }
-            }
-            $editresponses = $alreadycompleted && $peerassessment->canedit;
-            switch($alreadycompleted) {
-                case PA_COMPLETED:
-                    if ($peerassessment->canedit) {
-                        echo $OUTPUT->box(get_string('alreadycompletedcanedit', 'peerassessment'));
-                    } else {
-                        notice(get_string('alreadycompleted', 'peerassessment'));
-                    }
-                    break;
-                case PA_COMPLETED_THIS_WEEK:
-                    if ($peerassessment->canedit) {
-                        echo $OUTPUT->box(get_string('notenoughtimepassedcanedit', 'peerassessment'));
-                    } else {
-                        notice(get_string('notenoughtimepassed', 'peerassessment'));
-                    }
-                    break;
-            }
-            $co = false;
-            if (!$alreadycompleted | $editresponses) {
-                $co = $DB->get_record('peerassessment_comments',
-                        array(
-                                'userid' => $USER->id,
-                                'peerassessment' => $peerassessment->id
-                                )
-                );
-                //check that the opening / due times are still OK
-                $ctime = time();
-                if ($peerassessment->timeavailable!=0 &&
-                    $peerassessment->timeavailable > time() &&
-                    !has_capability('mod/peerassessment:viewreport', $context)
-                ) {
-                    //and !has_capability('mod/assignment:grade', $this->context)      // grading user can see it anytime
-                    //and $this->assignment->var3) {                                   // force hiding before available date
-                    echo $OUTPUT->box_start();
-//			print_simple_box_start('center', '', '', 0, 'generalbox', 'intro');
-                    print_string('notavailableyet', 'peerassessment');
-		    echo $OUTPUT->box_end();
-//                    print_simple_box_end();
-                } else if (
-                        $peerassessment->timedue!=0
-                        && $peerassessment->timedue < time()
-                        && !has_capability('mod/peerassessment:viewreport', $context)
-                ) {
-                    echo $OUTPUT->box_start('center', '', '', 0, 'generalbox', 'intro');
-                    print_string('expired', 'peerassessment');
-                    echo $OUTPUT->box_end();
-                } else {
-                    if ($canrecordrating && $group) {
-			echo $OUTPUT->container_start();
-                        echo '<form  method="post">';
-                        echo "<input type='hidden' name='cmid' value='{$cm->id}'/>";
-                        echo '<table id="members">';
-                        $strlo = get_string('low', 'peerassessment');
-                        $strho = get_string('high', 'peerassessment');
-                        $strname = get_string('name', 'peerassessment');
-                        $strcommenthelp = get_string('commenthelp', 'peerassessment');
-                        echo "<tr><th></th><th>$strlo</th><th></th><th/><th></th><th colspan='2'>$strho</th></tr>";
-                        echo "<tr><th>$strname</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>";
-                        if ($members) {
-                            foreach ($members as $user) {
-                                if (!has_capability('mod/peerassessment:recordrating', $context, $user->id)) {
-                                    continue;
-                                }
-                                echo "<tr class='peerassessment_row'>";
-                                echo '<td>';
-                                echo "<a href='{$CFG->wwwroot}/user/view.php?id={$user->id}' target='_blank'>";
-                                if ($user->id == $USER->id) {
-                                    echo "<strong>{$user->lastname}, {$user->firstname}</strong>";
-                                } else {
-                                    echo "{$user->lastname}, {$user->firstname}";
-                                }
-                                echo "</a>";
-                                echo '</td>';
-                                if ($editresponses) {
-                                    $select = "peerassessment={$peerassessment->id}
-                                            AND ratedby ={$USER->id}
-                                            AND userid={$user->id}";
-                                    $lastratingtime = $DB->get_field_select(
-                                            'peerassessment_ratings',
-                                            'max(timemodified) as Timestamp',
-                                            $select
-                                    );
-                                    $previousresponses = false;
-                                    if ($lastratingtime !='') {
-                                        $previousresponses = $DB->get_records_select(
-                                                'peerassessment_ratings',
-                                                $select . " AND timemodified =$lastratingtime"
-                                        );
-                                    }
-                                    if ($previousresponses !== false) {
-                                        foreach ($previousresponses as $prev) {
-                                            echo "<td class='peerassessment_center'>";
-                                            echo "<input type='radio' name='rating_{$prev->userid}' ";
-                                            if ($prev->rating == 1) {
-                                                echo 'checked ';
-                                            }
-                                            echo "value='1'></td>";
-                                            echo "<td class='peerassessment_center'>";
-                                            echo "<input type='radio' name='rating_{$prev->userid}' ";
-                                            if ($prev->rating == 2) {
-                                                echo 'checked ';
-                                            }
-                                            echo "value='2'></td>";
-                                            echo "<td class='peerassessment_center'>";
-                                            echo "<input type='radio' name='rating_{$prev->userid}' ";
-                                            if ($prev->rating == 3) {
-                                                echo 'checked ';
-                                            }
-                                            echo "value='3'></td>";
-                                            echo "<td class='peerassessment_center'>";
-                                            echo "<input type='radio' name='rating_{$prev->userid}' ";
-                                            if ($prev->rating == 4) {
-                                                echo 'checked ';
-                                            }
-                                            echo "value='4'></td>";
-                                            echo "<td class='peerassessment_center'>";
-                                            echo "<input type='radio' name='rating_{$prev->userid}' ";
-                                            if ($prev->rating == 5) {
-                                                echo 'checked ';
-                                            }
-                                            echo "value='5'></td>";
-                                        }
-                                    } else {
-                                        echo "<td class='peerassessment_center'>";
-                                        echo "<input type='radio' name='rating_{$user->id}' value='1'></td>";
-                                        echo "<td class='peerassessment_center'>";
-                                        echo "<input type='radio' name='rating_{$user->id}' value='2'></td>";
-                                        echo "<td class='peerassessment_center'>";
-                                        echo "<input type='radio' name='rating_{$user->id}' value='3'></td>";
-                                        echo "<td class='peerassessment_center'>";
-                                        echo "<input type='radio' name='rating_{$user->id}' value='4'></td>";
-                                        echo "<td class='peerassessment_center'>";
-                                        echo "<input type='radio' name='rating_{$user->id}' value='5'></td>";
-                                        echo "<td class='peerassessment_center'>*</td>";
-                                    }
-                                } else {
-                                    echo "<td class='peerassessment_center'>";
-                                    echo "<input type='radio' name='rating_{$user->id}' value='1'></td>";
-                                    echo "<td class='peerassessment_center'>";
-                                    echo "<input type='radio' name='rating_{$user->id}' value='2'></td>";
-                                    echo "<td class='peerassessment_center'>";
-                                    echo "<input type='radio' name='rating_{$user->id}' value='3'></td>";
-                                    echo "<td class='peerassessment_center'>";
-                                    echo "<input type='radio' name='rating_{$user->id}' value='4'></td>";
-                                    echo "<td class='peerassessment_center'>";
-                                    echo "<input type='radio' name='rating_{$user->id}' value='5'></td>";
-                                }
-                                echo '</tr>';
-                            }
-                        } else {
-                            echo "<tr><td>".get_string('nomembersfound', 'peerassessment').'</td></tr>';
-                        }
-                        echo "<tr><th colspan='6'>Comments</th></tr>";
-                        echo "<tr><td colspan='6'>$strcommenthelp</td></tr>";
-
-                        echo "<tr><td colspan='6'>";
-                        echo "<textarea name='comments' rows='5' columns='40' class='peerassessment_fullwidth'>";
-                        //really should display existing comment
-                        if ($co) {
-                            echo $co->studentcomment;
-                        }
-                        echo "</textarea></td></tr>";
-                        echo "<tr><th colspan='6'>";
-                        echo "<input type='submit' value='Save'/>";
-                        echo "<input type='submit' name='cancel' value='Cancel'/>";
-                        echo "</td></tr>";
-                        echo '</table>';
-                        echo '</form>';
-			echo $OUTPUT->container_end();
-                    } else {
-                        if (!$group) {
-                            echo $OUTPUT->box(get_string('nogroup', 'peerassessment'));
-                        }
-                    }
-                }
-            }
-        } echo '<!--end middle//-->';
-	echo "</td>";
-        break;
-        case 'right':
-            break;
     }
 }
-echo '</tr></table>';//should fix #1009
-echo $OUTPUT->footer($course);
+
+// Prepare shared Data
+// Most of this is all about marshalling the data from the PeerAssessment object
+// into a format that is easily used in the mustache templates.
+$tdata['cmid'] = $id;    // Page data first
+$tdata['sesskey'] = sesskey();
+
+// Permission data
+$tdata['canmanage'] = $canmanage;
+$tdata['pagemode'] = $mode;
+// Activity Data
+$tdata['name'] = $pa->name; 
+$tdata['intro'] = format_module_intro('peerassessment', $pa, $cm->id);
+foreach($exceptions as $ex) {
+    $errors[] = $ex->getMessage();
+}
+$tdata['errors'] = $errors;
+
+if ($group) {
+    /* Initialise variables */
+    $scaleitems = null;
+    $scalename = null;
+
+    $pa_instance = new mod_peerassessment\peerassessment($pa, $group->id);
+    
+    // Prepare rating scales for rating UI as it saves multiple loops later!
+    $scaleid = (int)$pa->ratingscale;    // NOTE Scales are negative, points are +
+    if ($scaleid < 0) {
+        peerassessment_trace("Rating is via Scale {$scaleid}");
+        if ($scale = $DB->get_record('scale', array('id'=> (-$scaleid)))) {
+            $scaleitems = \mod_peerassessment\peerassessment::make_ratings_for_template_from_list($scale->scale);
+            $scalename = $scale->name;
+            $tdata['scaleitems'] = array_values($scaleitems);
+            $tdata['scalecount'] = count($scaleitems);
+            $tdata['scalename'] = $scalename;
+        }
+    } else {
+        //we have a points system.
+        peerassessment_trace("Rating is via Points");
+        $scalename = "Points";
+
+        $scaleitems = array();
+        for ($i=1; $i<=$scaleid; $i++) {
+            $r = new \mod_peerassessment\rating\ratingelement();
+            $r->rating = $i;
+            $r->name = ' ' .$i .'/'. $scaleid. ' ';
+            $scaleitems[] = $r;
+        }
+        $tdata['scaleitems'] = $scaleitems;
+
+    }
+    $tdata['isscale'] = ($scaleid < 0);
+    $tdata['scalecount'] = count($scaleitems);
+    $tdata['scalename'] = $scalename;
+    
+    $hasrated = $pa_instance->has_rated($USER->id);
+    $deleteratingurl = new moodle_url('/mod/peerassessment/view.php', array(
+        'id' => $id, 'groupid'=>$groupid, 'delete' => 'delete', 'sesskey' => sesskey(), 'ratedby'=> false, 'mode' => $mode)
+    );
+    
+    $tdata['canrate'] = $canrate & groups_is_member($group->id, $USER->id) & !$hasrated ;
+    $tdata['hasrated'] = $hasrated;
+    $tdata['isadmin'] = $isadmin;
+    $tdata['ratings'] = array();
+    $tdata['members'] = array();//array_values($pa_instance->members);
+    $tdata['ratings'] = $pa_instance->get_ratings();
+
+    $tdata['group'] = $group;
+    $tdata['groupid'] = $groupid;
+    $tdata['groupname'] = $group->name;
+    $tdata['membercount'] = count($pa_instance->get_members());
+    $tdata['comment'] = $pa_instance->get_comment();
+    /* Group Jump box */
+    $tdata['groupselect'] = '';
+    if(count($groups) > 1) {
+        $groupoptions = array_map(function($o) {
+            return $o->name;
+        }, $groups);
+        $tdata['groupselect'] = $OUTPUT->single_select(
+                new \moodle_url('/mod/peerassessment/view.php', array(
+                        'id' => $id,
+                        'mode' => $mode
+                )),
+                'groupid', 
+                $groupoptions,
+                $formid = null, 
+                $attributes = array('label' => get_string('switchgroups', 'peerassessment'))
+                );
+    }
+    
+    foreach($pa_instance->get_members() as $mid => $member) {
+        
+        $mdata = array(
+            'userid' => $member->id,
+            'lastname' => $member->lastname,
+            'firstname' => $member->firstname,
+            'userpicture' => $OUTPUT->user_picture($member),
+            'ratings' => array(),
+            'scaleitems' => array(),
+            'comment'=> $pa_instance->get_comment($member->id),
+            'deletelink' => '',
+            'self' => $member->id == $USER->id
+        );
+        if ($pa_instance->has_rated($member->id)) {
+            $mdata['deletelink'] = $OUTPUT->action_link($deleteratingurl->out(false, array('ratedby' => $member->id)),
+                $OUTPUT->pix_icon('t/delete',get_string('delete')),
+                new confirm_action(get_string('confirmdelete', 'peerassessment'))
+            );
+        }
+        peerassessment_trace("Ratings awarded to {$member->id}", DEBUG_DEVELOPER);
+        foreach($pa_instance->get_members() as $mid2 => $member2) {
+            $key = "{$mid}:{$mid2}";
+            $rating = $pa_instance->get_ratings()[$key];
+            if ($scaleid < 0 && isset($rating)) {
+                $scalekey = ($rating->rating) - 1;
+                peerassessment_trace("Rating:{$rating->rating}, Scalekey: $scalekey, Name:{$scaleitems[$scalekey]->name}");
+                $mdata['ratings'][] = array('rating' => get_string('scaledisplayformat', 'peerassessment',
+                    array(
+                        'text' => $scaleitems[$scalekey]->name,
+                        'value'=> $rating->rating
+                    ))
+                );
+            } else {
+                $mdata['ratings'][] = $pa_instance->get_ratings()[$key];
+            }
+            $mdata['averagerating_received'] = $pa_instance->get_student_average_rating_received($mid, true);
+            $avgrec = $mdata['averagerating_received'];
+            if (empty($avgrec)) {
+                $mdata['averagerating_received_bound'] = '';
+            } else if ($avgrec <= $pa->lowerbound) {
+                $mdata['averagerating_received_bound'] = 'exceedlowerbounds';
+            } else if ($avgrec >= $pa->upperbound) {
+                $mdata['aaveragerating_received_bound'] = 'exceedupperbounds';
+            }
+            if ($scaleid < 0) {
+                $averagescalekey = abs($avgrec) - 1 ;
+                if(abs($avgrec)) {
+                    $mdata['averagerating_received'] = get_string('scaledisplayformat', 'peerassessment', 
+                        array(    
+                            'text'=>$scaleitems[$averagescalekey]->name,
+                            'value'=>$avgrec
+                        )); 
+                }
+            }
+            $ratingitems = array();        
+        }
+        $mdata['averagerating_given'] = $pa_instance->get_student_average_rating_given($mid, true);
+        $avggiven = $mdata['averagerating_given'];
+        if (empty($avggiven)) {
+            $mdata['averagerating_given_bound'] = '';
+        } else if ($avggiven <= $pa->lowerbound) {
+            $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
+        } else if ($avggiven >= $pa->upperbound) {
+            $mdata['averagerating_given_bound'] = 'exceedupperbounds';
+        } 
+        if ($scaleid < 0) {
+            $averagescalekey = abs($avggiven) - 1;
+            if (abs($avggiven)) {    // Only display if we've gotten to a sensible value.
+                $mdata['averagerating_given'] = get_string('scaledisplayformat', 'peerassessment', 
+                    array(    
+                        'text'=>$scaleitems[$averagescalekey]->name,
+                        'value'=>$avggiven
+                    ));
+            }
+        }
+        foreach($scaleitems as $sc) {
+            $r = clone $sc;
+            $r->rater = $USER->id;
+            $r->ratee = $mid;
+            $mdata['scaleitems'][] = $r;
+        }
+
+        $tdata['members'][] = $mdata;
+    }
+    
+    $myratings = $pa_instance->get_myratings($USER->id);
+    $tdata['averagerating_given'] = array();
+    
+    // Ouput data about the current user's ratings that they've made
+    $tdata['myratings'] = array();
+    foreach($pa_instance->get_members() as $mid => $member) {
+        
+        $r = array(
+            'userid' => $member->id,
+            'lastname' => $member->lastname,
+            'firstname' => $member->firstname,
+            'userpicture' => $OUTPUT->user_picture($member),
+            'rating' => isset($myratings[$member->id]) ? $myratings[$member->id]->rating : null
+        );
+        
+        if ($scaleid < 0 && isset($r['rating'])) {
+            peerassessment_trace("Displaying rating scale name");
+            $scalekey = ($r['rating']->rating) - 1;
+            $r['rating'] = get_string('scaledisplayformat', 'peerassessment', 
+                    array(    
+                        'text' => $scaleitems[$scalekey]->name,
+                        'value' => $myratings[$member->id]->rating
+                    )); 
+        }
+        $tdata['myratings'][] = $r;
+    }
+    $tdata['averagerating_given'] = $pa_instance->get_student_average_rating_given($USER->id, true);
+    if ($scaleid < 0) {
+        $avgiven = $tdata['averagerating_given'];
+        $averagescalekey = abs($avgiven) - 1;
+        if (abs($avgiven)) {
+            $tdata['averagerating_given'] = get_string('scaledisplayformat', 'peerassessment', 
+                array(    
+                    'text' => $scaleitems[$averagescalekey]->name,
+                    'value' => $avgiven
+                ));  
+        }
+        //$scaleitems[$averagescalekey]->name. " ({$avgiven})";
+    }
+}
+
+if ($mode == MOD_PEERASSESSMENT_MODE_VIEW && !$canrate & $canmanage) {
+    $mode = MOD_PEERASSESSMENT_MODE_REPORT;
+}
+
+$url = new moodle_url('/mod/peerassessment/view.php', array(
+    'id' => $id, 
+    'groupid' => $groupid,
+    'mode' => $mode
+));
+$PAGE->set_url($url);
+
+$showscalevalues = true;
+if ($mode == MOD_PEERASSESSMENT_MODE_VIEW) {
+    if ($canmanage) {
+        $reporturl = new moodle_url($PAGE->url, array('mode' => MOD_PEERASSESSMENT_MODE_REPORT));
+        $viewreportbutton = $OUTPUT->action_link($reporturl, get_string('viewreport', 'peerassessment'), null,
+            array('class' => 'btn btn-primary')
+        );
+        $PAGE->set_button($viewreportbutton);
+        $tdata['viewreportbutton'] = $viewreportbutton;
+    } else {
+        $PAGE->set_button($tdata['groupselect']);
+    }
+} else if ($mode == MOD_PEERASSESSMENT_MODE_REPORT) {
+    $PAGE->set_button($tdata['groupselect']);
+}
+/* Render the actual page */
+if(isset($tdata['group'])) {
+    $PAGE->set_title($pa->name .": ". $group->name);
+} 
+
+echo $OUTPUT->header();
+if ($mode == MOD_PEERASSESSMENT_MODE_REPORT) {
+    $USER->ajax_updatable_user_prefs['mod_peerassessment/showtransposewarning'] = true;
+    $tdata['showtransposewarning'] = get_user_preferences('mod_peerassessment/showtransposewarning', true) === "false" ? false: true;
+    echo $OUTPUT->render_from_template("mod_peerassessment/report", $tdata);
+} else {
+    echo $OUTPUT->render_from_template("mod_peerassessment/view", $tdata);
+}
+
+echo $OUTPUT->footer();

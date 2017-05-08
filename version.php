@@ -4,11 +4,11 @@
  *
  * @package mod
  * @subpackage peerassessment
- * @copyright 2010 - 2012 University of Strathclyde.
+ * @copyright 2010 - 2016 University of Strathclyde.
  * @author Michael Hughes
  * @author Viktor Dorfler
  */
-$plugin->version  = 2015052000;
+$plugin->version  = 2016092305;
 $plugin->requires = 2010112400;
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->component = 'mod_peerassessment';

@@ -1,0 +1,41 @@
+{{!
+@template mod_peerassessment/ratings
+Displays Ratings table
+}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12 col-md-6 col-sm-6">
+            <table class='table-responsive mod_peerassessment ratingtable'>
+                <thead>
+                    <tr><th colspan="2">Name</th><th class='ratingcell'>Rated</th></tr>
+                </thead>
+                <tbody>
+                    {{#myratings}} 
+                    <tr>
+                        <td>{{{userpicture}}}</td>
+                        <th>{{lastname}}, {{firstname}}</th>
+                        <td class='ratingcell'>{{rating}}</td>
+                    </tr>
+                    {{/myratings}}
+                    <tr>
+                        <th colspan="2">Average Given</th>
+                        <td class='ratingcell'>{{averagerating_given}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-xs-12 col-md-6 col-sm-6">
+            <h3>{{#str}}comment, peerassessment{{/str}}</h3>
+            <div class="well" style="">
+                {{#comment}}
+                    {{studentcomment}}
+                {{/comment}}
+                {{^comment}}
+                    {{#str}}nocomment, peerassessment{{/str}}
+                {{/comment}}
+            </div>
+        </div>
+    </div>
+</div>
+
+

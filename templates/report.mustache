@@ -1,0 +1,25 @@
+{{!
+@template mod_peerassessment/report
+Report Template for view.php
+}}
+<div class="container-fluid">
+    <h2>{{name}} - {{groupname}} Peer Assessment Report</h2>
+    {{#isadmin}}
+    <div class="well bg-danger">
+        You are an admin, you cannot do this activity without switching to a "Student" type role.
+    </div>
+    {{/isadmin}}
+    {{#showtransposewarning}}
+    {{>mod_peerassessment/transposewarning}}
+    {{/showtransposewarning}}
+    <div class="row">
+        {{#intro}}
+        	{{{intro}}}
+        {{/intro}}
+        {{>mod_peerassessment/ratings}}
+    </div>
+    <div class="row">
+        <h3>Grading</h3>
+        <p class="bg-danger">TODO Allow staff to award a grade to either all members or some members.</p>
+    </div>
+</div>

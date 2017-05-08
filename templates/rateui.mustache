@@ -1,0 +1,40 @@
+{{!
+@template mod_peerassessment/rateui
+Displays UI for recording a user's peer ratings
+}}
+<form method="post">
+<input type="hidden" name="id" value="{{cmid}}"/>
+<input type="hidden" name="rate" value="rate"/>
+<input type="hidden" name="groupid" value="{{groupid}}"/>
+<input type="hidden" name="sesskey" value="{{sesskey}}"/>
+<table class='table-responsive mod_peerassessment ratingtable'>
+<thead>
+<tr><th colspan="2">Rate</th><th colspan="{{scalecount}}">{{scalename}}</th></tr>
+<tr><th colspan="2">Name</th>
+{{#scaleitems}}
+<th class='ratingcell'>{{name}}</th>
+{{/scaleitems}}
+</thead>
+<tbody>
+{{#members}} 
+<tr>
+<td class="{{#self}}self{{/self}}">{{{userpicture}}}</td>
+<th class="{{#self}}self{{/self}}">{{lastname}}, {{firstname}} ({{userid}})</th>
+{{#scaleitems}}
+<td class='mod_peerassessment rateui ratingcell'>
+<input type="radio" name="rating_{{rater}}|{{ratee}}" value="{{rating}}" required></input>
+</td>
+{{/scaleitems}}
+</tr>
+{{/members}}
+<tr>
+</tbody>
+</table>
+<div class="form-group">
+<label for="comment">Comment</label>
+<textarea class="form-control" name="comment" rows="4" cols="30" required></textarea>
+</div>
+<div class="btn-group" role="group">
+<input type="submit" value="Submit Ratings" class="btn btn-success"/><!--<a href="/" class='btn btn-default'>Cancel</a>//-->
+</div>
+</form>

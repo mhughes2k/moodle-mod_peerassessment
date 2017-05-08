@@ -1,85 +1,76 @@
-<?php
-$string['pluginadministration'] ='Peer Assessment Admin';
-$string['pluginname']= 'Peer Assessment';
+<?php 
 $string['modulename'] = 'Peer Assessment';
 $string['modulenameplural'] = 'Peer Assessments';
+$string['pluginname'] = 'Peer Assessment';
+$string['pluginadministration'] = 'Peer Assessment';
 
-$string['additionalinfo'] = '<p>This module <strong>requires</strong> the use of Groups!</p><p>If you have selected an <strong>Assignment</strong> then the groups that are specified for that assignment will be used.</p><p>If you <strong>haven\'t</strong> selected and assignment, you should choose a group option below.</p><p>It is probably easiest to create a "Peer Assessment" grouping to hold the groups that will be used.</p>';
-$string['additionalinfoheader'] = 'Additional Information';
-$string['alreadycompleted'] = 'You have already completed this activity.';
-$string['alreadycompletedcanedit'] = 'You have already completed this activity. You may change the <strong>last</strong> rating.';
-$string['assignment'] = 'Assignment';
-$string['associatedactivitynogroups'] = 'The associated assignment does not use groups. Please contact your lecturer/course leader and ask them to reconfigure this activity';
-$string['associatedactivitynogroupsstaff'] = 'The associated assignment does not use groups. Either reconfigure this activity to be a standalone activity or set up groups in the associated activity.';
-$string['availablefrom'] = "Available from";
-$string['averageratinggiven']='Average Rating Given';
-$string['averageratingreceived']='Average Rating Received';
-$string['canedit'] = 'Responses can be changed';
-$string['canedithelp'] = 'Allow students to change their responses.';
-$string['commenthelp'] = 'You can attach a comment about the whole activity you are reviewing.';
-$string['displaygroup'] = 'Display Group';
-$string['deleteratings'] ='Delete Student\'s Ratings';
-$string['details'] ='Details';
-$string['expired']='This activity is no longer available (deadline passed).';
-$string['failedtosaverating'] = 'Unable to save ratings/comments. Please contact the LTE team.';
-$string['frequency'] ='Frequency';
-$string['high'] = 'High';
-$string['introduction'] = 'Introductory Text';
-$string['low'] = 'Low';
-$string['lowerbound'] ='Lower Bound';
-$string['lowerbound_help'] ='This is the value <strong>below</strong> which the average rating will be highlighted.';
-$string['mustbestudent']='<p>You cannot perform this activity as staff, you must be in a student role.</p><p><a href=\'report.php?id=$a\'>View report</p>';
-$string['name'] = 'Name';
-$string['noassignment'] = 'No assignment';//Associated Assignment no longer exists, it may have been deleted. Please check the configuration of this activity.';
+$string['alreadyrated'] = 'You have already rated your peers.';
+$string['canedit'] 	= 'Allow student to change their responses.';
+$string['cantrate'] = 'You are not able to rate your peers. Please check with your lecturer that you are in a group.';
+$string['chooseexportfields'] = 'Choose fields to export';
+$string['chooseexportformat'] = 'Choose export format';
+$string['chooseexportgroups'] = 'Choose groups to export';
+$string['comment'] = 'Comment';
+$string['completionratinggroup'] = 'Require peer rating';
+$string['completionrating'] = 'Students must have rated their peers.';
+$string['confirmdelete'] = 'Are you sure you want to delete this user\'s ratings';
+$string['csvwithseleteddelimiter'] = 'CSV with Selected Delimiter';
+$string['frequency'] = 'Frequency';
+$string['frequency_help'] = 'How often can users complete this activity';
+$string['frequencyonce'] = 'Once';
+$string['frequencyweekly'] = 'Weekly';
+$string['introduction'] = 'Introduction';
+$string['issues_staff'] = 'The following problems were identified:';
+$string['issues_student'] = 'This activity has not been configured correctly, please ask your lecturer to access this page and a list of identified issues for them to address will be displayed.';
+$string['lowerbound'] = 'Lower bound';
+$string['lowerbound_help'] = 'Highlight average ratings equal or less than this value';
+$string['upperbound'] = 'Upper bound';
+$string['upperbound_help'] = 'Highlight average ratings equal or greater than this value';
+$string['scaledisplayformat'] = '{$a->text} ({$a->value})';
+$string['norating'] = '-';
+$string['grade'] = 'Grade';
+$string['nocomment'] = 'No comment entered';
+$string['nogradeinfo'] = 'Grading Peer Assessments';
+$string['nogradeinfo_text'] = '**Grading is disabled by default.** (See the help icon for further information).
 
-$string['nogroup'] = 'You are not a member of a group.';
-$string['nogroups']='No groups appear to be set up';
-$string['nomembersfound'] = 'No members found';
-$string['notavailableyet']='This activity is not yet available.';
-$string['notenoughtimepassed'] = 'You can\'t complete this activity just now, not enough time has passed since your last submission.';
-$string['notenoughtimepassedcanedit'] = 'You can\'t submit a new rating as not enough time has passed since your last submission. You may change your existing rating.';
-$string['oncefrequency'] = 'Once';
-$string['overview'] ='Overview';
-$string['assignment_help'] = '<p><img alt="" src="<?php echo $CFG->wwwroot?>/mod/peerassessment/icon.gif" />&nbsp;<b>Peer Assessment Activities</b></p>
-<div class="indent">
-The Peer Assessment Activity (PAA) module allows group members to rate themselves and the other group members.
-</div>
-<div class="indent">
-There are 2 modes that the PAA module can be used:
-<ol>
-<li>Associated with an Assignment</li>
-<li>Unassociated with an Assignment</li>
-</ol>
-</div>
+There is **no** grading interface within the Peer Assessment activity, you must enter grades via the grade book.';
+$string['nogradeinfo_help'] ='As it is not possible to determine if you would be wanting to give the grade
+to a student on the basis of the ratings they\'ve given or on the basis of the ratings they have recieved grading is disabled by default.
 
-<p><b>Associated Assignment Mode</b></p>
-<div class="indent">
-<p>In this mode the Peer Assessment Activity is associated with a specific assignment in the course.</p>
-<p>The groups that are configured for the associated activity are used to control the list of students that users are able to rate.</p>
-</div>
-<p><b>No Associated Assignment Mode</b>  </p>
-<div class="indent">
-<p>In this mode the activity is not associated with any specific assignment.</p>
-<p>You will need to specify what group information is used.</p>
-</div>';
-$string['peerassessmentactivityheading'] = 'Peer Assessment Activity: {$a->peerassessmentname}';
-$string['peerassessmentactivityheadingforgroup'] = 'Peer Assessment Activity: {$a->peerassessmentname} for Group {$a->groupname}';
-$string['peerassessmentreportheading'] = 'Peer Assessment Activity Report: {$a->name}';
-$string['recordrating'] ='Record a Rating';
-$string['resetpeerassessmentall'] = 'Reset All Peer Assessments';
-$string['scheduling'] = 'Frequency';
-$string['submissiondate'] = 'Submission date';
-$string['unlimitedfrequency'] = 'Unlimited';
-$string['upperbound'] ='Upper Bound';
-$string['upperbound_help'] ='This is the value <strong>above</strong> which the average rating will be highlighted.';
-$string['userpeerassessment'] ='Enable Peer Assessment Activity';
-$string['usernotactuallyingroup'] = 'You are not actually in this group. This has been recorded';
-$string['viewreport'] ='View Report';
-$string['viewreportgroup']='View Report for Group:';
-$string['weeklyfrequency'] = 'Weekly';
+If you wish to be able to give a grade to a user (for what ever reason you choose) you may enable grading. This will create a grade item in the 
+gradebook for this activity.
+        
+It is then up to you to decide what the grade represents to the student.
+';
+$string['grade_help'] ='Select the type of grading used for this activity. If "scale" is chosen, you can then choose the scale from the "scale" dropdown. If using "point" grading, you can then enter the maximum grade available for this activity.';
+$string['notamemberofgroup'] = 'You do not belong to a group. Please contact your lecturer / tutor.';
+$string['notamemberofgroup_warning'] = '{$a->affecteduserid} is not a member of the group {$a->groupid}';
+$string['ratedallgroups'] = 'Rated all groups';
+$string['ratedanygroup'] = 'Rated any group';
+$string['ratingscale'] = 'Scale to rate peers against';
+$string['ratingscale_help'] = 'You can select either a scale or a number of points to rate each member against.
 
-$string['peerassessment:addinstance'] = '';
-$string['peerassessment:deleteratings'] = '';
-$string['peerassessment:recordrating'] = '';
-$string['peerassessment:usepeerassessment'] = '';
-$string['peerassessment:viewreport'] = '';
+If you select **Scale**, each scale item will be given a value from 1 to the number of items in the scale.
+
+If you select **Point**, then there will be a single option for each integer value from 1 to the maximum grade.';
+$string['resetpeerassessmentall'] = 'Delete All Peer Ratings';
+$string['switchgroups'] = 'Switch Group';
+$string['viewreport'] = 'View Report';
+
+/* Strings from pagrade form element */
+
+$string['pagradeerrorbadpoint'] = 'Invalid Grade Value. This must be an integer between 1 and {$a}';
+$string['pagradeerrorbadscale'] = 'Invalid scale selected. Please make sure you select a scale from the selections below.';
+$string['pagrade'] = 'Grade';
+$string['pagrade_help'] = 'Select the type of grading used for this activity. If "scale" is chosen, you can then choose the scale from the "scale" dropdown. If using "point" grading, you can then enter the maximum grade available for this activity.';
+$string['pagrademaxgrade'] = 'Maximum points';
+$string['pagradetype'] = 'Type';
+$string['pagradetypenone'] = 'None';
+$string['pagradetypepoint'] = 'Point';
+$string['pagradetypescale'] = 'Scale';
+
+/* Errors */
+$string['unabletoloadgroups'] = 'Unable to load groups';
+$string['raternotingroup'] = 'Rater {$a->rater} is not in the group {$a->groupname}.';
+$string['rateenotingroup'] = 'Ratee {$a->ratee} is not in the group {$a->groupname}.';
+$string['targetsnotingroup'] = 'Neither rater {$a->rater} or ratee {$a->ratee} are in the group {$a->groupname}';
