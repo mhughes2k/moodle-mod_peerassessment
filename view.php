@@ -344,12 +344,13 @@ if ($group) {
             }
             $mdata['averagerating_received'] = $pa_instance->get_student_average_rating_received($mid, true);
             $avgrec = $mdata['averagerating_received'];
+            //debugging($avgrec .'>='. $pa->upperbound . '='. (int)($avgrec >= $pa->upperbound));
             if (empty($avgrec)) {
                 $mdata['averagerating_received_bound'] = '';
             } else if ($avgrec <= $pa->lowerbound) {
                 $mdata['averagerating_received_bound'] = 'exceedlowerbounds';
             } else if ($avgrec >= $pa->upperbound) {
-                $mdata['aaveragerating_received_bound'] = 'exceedupperbounds';
+                $mdata['averagerating_received_bound'] = 'exceedupperbounds';
             }
             if ($scaleid < 0) {
                 $averagescalekey = abs($avgrec) - 1 ;
@@ -367,7 +368,7 @@ if ($group) {
         $avggiven = $mdata['averagerating_given'];
         if (empty($avggiven)) {
             $mdata['averagerating_given_bound'] = '';
-        } else if ($avggiven <= $pa->lowerbound) {
+        } else if ($avggiven <= $pa->lowerbound) {             
             $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
         } else if ($avggiven >= $pa->upperbound) {
             $mdata['averagerating_given_bound'] = 'exceedupperbounds';

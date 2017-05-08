@@ -33,9 +33,13 @@ $string['introduction'] = 'Introduction';
 $string['issues_staff'] = 'The following problems were identified:';
 $string['issues_student'] = 'This activity has not been configured correctly, please ask your lecturer to access this page and a list of identified issues for them to address will be displayed.';
 $string['lowerbound'] = 'Lower bound';
-$string['lowerbound_help'] = 'Highlight average ratings equal or less than this value';
+$string['lowerbound_help'] = 'Highlight average ratings equal or less than this value.
+
+Only available if rating scale is "point".';
 $string['upperbound'] = 'Upper bound';
-$string['upperbound_help'] = 'Highlight average ratings equal or greater than this value';
+$string['upperbound_help'] = 'Highlight average ratings equal or greater than this value.
+
+Only available if rating scale is "point".';
 $string['scaledisplayformat'] = '{$a->text} ({$a->value})';
 $string['norating'] = '-';
 $string['grade'] = 'Grade';

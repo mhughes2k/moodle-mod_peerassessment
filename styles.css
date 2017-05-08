@@ -15,11 +15,11 @@ th .ratingcell {
     font-weight:bolder;
 }
 
-.ratingcell .exceedlowerbounds {
+.ratingcell.exceedlowerbounds {
     color: red;
 }
 
-.ratingcell .exceedupperbounds {
+.ratingcell.exceedupperbounds {
     color: green;
 }
 .mod_peerassessment.suppresstransposewarning {

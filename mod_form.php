@@ -32,13 +32,15 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         //$mform->setDefault('ratingscale', $CFG->gradepointdefault);
         
         $mform->addElement('header', 'advancedsettings', 'Advanced');
+        /*
+        // Removing inline with STRATHPA-50.
         $options=array();
         $options[0]  = get_string('frequencyonce', 'peerassessment');
 
         $options[1]  = get_string('frequencyweekly', 'peerassessment');
 
         $mform->addElement('select', 'frequency', get_string('frequency', 'peerassessment'), $options);
-
+        */
         // TODO Decide if we're keeping upper/lower bound highlighting.
         $mform->addElement('text', 'lowerbound', get_string('lowerbound', 'peerassessment'), array('value' => '2.5'));
         $mform->setType('lowerbound', PARAM_RAW);
@@ -50,7 +52,8 @@ class mod_peerassessment_mod_form extends moodleform_mod {
 
         $mform->addRule('lowerbound', 'Must be numeric', 'numeric', null, 'client');
         $mform->addRule('upperbound', 'Must be numeric', 'numeric', null, 'client');
-
+        $mform->disabledIf('lowerbound', 'ratingscale[pagrade_type]', 'neq', 'point');
+        $mform->disabledIf('upperbound', 'ratingscale[pagrade_type]', 'neq', 'point');
         // Decide if we're making this a gradable activity!
         $this->standard_grading_coursemodule_elements();
         //$mform->setDefault('grade', null);
