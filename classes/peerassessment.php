@@ -10,7 +10,9 @@ use mod_peerassessment\exception\invalid_rating_exception;
  *
  */
 class peerassessment {
-	
+
+    const RATE_ALL_GROUPS = 1;
+    const RATE_ANY_GROUP = 2;
 	/**
 	 * Peer Assessment Instance that this Peer Assessment is associated with.
 	 * @var stdClass

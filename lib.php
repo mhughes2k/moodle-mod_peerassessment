@@ -1,6 +1,7 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
+use mod_peerassessment\peerassessment;
 /**
  * 
  * @param unknown $feature
@@ -15,10 +16,10 @@ function peerassessment_supports($feature) {
 		case FEATURE_MOD_INTRO:
 			return true;
 		case FEATURE_COMPLETION_TRACKS_VIEWS:
-			return true;
+			return false;
 		case FEATURE_GRADE_HAS_GRADE:
 			return true;	// TODO to be decided.
-		case FEATURE_COMPLETION_HAS_RULES:
+		case FEATURE_COMPLETION_HAS_RULES: 
 			return true;
 		case FEATURE_GRADE_OUTCOMES:
 			return true;
@@ -290,14 +291,14 @@ function peerassessment_get_completion_state($course, $cm, $userid, $type) {
 		//$completions = $DB->get_records_sql($completionssql, array($userid));
 		$completions = $DB->count_records_sql($completionssql, array($userid));
 		
-		if ($pa->completionrating == 1) {
+		if ($pa->completionrating == peerassessment::RATE_ALL_GROUPS) {
 			$expected = count($usergroupids);
 			if ($completions == $expected) {
 				return true;
 			} else {
 				return false;
 			}
-		} else if ($pa->completionrating == 2) {
+		} else if ($pa->completionrating == peerassessment::RATE_ANY_GROUP) {
 			if ($completions > 0) {
 				return true;
 			} else {

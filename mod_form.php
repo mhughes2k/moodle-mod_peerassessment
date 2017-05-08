@@ -75,7 +75,7 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         
         $group = array();
         $group[] = & $mform->createElement('checkbox', 'completionratingenabled', ' ', get_string('completionrating', 'peerassessment'));
-        $completionoptions = array(1 => get_string('ratedallgroups', 'peerassessment'), '2' => get_string('ratedanygroups', 'peerassessment'));
+        $completionoptions = array(1 => get_string('ratedallgroups', 'peerassessment'), '2' => get_string('ratedanygroup', 'peerassessment'));
         $group[] = & $mform->createElement('select', 'completionrating', ' ', $completionoptions );
         $mform->setType('completionrating', PARAM_INT);
         $mform->addGroup($group, 'completionratinggroup', get_string('completionratinggroup', 'peerassessment'), array(' '), false);
