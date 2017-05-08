@@ -274,7 +274,8 @@ class peerassessment {
 		// save the comment
 		if ($comment = $DB->get_record('peerassessment_comments', array(
 				'userid' => $userid,
-				'groupid' => $this->group->id
+				'groupid' => $this->group->id,
+                'peerassessment' => $this->instance->id
 		))){
 			// Should we save a copy?
 		} else {
