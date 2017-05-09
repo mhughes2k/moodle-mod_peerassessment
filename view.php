@@ -120,14 +120,7 @@ if ($data) {
             if ($completion->is_enabled($cm) && $pa->completionrating) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
             }
-            // Record that ratings were made!
-            $eventdata = [
-                    'objectid' => $pa->id,
-                    'context' =>$context,
-                    'courseid' => $course->id
-            ];
-            $event = \mod_peerassessment\event\rating_created::create($eventdata);
-            $event->trigger();
+
             redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
             exit();
         } else {
@@ -338,16 +331,18 @@ if ($group) {
             $commentlinkurl = new moodle_url('/mod/peerassessment/viewcomment.php', [
                     'id' => $id, 'groupid'=>$groupid, 'userid' => $member->id, 'mode' => $mode
             ]);
-            $commenttext =  $mdata['comment']->studentcomment;
-            $isLongComment = strlen($commenttext) > 500 ;
-            $commenttext = $isLongComment ? substr($commenttext,0, 500) : $commenttext;
-            if($isLongComment) {
-            $mdata['commentlink'] = $OUTPUT->action_link($commentlinkurl->out(false, []),
-                'View Comment',
-                null,
-                ['title' => $commenttext]);
-            } else {
-                $mdata['commentlink'] = $commenttext;
+            if (!empty($mdata['comment'])) {
+                $commenttext =  $mdata['comment']->studentcomment;
+                $isLongComment = strlen($commenttext) > 500 ;
+                $commenttext = $isLongComment ? substr($commenttext,0, 500) : $commenttext;
+                if($isLongComment) {
+                $mdata['commentlink'] = $OUTPUT->action_link($commentlinkurl->out(false, []),
+                    'View Comment',
+                    null,
+                    ['title' => $commenttext]);
+                } else {
+                    $mdata['commentlink'] = $commenttext;
+                }
             }
         }
         peerassessment_trace("Ratings awarded to {$member->id}", DEBUG_DEVELOPER);
