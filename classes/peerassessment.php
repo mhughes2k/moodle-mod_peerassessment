@@ -146,29 +146,56 @@ class peerassessment {
 	public function save_ratings() {
 		global $DB;
 		$rating_transaction = $DB->start_delegated_transaction();
+        $isUpdate = false;
+        $dbRatingRecords = [];
 		if (!empty($this->dbratings)) {
 			foreach($this->dbratings as $r) {
 				$this->validate_rating($r);	
 				if (empty($r->id)) {
-					 peerassessment_trace('Inserting new rating', DEBUG_DEVELOPER);
-					 $r->id = $DB->insert_record('peerassessment_ratings', $r);
+					peerassessment_trace('Inserting new rating', DEBUG_DEVELOPER);
+					$r->id = $DB->insert_record('peerassessment_ratings', $r);
+                    $isUpdate = $isUpdate & false;       
 				} else {
-					 peerassessment_trace('Updating existing rating', DEBUG_DEVELOPER);
-					 $DB->update_record('peerassessment_ratings', $r);
+					peerassessment_trace('Updating existing rating', DEBUG_DEVELOPER);
+                    $isUpdate = $isUpdate & true;
+					$DB->update_record('peerassessment_ratings', $r);
 				}
 				$key = "{$r->ratedby}:{$r->userid}";
 				$this->ratings[$key] = $r;
 			}
 		}
 		if (isset($this->dbcomment)) {
+		    var_dump($this->dbcomment);
 		    if (empty($dbcomment->id)) {
-				$DB->insert_record('peerassessment_comments', $this->dbcomment);
+				$this->dbcomment->id = $DB->insert_record('peerassessment_comments', $this->dbcomment);
+				$isUpdate = $isUpdate & false;
 			} else {
 				$DB->update_record('peerassessment_comments', $this->dbcomment);
+				$isUpdate = $isUpdate & true;
 			}
 		}
 		$rating_transaction->allow_commit();
-		$this->clear_rating_queue();
+        $cm = get_coursemodule_from_instance('peerassessment', $this->instance->id);
+        $context = \context_module::instance($cm->id);
+        // Record that ratings were made!
+        $eventdata = [
+                'objectid' => $this->instance->id,
+                'context' =>$context,
+                'courseid' => $this->instance->course
+        ];
+        
+        if ($isUpdate) {
+            $event = \mod_peerassessment\event\rating_updated::create($eventdata);
+        } else {
+            $event = \mod_peerassessment\event\rating_created::create($eventdata);
+            
+        }
+        foreach($this->dbratings as $dbrating) {
+            $event->add_record_snapshot('peerassessment_ratings', $dbrating);
+        }
+        $event->add_record_snapshot('peerassessment_comments', $this->dbcomment);
+        $event->trigger();
+        $this->clear_rating_queue();
 	}
 	public function clear_rating_queue() {
 		$this->dbratings = array(); // reset the items waiting for update / insert
@@ -223,12 +250,19 @@ class peerassessment {
 	 */
 	public function delete_ratings($byuserid) {
 		global $DB, $USER;
+		$ratings = $DB->get_records('peerassessment_ratings', array(
+		        'peerassessment' => $this->instance->id,
+		        'ratedby' => $byuserid,
+		        'groupid' => $this->group->id
+		));
 		$DB->delete_records('peerassessment_ratings', array(
 			'peerassessment' => $this->instance->id,
 			'ratedby' => $byuserid,
 			'groupid' => $this->group->id
 		));
 		unset($this->ratings);
+		// we should remove the comment too!
+        
 		// Log this occurence
         $cm = get_coursemodule_from_instance('peerassessment', $this->instance->id);
         $context = \context_module::instance($cm->id);
@@ -241,6 +275,9 @@ class peerassessment {
                 ]
         ];
         $event = \mod_peerassessment\event\rating_deleted::create($eventdata);
+        foreach($ratings as $deleted) {
+            $event->add_record_snapshot('peerassessment_ratings', $deleted);
+        }
         $event->trigger();
 	}
 	
