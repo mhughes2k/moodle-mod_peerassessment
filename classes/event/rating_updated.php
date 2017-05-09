@@ -5,7 +5,7 @@ namespace mod_peerassessment\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Represents a user viewing the Peer Assessment activity instance page.
+ * Represents a change to an existing Peer Assessment Rating.
  *
  * @package mod_peerassessment
  * @since Moodle 3.2
@@ -15,18 +15,16 @@ defined('MOODLE_INTERNAL') || die();
  *  - int groupid: Moodle ID of the group affected.
  * }
  */
-class course_module_viewed extends \core\event\course_module_viewed {
+class rating_updated extends \core\event\assessable_submitted {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'peerassessment_ratings';
     }
-    
     public function get_description() {
-        return "The user with id '$this->userid' viewed the peer assessment for group id '{$this->other['groupid']}' in peer assessment module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' updated ratings for group '$this->relateduserid's rating for group id '{$this->other['groupid']}' in peer assessment module id '$this->contextinstanceid'.";
     }
-    
-    /*public static function get_name() {
-        return get_string('eventreportviewed', 'peerassessment');
-    }*/
+    public static function get_name() {
+        return get_string('eventratingupdated', 'peerassessment');
+    }
 }

@@ -5,13 +5,15 @@ namespace mod_peerassessment\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Represents a user recording a Peer Assessment Rating.
+ * Represents a (typically) staff viewing a Peer Assessment activity.
  *
  * @package mod_peerassessment
  * @since Moodle 3.2
  * @copyright University of Strathclyde
  * @author Michael Hughes
- *
+ * @property-read array $other {
+ *  - int groupid: Moodle ID of the group affected.
+ * }
  */
 class report_viewed extends \core\event\course_module_viewed{
     protected function init() {

@@ -11,7 +11,9 @@ defined('MOODLE_INTERNAL') || die();
  * @since Moodle 3.2
  * @copyright University of Strathclyde
  * @author Michael Hughes
- *
+ * @property-read array $other {
+ *  - int groupid: Moodle ID of the group affected.
+ * }
  */
 class rating_created extends \core\event\assessable_submitted {
     protected function init() {

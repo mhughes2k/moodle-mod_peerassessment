@@ -5,12 +5,15 @@ namespace mod_peerassessment\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Represents a user recording a Peer Assessment Rating.
+ * Represents the deletion of a peer assessment rating.
  *
  * @package mod_peerassessment
  * @since Moodle 3.2
  * @copyright University of Strathclyde
  * @author Michael Hughes
+ * @property-read array $other {
+ *  - int groupid: Moodle ID of the group affected.
+ * }
  *
  */
 class rating_deleted extends \core\event\assessable_submitted {
