@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * 
+ * @author igs03102
+ * @group mod_peerassessment
+ */
 class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 	
 	protected $testCourse;

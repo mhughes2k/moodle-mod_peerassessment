@@ -165,7 +165,6 @@ class peerassessment {
 			}
 		}
 		if (isset($this->dbcomment)) {
-		    var_dump($this->dbcomment);
 		    if (empty($dbcomment->id)) {
 				$this->dbcomment->id = $DB->insert_record('peerassessment_comments', $this->dbcomment);
 				$isUpdate = $isUpdate & false;
@@ -193,7 +192,9 @@ class peerassessment {
         foreach($this->dbratings as $dbrating) {
             $event->add_record_snapshot('peerassessment_ratings', $dbrating);
         }
-        $event->add_record_snapshot('peerassessment_comments', $this->dbcomment);
+        if (isset($this->dbcomment)) {
+            $event->add_record_snapshot('peerassessment_comments', $this->dbcomment);
+        }
         $event->trigger();
         $this->clear_rating_queue();
 	}

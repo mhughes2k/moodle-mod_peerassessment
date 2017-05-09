@@ -5,6 +5,7 @@
  * @author Michael Hughes
  * @category phpunit
  * @copyright 2016 Michael Hughes
+ * @group mod_peerassessment
  */
 class mod_peerassessment_generator_testcase extends advanced_testcase {
 	/**
