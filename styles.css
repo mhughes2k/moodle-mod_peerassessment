@@ -25,3 +25,7 @@ th .ratingcell {
 .mod_peerassessment.suppresstransposewarning {
     cursor:pointer;
 }
+.studentcommentrow,
+.studentcommentcell {
+    max-width:100px;
+}

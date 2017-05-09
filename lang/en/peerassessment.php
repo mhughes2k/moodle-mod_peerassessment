@@ -25,6 +25,10 @@ $string['completionratinggroup'] = 'Require peer rating';
 $string['completionrating'] = 'Students must have rated their peers.';
 $string['confirmdelete'] = 'Are you sure you want to delete this user\'s ratings';
 $string['csvwithseleteddelimiter'] = 'CSV with Selected Delimiter';
+$string['eventreportviewed'] = 'Report viewed';
+$string['eventratingcreated'] = 'Rating Created';
+$string['eventratingdeleted'] = 'Rating Deleted';
+
 $string['frequency'] = 'Frequency';
 $string['frequency_help'] = 'How often can users complete this activity';
 $string['frequencyonce'] = 'Once';
@@ -32,6 +36,7 @@ $string['frequencyweekly'] = 'Weekly';
 $string['introduction'] = 'Introduction';
 $string['issues_staff'] = 'The following problems were identified:';
 $string['issues_student'] = 'This activity has not been configured correctly, please ask your lecturer to access this page and a list of identified issues for them to address will be displayed.';
+$string['heading_viewcomment'] = '{$a->activity} - {$a->groupname} - {$a->username}'; 
 $string['lowerbound'] = 'Lower bound';
 $string['lowerbound_help'] = 'Highlight average ratings equal or less than this value.
 

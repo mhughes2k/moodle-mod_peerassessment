@@ -161,7 +161,7 @@ class peerassessment {
 			}
 		}
 		if (isset($this->dbcomment)) {
-			if (empty($comment->id)) {
+		    if (empty($dbcomment->id)) {
 				$DB->insert_record('peerassessment_comments', $this->dbcomment);
 			} else {
 				$DB->update_record('peerassessment_comments', $this->dbcomment);
@@ -222,13 +222,26 @@ class peerassessment {
 	 * @param int $byuserid ID of user whose ratings to remove.
 	 */
 	public function delete_ratings($byuserid) {
-		global $DB;
+		global $DB, $USER;
 		$DB->delete_records('peerassessment_ratings', array(
 			'peerassessment' => $this->instance->id,
 			'ratedby' => $byuserid,
 			'groupid' => $this->group->id
 		));
 		unset($this->ratings);
+		// Log this occurence
+        $cm = get_coursemodule_from_instance('peerassessment', $this->instance->id);
+        $context = \context_module::instance($cm->id);
+        $eventdata = [
+                'contextid' => $context->id,
+                'userid' => $USER->id,
+                'relateduserid' => $byuserid,
+                'other'=> [
+                        'groupid' => $this->group->id
+                ]
+        ];
+        $event = \mod_peerassessment\event\rating_deleted::create($eventdata);
+        $event->trigger();
 	}
 	
 	/**

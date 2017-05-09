@@ -15,6 +15,7 @@ require_login($course, false, $cm);
 
 const MOD_PEERASSESSMENT_MODE_VIEW = 0 ;
 const MOD_PEERASSESSMENT_MODE_REPORT = 1;
+const MOD_PEERASSESSMENT_MODE_VIEW_SINGLE = 2;
 $mode = optional_param('mode', MOD_PEERASSESSMENT_MODE_VIEW, PARAM_INT);
 
 /**
@@ -119,10 +120,19 @@ if ($data) {
             if ($completion->is_enabled($cm) && $pa->completionrating) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
             }
+            // Record that ratings were made!
+            $eventdata = [
+                    'objectid' => $pa->id,
+                    'context' =>$context,
+                    'courseid' => $course->id
+            ];
+            $event = \mod_peerassessment\event\rating_created::create($eventdata);
+            $event->trigger();
             redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
             exit();
         } else {
-            var_dump($exceptions);
+            throw new coding_exception('Unable to save ratings', $exceptions);
+//             var_dump($exceptions);
         }
         // We fall through to displaying the form again
     }
@@ -276,7 +286,6 @@ if ($group) {
     $deleteratingurl = new moodle_url('/mod/peerassessment/view.php', array(
         'id' => $id, 'groupid'=>$groupid, 'delete' => 'delete', 'sesskey' => sesskey(), 'ratedby'=> false, 'mode' => $mode)
     );
-    
     $tdata['canrate'] = $canrate & groups_is_member($group->id, $USER->id) & !$hasrated ;
     $tdata['hasrated'] = $hasrated;
     $tdata['isadmin'] = $isadmin;
@@ -318,13 +327,28 @@ if ($group) {
             'scaleitems' => array(),
             'comment'=> $pa_instance->get_comment($member->id),
             'deletelink' => '',
-            'self' => $member->id == $USER->id
+            'self' => $member->id == $USER->id,
+            'commentlink' => ''
         );
         if ($pa_instance->has_rated($member->id)) {
             $mdata['deletelink'] = $OUTPUT->action_link($deleteratingurl->out(false, array('ratedby' => $member->id)),
                 $OUTPUT->pix_icon('t/delete',get_string('delete')),
                 new confirm_action(get_string('confirmdelete', 'peerassessment'))
             );
+            $commentlinkurl = new moodle_url('/mod/peerassessment/viewcomment.php', [
+                    'id' => $id, 'groupid'=>$groupid, 'userid' => $member->id, 'mode' => $mode
+            ]);
+            $commenttext =  $mdata['comment']->studentcomment;
+            $isLongComment = strlen($commenttext) > 500 ;
+            $commenttext = $isLongComment ? substr($commenttext,0, 500) : $commenttext;
+            if($isLongComment) {
+            $mdata['commentlink'] = $OUTPUT->action_link($commentlinkurl->out(false, []),
+                'View Comment',
+                null,
+                ['title' => $commenttext]);
+            } else {
+                $mdata['commentlink'] = $commenttext;
+            }
         }
         peerassessment_trace("Ratings awarded to {$member->id}", DEBUG_DEVELOPER);
         foreach($pa_instance->get_members() as $mid2 => $member2) {
@@ -459,18 +483,36 @@ if ($mode == MOD_PEERASSESSMENT_MODE_VIEW) {
     }
 } else if ($mode == MOD_PEERASSESSMENT_MODE_REPORT) {
     $PAGE->set_button($tdata['groupselect']);
-}
+} 
 /* Render the actual page */
 if(isset($tdata['group'])) {
     $PAGE->set_title($pa->name .": ". $group->name);
 } 
 
 echo $OUTPUT->header();
-if ($mode == MOD_PEERASSESSMENT_MODE_REPORT) {
+if ($mode == MOD_PEERASSESSMENT_MODE_REPORT ) {
+    
+    \mod_peerassessment\event\report_viewed::create([
+        'contextid' => $context->id,
+        'objectid' => $pa->id,
+        //'objecttable' =>
+        'other'=> [
+                'groupid' => $groupid
+        ]
+    ])->trigger();
     $USER->ajax_updatable_user_prefs['mod_peerassessment/showtransposewarning'] = true;
     $tdata['showtransposewarning'] = get_user_preferences('mod_peerassessment/showtransposewarning', true) === "false" ? false: true;
     echo $OUTPUT->render_from_template("mod_peerassessment/report", $tdata);
-} else {
+} /*elseif ($mode == MOD_PEERASSESSMENT_MODE_VIEW_SINGLE) {
+    
+} */else {
+    \mod_peerassessment\event\course_module_viewed::create([
+            'contextid' => $context->id,
+            'objectid' => $pa->id,
+            'other'=> [
+                    'groupid' => $groupid
+            ]
+    ])->trigger();
     echo $OUTPUT->render_from_template("mod_peerassessment/view", $tdata);
 }
 

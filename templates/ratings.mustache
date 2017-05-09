@@ -33,10 +33,12 @@ Displays Ratings table
 <td class='ratingcell {{averagerating_given_bound}}'>{{averagerating_given}}</td>
 {{/members}}
 </tr>
-<tr>
+<tr class='studentcommentrow'>
 <th colspan="2">Comment</th>
 {{#members}}
-<td class=''>{{comment.studentcomment}}</td>
+<td class=''>
+    {{{commentlink}}}
+</td>
 {{/members}}
 </tr>
 
