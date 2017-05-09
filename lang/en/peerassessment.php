@@ -13,8 +13,10 @@ Or any scenario where a value judgement is being made on peers.';
 
 $string['pluginname'] = 'Peer Assessment';
 $string['pluginadministration'] = 'Peer Assessment';
-
+$string['allowsubmissionsfromdate'] = 'Allow submissions from';
+$string['allowsubmissionsfromdate_help'] = 'Students will only be able to submit their ratings after this date.';
 $string['alreadyrated'] = 'You have already rated your peers.';
+$string['backtocourse'] = 'Back to class';
 $string['canedit'] 	= 'Allow student to change their responses.';
 $string['cantrate'] = 'You are not able to rate your peers. Please check with your lecturer that you are in a group.';
 $string['chooseexportfields'] = 'Choose fields to export';
@@ -25,6 +27,8 @@ $string['completionratinggroup'] = 'Require peer rating';
 $string['completionrating'] = 'Students must have rated their peers.';
 $string['confirmdelete'] = 'Are you sure you want to delete this user\'s ratings';
 $string['csvwithseleteddelimiter'] = 'CSV with Selected Delimiter';
+$string['duedate'] = 'Due date';
+$string['duedate_help']= 'Ratings *must* be completed by this date';
 $string['eventreportviewed'] = 'Report viewed';
 $string['eventratingcreated'] = 'Rating Created';
 $string['eventratingdeleted'] = 'Rating Deleted';
@@ -74,6 +78,7 @@ If you select **Scale**, each scale item will be given a value from 1 to the num
 If you select **Point**, then there will be a single option for each integer value from 1 to the maximum grade.';
 $string['resetpeerassessmentall'] = 'Delete All Peer Ratings';
 $string['switchgroups'] = 'Switch Group';
+$string['toolate'] = 'You are too late to complete this activity.';
 $string['viewreport'] = 'View Report';
 
 /* Strings from pagrade form element */

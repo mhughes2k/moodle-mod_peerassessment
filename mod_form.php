@@ -20,8 +20,6 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
 
         $this->standard_intro_elements(get_string('introduction', 'peerassessment'));
-
-        $mform->addElement('selectyesno', 'canedit', get_string('canedit', 'peerassessment'));
         /* $mform->addElement('header', 'additionalinfo', get_string('additionalinfoheader', 'peerassessment'));
         $mform->addElement('html', get_string('additionalinfo', 'peerassessment'));
  */
@@ -30,8 +28,21 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         //$mform->disabledIf('ratingscale', 'assessed', 'eq', 0);
         $mform->addHelpButton('ratingscale', 'ratingscale', 'peerassessment');
         //$mform->setDefault('ratingscale', $CFG->gradepointdefault);
+
+        $mform->addElement('header', 'availability', get_string('availability', 'assign'));
+        $mform->setExpanded('availability', true);
+        
+        $name = get_string('allowsubmissionsfromdate', 'assign');
+        $options = array('optional'=>true);
+        $mform->addElement('date_time_selector', 'timeavailable', $name, $options);
+        $mform->addHelpButton('timeavailable', 'allowsubmissionsfromdate', 'peerassessment');
+        
+        $name = get_string('duedate', 'assign');
+        $mform->addElement('date_time_selector', 'timedue', $name, array('optional'=>true));
+        $mform->addHelpButton('timedue', 'duedate', 'peerassessment');
         
         $mform->addElement('header', 'advancedsettings', 'Advanced');
+        $mform->addElement('selectyesno', 'canedit', get_string('canedit', 'peerassessment'));
         /*
         // Removing inline with STRATHPA-50.
         $options=array();

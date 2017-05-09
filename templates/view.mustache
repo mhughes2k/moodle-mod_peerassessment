@@ -18,18 +18,25 @@ Template for view.php
 		{{{intro}}}
 	{{/intro}}
 	{{#readonly}}
-		{{>mod_peerassessment/userratings}}
+        {{>mod_peerassessment/userratings}}
 	{{/readonly}}
 	{{^readonly}}
 		{{#canrate}}
 			{{>mod_peerassessment/rateui}}
 		{{/canrate}}
 		{{^canrate}}
-			<div class="alert alert-block alert-info">
-			{{#hasrated}}{{#str}}alreadyrated, peerassessment{{/str}}{{/hasrated}}
-			</div>
 			{{#hasrated}}
+                <div class="alert alert-block alert-info">
+                {{#str}}alreadyrated, peerassessment{{/str}}
+                </div>
 				{{>mod_peerassessment/userratings}}
+			{{/hasrated}}
+			{{^hasrated}}
+			     {{#hasexpired}}
+			     <div class="alert alert-block alert-danger">
+			     {{# str}} toolate, peerassessment {{/str}}
+			     </div>
+			     {{/hasexpired}}
 			{{/hasrated}}
 			{{#canmanage}}
 				<div class='well'>
@@ -37,6 +44,7 @@ Template for view.php
 				{{{viewreportbutton}}}
 				</div>
 			{{/canmanage}}
+            {{{backlink}}}
 		{{/canrate}}
 	{{/readonly}}
 {{/group}}

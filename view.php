@@ -50,17 +50,21 @@ $PAGE->set_heading($course->fullname);
 $context = context_module::instance($cm->id);
 $canmanage = has_capability('mod/peerassessment:viewreport', $context, $USER);
 $isadmin = false; //in_array($USER->id, array_keys(get_admins()));
+
+$isopen = $pa->timeavailable > 0 ? time() >= $pa->timeavailable : true;
+$hasexpired = $pa->timedue ? time() >= $pa->timedue : false;
+
 $canrate = has_capability('mod/peerassessment:recordrating', $context, $USER, false);
+
 if (!$canmanage) {
     $mode = MOD_PEERASSESSMENT_MODE_VIEW;
 } 
-
 
 // Handle data entry
 $data = data_submitted();
 if ($data) {    
     require_sesskey();
-    if (!$canrate) {
+    if (!$canrate | $hasexpired) {
         // user doesn't hold the capability to rate in this assignment
         print_error('cantrate', 'peerassessment');
     }
@@ -225,6 +229,11 @@ if ($groupid) {
 // Most of this is all about marshalling the data from the PeerAssessment object
 // into a format that is easily used in the mustache templates.
 $tdata['cmid'] = $id;    // Page data first
+$tdata['backlink'] = $OUTPUT->render(
+        new single_button(
+                new \moodle_url('/course/view.php',['id' => $course->id]), get_string('backtocourse', 'peerassessment'), 'get'
+                )
+        );
 $tdata['sesskey'] = sesskey();
 
 // Permission data
@@ -279,7 +288,9 @@ if ($group) {
     $deleteratingurl = new moodle_url('/mod/peerassessment/view.php', array(
         'id' => $id, 'groupid'=>$groupid, 'delete' => 'delete', 'sesskey' => sesskey(), 'ratedby'=> false, 'mode' => $mode)
     );
-    $tdata['canrate'] = $canrate & groups_is_member($group->id, $USER->id) & !$hasrated ;
+    $tdata['canrate'] = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & !$hasrated ;
+    $tdata['hasexpired'] = $hasexpired;
+    $tdata['isopen'] = $isopen;
     $tdata['hasrated'] = $hasrated;
     $tdata['isadmin'] = $isadmin;
     $tdata['ratings'] = array();
@@ -485,6 +496,11 @@ if(isset($tdata['group'])) {
 } 
 
 echo $OUTPUT->header();
+if (!$canmanage && !$isopen) {
+    echo $OUTPUT->render_from_template("mod_peerassessment/notavailable", $tdata);
+    echo $OUTPUT->footer();
+    exit();
+}
 if ($mode == MOD_PEERASSESSMENT_MODE_REPORT ) {
     
     \mod_peerassessment\event\report_viewed::create([
