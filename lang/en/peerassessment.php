@@ -98,3 +98,10 @@ $string['unabletoloadgroups'] = 'Unable to load groups';
 $string['raternotingroup'] = 'Rater {$a->rater} is not in the group {$a->groupname}.';
 $string['rateenotingroup'] = 'Ratee {$a->ratee} is not in the group {$a->groupname}.';
 $string['targetsnotingroup'] = 'Neither rater {$a->rater} or ratee {$a->ratee} are in the group {$a->groupname}';
+
+/* Capability strings */
+$string['peerassessment:addinstance'] = 'Add a new Peer Assessment';
+$string['peerassessment:deleteratings'] = 'Delete Peer Assessment Ratings';
+$string['peerassessment:usepeerassessment'] = 'Use Peer Assessment';
+$string['peerassessment:viewreport'] = 'View Report';
+
