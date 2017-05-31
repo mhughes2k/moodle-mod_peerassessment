@@ -376,12 +376,14 @@ if ($group) {
             $mdata['averagerating_received'] = $pa_instance->get_student_average_rating_received($mid, true);
             $avgrec = $mdata['averagerating_received'];
             //debugging($avgrec .'>='. $pa->upperbound . '='. (int)($avgrec >= $pa->upperbound));
-            if (empty($avgrec)) {
-                $mdata['averagerating_received_bound'] = '';
-            } else if ($avgrec <= $pa->lowerbound) {
-                $mdata['averagerating_received_bound'] = 'exceedlowerbounds';
-            } else if ($avgrec >= $pa->upperbound) {
-                $mdata['averagerating_received_bound'] = 'exceedupperbounds';
+            if (!$tdata['isscale']) { 
+                if (empty($avgrec)) {
+                    $mdata['averagerating_received_bound'] = '';
+                } else if ($avgrec <= $pa->lowerbound) {
+                    $mdata['averagerating_received_bound'] = 'exceedlowerbounds';
+                } else if ($avgrec >= $pa->upperbound) {
+                    $mdata['averagerating_received_bound'] = 'exceedupperbounds';
+                }
             }
             if ($scaleid < 0) {
                 $averagescalekey = abs($avgrec) - 1 ;
@@ -397,13 +399,15 @@ if ($group) {
         }
         $mdata['averagerating_given'] = $pa_instance->get_student_average_rating_given($mid, true);
         $avggiven = $mdata['averagerating_given'];
-        if (empty($avggiven)) {
-            $mdata['averagerating_given_bound'] = '';
-        } else if ($avggiven <= $pa->lowerbound) {             
-            $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
-        } else if ($avggiven >= $pa->upperbound) {
-            $mdata['averagerating_given_bound'] = 'exceedupperbounds';
-        } 
+        if (!$tdata['isscale']) { 
+            if (empty($avggiven)) {
+                $mdata['averagerating_given_bound'] = '';
+            } else if ($avggiven <= $pa->lowerbound) {             
+                $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
+            } else if ($avggiven >= $pa->upperbound) {
+                $mdata['averagerating_given_bound'] = 'exceedupperbounds';
+            } 
+        }
         if ($scaleid < 0) {
             $averagescalekey = abs(round($avggiven)) - 1;
             if (abs($avggiven)) {    // Only display if we've gotten to a sensible value.
