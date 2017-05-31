@@ -323,7 +323,7 @@ class peerassessment {
 	public function comment($userid, $commenttext) {
 		global $DB;
 		// save the comment
-		if ($comment = $DB->get_record('peerassessment_comments', array(
+		if ($DB->count_records('peerassessment_comments', array(
 				'userid' => $userid,
 				'groupid' => $this->group->id,
                 'peerassessment' => $this->instance->id

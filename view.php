@@ -84,7 +84,8 @@ if ($data) {
     
     // Construct a PA instance
     $pa_instance = new \mod_peerassessment\peerassessment($pa, $groupid);
-    if ($pa_instance->has_rated($USER->id)) {
+    $allowratechange = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & $pa->canedit;
+    if ($pa_instance->has_rated($USER->id) & !$allowratechange) {
         print_error('alreadyrated', 'peerassessment');
     }
     
@@ -234,7 +235,7 @@ $tdata['backlink'] = $OUTPUT->render(
                 )
         );
 $tdata['sesskey'] = sesskey();
-
+$tdata['duedate'] = userdate($pa->timedue);
 // Permission data
 $tdata['canmanage'] = $canmanage;
 $tdata['pagemode'] = $mode;
@@ -290,7 +291,8 @@ if ($group) {
     $deleteratingurl = new moodle_url('/mod/peerassessment/view.php', array(
         'id' => $id, 'groupid'=>$groupid, 'delete' => 'delete', 'sesskey' => sesskey(), 'ratedby'=> false, 'mode' => $mode)
     );
-    $tdata['canrate'] = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & !$hasrated ;
+    $tdata['allowratechange'] = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & $pa->canedit;
+    $tdata['canrate'] = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & ($pa->canedit || !$hasrated );
     $tdata['hasexpired'] = $hasexpired;
     $tdata['isopen'] = $isopen;
     $tdata['hasrated'] = $hasrated;

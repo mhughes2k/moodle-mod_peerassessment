@@ -21,23 +21,27 @@ Template for view.php
         {{>mod_peerassessment/userratings}}
 	{{/readonly}}
 	{{^readonly}}
-		{{#canrate}}
-			{{>mod_peerassessment/rateui}}
-		{{/canrate}}
+        {{#hasrated}}
+            <div class="alert alert-block alert-info">
+            {{#str}}alreadyrated, peerassessment{{/str}}
+            </div>
+            {{>mod_peerassessment/userratings}}
+        {{/hasrated}}
+        {{^hasrated}}
+             {{#hasexpired}}
+             <div class="alert alert-block alert-danger">
+             {{# str}} toolate, peerassessment {{/str}}
+             </div>
+             {{/hasexpired}}
+        {{/hasrated}}
+        {{#canrate}}
+            {{#allowratechange}}
+            <h3>Change your rating</h3>
+            You are permitted to change your rating until {{duedate}}.
+            {{/allowratechange}}
+            {{>mod_peerassessment/rateui}}
+        {{/canrate}}
 		{{^canrate}}
-			{{#hasrated}}
-                <div class="alert alert-block alert-info">
-                {{#str}}alreadyrated, peerassessment{{/str}}
-                </div>
-				{{>mod_peerassessment/userratings}}
-			{{/hasrated}}
-			{{^hasrated}}
-			     {{#hasexpired}}
-			     <div class="alert alert-block alert-danger">
-			     {{# str}} toolate, peerassessment {{/str}}
-			     </div>
-			     {{/hasexpired}}
-			{{/hasrated}}
 			{{#canmanage}}
 				<div class='well'>
 				You are a member of staff. Use the "View Report' button to view.
