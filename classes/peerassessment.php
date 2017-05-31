@@ -420,6 +420,9 @@ class peerassessment {
 	public function get_student_average_rating_given($userid, $includeself = false) {
 		global $DB;
 		$memberids = array_keys($this->get_members());
+		if (empty($memberids)) {
+			return null;
+		}
 		list($uselect, $uparams) = $DB->get_in_or_equal($memberids);
 		
 		// Average of ratings given by $userid to users currently in the group 
