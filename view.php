@@ -209,7 +209,6 @@ if ($groupid == false && count($groups) >0 ) {
 $group = false;
 if ($groupid) {
     $group = groups_get_group($groupid);
-    
     if (!$canmanage & !groups_is_member($group->id, $USER->id)) {
         $PAGE->set_url(new moodle_url('/mod/peerassessment/view.php', array('id' =>$id, 'groupid'=>$groupid)));
         echo $OUTPUT->header();
@@ -247,13 +246,16 @@ foreach($exceptions as $ex) {
 }
 $tdata['errors'] = $errors;
 
+/* Group Jump box */
+$tdata['groupselect'] = '';
+
 if ($group) {
     /* Initialise variables */
     $scaleitems = null;
     $scalename = null;
 
     $pa_instance = new mod_peerassessment\peerassessment($pa, $group->id);
-    
+
     // Prepare rating scales for rating UI as it saves multiple loops later!
     $scaleid = (int)$pa->ratingscale;    // NOTE Scales are negative, points are +
     if ($scaleid < 0) {
@@ -302,8 +304,6 @@ if ($group) {
     $tdata['groupname'] = $group->name;
     $tdata['membercount'] = count($pa_instance->get_members());
     $tdata['comment'] = $pa_instance->get_comment();
-    /* Group Jump box */
-    $tdata['groupselect'] = '';
     if(count($groups) > 1) {
         $groupoptions = array_map(function($o) {
             return $o->name;
@@ -372,6 +372,7 @@ if ($group) {
             } else {
                 $mdata['ratings'][] = $pa_instance->get_ratings()[$key];
             }
+
             $mdata['averagerating_received'] = $pa_instance->get_student_average_rating_received($mid, true);
             $avgrec = $mdata['averagerating_received'];
             //debugging($avgrec .'>='. $pa->upperbound . '='. (int)($avgrec >= $pa->upperbound));
