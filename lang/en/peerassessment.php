@@ -104,4 +104,4 @@ $string['peerassessment:addinstance'] = 'Add a new Peer Assessment';
 $string['peerassessment:deleteratings'] = 'Delete Peer Assessment Ratings';
 $string['peerassessment:usepeerassessment'] = 'Use Peer Assessment';
 $string['peerassessment:viewreport'] = 'View Report';
-
+$string['peerassessment:recordrating'] = 'Record a peer assessment rating';
