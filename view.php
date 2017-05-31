@@ -405,7 +405,7 @@ if ($group) {
             $mdata['averagerating_given_bound'] = 'exceedupperbounds';
         } 
         if ($scaleid < 0) {
-            $averagescalekey = abs($avggiven) - 1;
+            $averagescalekey = abs(round($avggiven)) - 1;
             if (abs($avggiven)) {    // Only display if we've gotten to a sensible value.
                 $mdata['averagerating_given'] = get_string('scaledisplayformat', 'peerassessment', 
                     array(    
@@ -429,8 +429,8 @@ if ($group) {
     
     // Ouput data about the current user's ratings that they've made
     $tdata['myratings'] = array();
+    //var_dump($scaleitems);
     foreach($pa_instance->get_members() as $mid => $member) {
-        
         $r = array(
             'userid' => $member->id,
             'lastname' => $member->lastname,
@@ -438,10 +438,10 @@ if ($group) {
             'userpicture' => $OUTPUT->user_picture($member),
             'rating' => isset($myratings[$member->id]) ? $myratings[$member->id]->rating : null
         );
-        
         if ($scaleid < 0 && isset($r['rating'])) {
             peerassessment_trace("Displaying rating scale name");
-            $scalekey = ($r['rating']->rating) - 1;
+            $scalekey = ($r['rating']) - 1;
+            //debugging("Rating {$r['rating']}, Scale key:{$scalekey}: ".$scaleitems[$scalekey]->name);
             $r['rating'] = get_string('scaledisplayformat', 'peerassessment', 
                     array(    
                         'text' => $scaleitems[$scalekey]->name,
@@ -453,7 +453,7 @@ if ($group) {
     $tdata['averagerating_given'] = $pa_instance->get_student_average_rating_given($USER->id, true);
     if ($scaleid < 0) {
         $avgiven = $tdata['averagerating_given'];
-        $averagescalekey = abs($avgiven) - 1;
+        $averagescalekey = abs(round($avgiven)) - 1;
         if (abs($avgiven)) {
             $tdata['averagerating_given'] = get_string('scaledisplayformat', 'peerassessment', 
                 array(    
