@@ -252,12 +252,12 @@ function peerassessment_reset_gradebook($courseid, $type='') {
 	$sql = "SELECT pa.*, cm.idnumber as cmidnumber, pa.course as courseid
 	FROM {peerassessment} pa, {course_modules} cm, {modules} m
 	WHERE m.name='peerassessment' AND m.id=cm.module AND cm.instance=pa.id AND pa.course=? $wheresql";
-
+    /*
 	if ($forums = $DB->get_records_sql($sql, $params)) {
 		foreach ($forums as $forum) {
 			// peerassessment_grade_item_update($forum, 'reset');
 		}
-	}
+	}*/
 }
 
 /**
