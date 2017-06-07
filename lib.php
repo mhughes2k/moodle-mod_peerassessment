@@ -18,7 +18,7 @@ function peerassessment_supports($feature) {
 		case FEATURE_COMPLETION_TRACKS_VIEWS:
 			return false;
 		case FEATURE_GRADE_HAS_GRADE:
-			return true;	// TODO to be decided.
+			return false;	// TODO to be decided.
 		case FEATURE_COMPLETION_HAS_RULES: 
 			return true;
 		case FEATURE_GRADE_OUTCOMES:
