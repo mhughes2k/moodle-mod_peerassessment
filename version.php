@@ -10,6 +10,6 @@
  */
 $plugin->version  = 2017053000;
 $plugin->requires = 2010112400;
-$plugin->maturity = MATURITY_RC;
+$plugin->maturity = MATURITY_ALPHA;
 $plugin->component = 'mod_peerassessment';
 $plugin->cron = 0;
