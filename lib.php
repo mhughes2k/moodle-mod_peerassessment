@@ -129,8 +129,11 @@ function peerassessment_update_grades($peerassessment = null, $userid=0, $nullif
  * Create grade item for given peer assessment
  * @param unknown $data
  * @param unknown $grades
+ * @return int 0 if ok, error code otherwise.
  */
 function peerassessment_grade_item_update($data, $grades = null) {
+    return true;
+    /*
 	global $CFG;
 	if (!function_exists('grade_update')) {
 		require_once("{$CFG->libdir}/gradelib.php");
@@ -158,6 +161,7 @@ function peerassessment_grade_item_update($data, $grades = null) {
     }
     
     return grade_update('mod/peerassessment', $data->course, 'mod', 'peerassessment', $data->id, 0, $grades, $params);
+    */
 }
 
 
