@@ -43,6 +43,8 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         
         $mform->addElement('header', 'advancedsettings', 'Advanced');
         $mform->addElement('selectyesno', 'canedit', get_string('canedit', 'peerassessment'));
+        $mform->disabledIf('canedit', 'timedue[enabled]', 'notchecked');
+        $mform->addHelpButton('canedit', 'canedit','peerassessment');
         /*
         // Removing inline with STRATHPA-50.
         $options=array();

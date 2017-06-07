@@ -18,7 +18,7 @@ function peerassessment_supports($feature) {
 		case FEATURE_COMPLETION_TRACKS_VIEWS:
 			return false;
 		case FEATURE_GRADE_HAS_GRADE:
-			return true;	// TODO to be decided.
+			return false;	// TODO to be decided.
 		case FEATURE_COMPLETION_HAS_RULES: 
 			return true;
 		case FEATURE_GRADE_OUTCOMES:
@@ -92,13 +92,48 @@ function peerassessment_delete_instance($id) {
 function peerassessment_grading_areas_list() {
     return array('rating'=>get_string('peerassignment', 'peerassignment'));
 }*/
+/*
+function peerassessment_get_user_grades($peerassessment, $userid = 0) {
+    
+}*/
+/**
+ * Update activity grades
+ * This is not implemented as we don't record grades in the activity, it has to be done in the
+ * grade book at the moment.
+ * @category grade
+ * 
+ * @param stdClass $peerassessment Null means all peerassessments (with extra cmidnumber property)
+ * @param number $userid specific user only, 0 means all
+ * @param string $nullifnone If true and the user has no grade then a grade item with rawgrade == null will be inserted
+ */
+function peerassessment_update_grades($peerassessment = null, $userid=0, $nullifnone = true) {
+    /*
+    global $CFG, $DB;
+    require_once($CFG->libdir.'/gradelib.php');
+    if ($peerassessment->grade == 0) {
+        peerassessment_grade_item_update($peerassessment);
+    } else if () {
+        
+    } else if ($userid and $nullifnone) {
+        $grade = new stdClass();
+        $grade->userid = $userid;
+        $grade->rawgrade = null;
+        peerassessment_grade_item_update($peerassessment, $grade);
+    } else {
+        peerassessment_grade_item_update($peerassessment);
+    }*/
+    return true;
+}
 
 /**
  * Create grade item for given peer assessment
  * @param unknown $data
  * @param unknown $grades
+ * @return int 0 if ok, error code otherwise.
  */
 function peerassessment_grade_item_update($data, $grades = null) {
+    return true;
+    /*
 	global $CFG;
 	if (!function_exists('grade_update')) {
 		require_once("{$CFG->libdir}/gradelib.php");
@@ -126,7 +161,10 @@ function peerassessment_grade_item_update($data, $grades = null) {
     }
     
     return grade_update('mod/peerassessment', $data->course, 'mod', 'peerassessment', $data->id, 0, $grades, $params);
+    */
 }
+
+
 
 function peerassessment_reset_userdata($data) {
 	global $DB;
@@ -218,12 +256,12 @@ function peerassessment_reset_gradebook($courseid, $type='') {
 	$sql = "SELECT pa.*, cm.idnumber as cmidnumber, pa.course as courseid
 	FROM {peerassessment} pa, {course_modules} cm, {modules} m
 	WHERE m.name='peerassessment' AND m.id=cm.module AND cm.instance=pa.id AND pa.course=? $wheresql";
-
+    /*
 	if ($forums = $DB->get_records_sql($sql, $params)) {
 		foreach ($forums as $forum) {
 			// peerassessment_grade_item_update($forum, 'reset');
 		}
-	}
+	}*/
 }
 
 /**

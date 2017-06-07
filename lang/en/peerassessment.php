@@ -18,6 +18,7 @@ $string['allowsubmissionsfromdate_help'] = 'Students will only be able to submit
 $string['alreadyrated'] = 'You have already rated your peers.';
 $string['backtocourse'] = 'Back to class';
 $string['canedit'] 	= 'Allow student to change their responses.';
+$string['canedit_help'] 	= 'Students may change their responses up to the Due Date. After the due date changes are not permitted.';
 $string['cantrate'] = 'You are not able to rate your peers. Please check with your lecturer that you are in a group.';
 $string['chooseexportfields'] = 'Choose fields to export';
 $string['chooseexportformat'] = 'Choose export format';
@@ -28,7 +29,9 @@ $string['completionrating'] = 'Students must have rated their peers.';
 $string['confirmdelete'] = 'Are you sure you want to delete this user\'s ratings';
 $string['csvwithseleteddelimiter'] = 'CSV with Selected Delimiter';
 $string['duedate'] = 'Due date';
-$string['duedate_help']= 'Ratings *must* be completed by this date';
+$string['duedate_help']= 'Ratings *must* be completed by this date.
+
+If a due date is set you may allow student to change their responses up to the due date.';
 $string['eventreportviewed'] = 'Report viewed';
 $string['eventratingcreated'] = 'Rating Created';
 $string['eventratingdeleted'] = 'Rating Deleted';
@@ -98,3 +101,10 @@ $string['unabletoloadgroups'] = 'Unable to load groups';
 $string['raternotingroup'] = 'Rater {$a->rater} is not in the group {$a->groupname}.';
 $string['rateenotingroup'] = 'Ratee {$a->ratee} is not in the group {$a->groupname}.';
 $string['targetsnotingroup'] = 'Neither rater {$a->rater} or ratee {$a->ratee} are in the group {$a->groupname}';
+
+/* Capability strings */
+$string['peerassessment:addinstance'] = 'Add a new Peer Assessment';
+$string['peerassessment:deleteratings'] = 'Delete Peer Assessment Ratings';
+$string['peerassessment:usepeerassessment'] = 'Use Peer Assessment';
+$string['peerassessment:viewreport'] = 'View Report';
+$string['peerassessment:recordrating'] = 'Record a peer assessment rating';

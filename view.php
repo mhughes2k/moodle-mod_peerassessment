@@ -84,7 +84,8 @@ if ($data) {
     
     // Construct a PA instance
     $pa_instance = new \mod_peerassessment\peerassessment($pa, $groupid);
-    if ($pa_instance->has_rated($USER->id)) {
+    $allowratechange = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & $pa->canedit;
+    if ($pa_instance->has_rated($USER->id) & !$allowratechange) {
         print_error('alreadyrated', 'peerassessment');
     }
     
@@ -209,7 +210,6 @@ if ($groupid == false && count($groups) >0 ) {
 $group = false;
 if ($groupid) {
     $group = groups_get_group($groupid);
-    
     if (!$canmanage & !groups_is_member($group->id, $USER->id)) {
         $PAGE->set_url(new moodle_url('/mod/peerassessment/view.php', array('id' =>$id, 'groupid'=>$groupid)));
         echo $OUTPUT->header();
@@ -235,7 +235,7 @@ $tdata['backlink'] = $OUTPUT->render(
                 )
         );
 $tdata['sesskey'] = sesskey();
-
+$tdata['duedate'] = userdate($pa->timedue);
 // Permission data
 $tdata['canmanage'] = $canmanage;
 $tdata['pagemode'] = $mode;
@@ -247,13 +247,16 @@ foreach($exceptions as $ex) {
 }
 $tdata['errors'] = $errors;
 
+/* Group Jump box */
+$tdata['groupselect'] = '';
+
 if ($group) {
     /* Initialise variables */
     $scaleitems = null;
     $scalename = null;
 
     $pa_instance = new mod_peerassessment\peerassessment($pa, $group->id);
-    
+
     // Prepare rating scales for rating UI as it saves multiple loops later!
     $scaleid = (int)$pa->ratingscale;    // NOTE Scales are negative, points are +
     if ($scaleid < 0) {
@@ -288,7 +291,8 @@ if ($group) {
     $deleteratingurl = new moodle_url('/mod/peerassessment/view.php', array(
         'id' => $id, 'groupid'=>$groupid, 'delete' => 'delete', 'sesskey' => sesskey(), 'ratedby'=> false, 'mode' => $mode)
     );
-    $tdata['canrate'] = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & !$hasrated ;
+    $tdata['allowratechange'] = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & $pa->canedit;
+    $tdata['canrate'] = !$hasexpired & $canrate & groups_is_member($group->id, $USER->id) & ($pa->canedit || !$hasrated );
     $tdata['hasexpired'] = $hasexpired;
     $tdata['isopen'] = $isopen;
     $tdata['hasrated'] = $hasrated;
@@ -302,8 +306,6 @@ if ($group) {
     $tdata['groupname'] = $group->name;
     $tdata['membercount'] = count($pa_instance->get_members());
     $tdata['comment'] = $pa_instance->get_comment();
-    /* Group Jump box */
-    $tdata['groupselect'] = '';
     if(count($groups) > 1) {
         $groupoptions = array_map(function($o) {
             return $o->name;
@@ -372,15 +374,18 @@ if ($group) {
             } else {
                 $mdata['ratings'][] = $pa_instance->get_ratings()[$key];
             }
+
             $mdata['averagerating_received'] = $pa_instance->get_student_average_rating_received($mid, true);
             $avgrec = $mdata['averagerating_received'];
             //debugging($avgrec .'>='. $pa->upperbound . '='. (int)($avgrec >= $pa->upperbound));
-            if (empty($avgrec)) {
-                $mdata['averagerating_received_bound'] = '';
-            } else if ($avgrec <= $pa->lowerbound) {
-                $mdata['averagerating_received_bound'] = 'exceedlowerbounds';
-            } else if ($avgrec >= $pa->upperbound) {
-                $mdata['averagerating_received_bound'] = 'exceedupperbounds';
+            if (!$tdata['isscale']) { 
+                if (empty($avgrec)) {
+                    $mdata['averagerating_received_bound'] = '';
+                } else if ($avgrec <= $pa->lowerbound) {
+                    $mdata['averagerating_received_bound'] = 'exceedlowerbounds';
+                } else if ($avgrec >= $pa->upperbound) {
+                    $mdata['averagerating_received_bound'] = 'exceedupperbounds';
+                }
             }
             if ($scaleid < 0) {
                 $averagescalekey = abs($avgrec) - 1 ;
@@ -396,15 +401,17 @@ if ($group) {
         }
         $mdata['averagerating_given'] = $pa_instance->get_student_average_rating_given($mid, true);
         $avggiven = $mdata['averagerating_given'];
-        if (empty($avggiven)) {
-            $mdata['averagerating_given_bound'] = '';
-        } else if ($avggiven <= $pa->lowerbound) {             
-            $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
-        } else if ($avggiven >= $pa->upperbound) {
-            $mdata['averagerating_given_bound'] = 'exceedupperbounds';
-        } 
+        if (!$tdata['isscale']) { 
+            if (empty($avggiven)) {
+                $mdata['averagerating_given_bound'] = '';
+            } else if ($avggiven <= $pa->lowerbound) {             
+                $mdata['averagerating_given_bound'] = 'exceedlowerbounds';
+            } else if ($avggiven >= $pa->upperbound) {
+                $mdata['averagerating_given_bound'] = 'exceedupperbounds';
+            } 
+        }
         if ($scaleid < 0) {
-            $averagescalekey = abs($avggiven) - 1;
+            $averagescalekey = abs(round($avggiven)) - 1;
             if (abs($avggiven)) {    // Only display if we've gotten to a sensible value.
                 $mdata['averagerating_given'] = get_string('scaledisplayformat', 'peerassessment', 
                     array(    
@@ -428,8 +435,8 @@ if ($group) {
     
     // Ouput data about the current user's ratings that they've made
     $tdata['myratings'] = array();
+    //var_dump($scaleitems);
     foreach($pa_instance->get_members() as $mid => $member) {
-        
         $r = array(
             'userid' => $member->id,
             'lastname' => $member->lastname,
@@ -437,10 +444,10 @@ if ($group) {
             'userpicture' => $OUTPUT->user_picture($member),
             'rating' => isset($myratings[$member->id]) ? $myratings[$member->id]->rating : null
         );
-        
         if ($scaleid < 0 && isset($r['rating'])) {
             peerassessment_trace("Displaying rating scale name");
-            $scalekey = ($r['rating']->rating) - 1;
+            $scalekey = ($r['rating']) - 1;
+            //debugging("Rating {$r['rating']}, Scale key:{$scalekey}: ".$scaleitems[$scalekey]->name);
             $r['rating'] = get_string('scaledisplayformat', 'peerassessment', 
                     array(    
                         'text' => $scaleitems[$scalekey]->name,
@@ -452,7 +459,7 @@ if ($group) {
     $tdata['averagerating_given'] = $pa_instance->get_student_average_rating_given($USER->id, true);
     if ($scaleid < 0) {
         $avgiven = $tdata['averagerating_given'];
-        $averagescalekey = abs($avgiven) - 1;
+        $averagescalekey = abs(round($avgiven)) - 1;
         if (abs($avgiven)) {
             $tdata['averagerating_given'] = get_string('scaledisplayformat', 'peerassessment', 
                 array(    
