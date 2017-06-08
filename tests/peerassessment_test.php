@@ -1,4 +1,5 @@
 <?php
+use mod_peerassessment\exception\multiplecomments_exception;
 /**
  * 
  * @author igs03102
@@ -168,4 +169,77 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 		
 		
 	}
-}
+	
+    /**
+     * Test that multiple comments are detected and reported.
+     */
+    public function test_multiplecomments() {
+        global $DB;
+        $this->resetAfterTest(true);
+        $instance = $DB->get_record('peerassessment', array('id' => $this->testPa->id));
+        $group = $this->testGroups[0];	// use the 1st group
+        $pai = new \mod_peerassessment\peerassessment($instance, $group->id);
+        $rater = array_values($pai->get_members())[0];
+        foreach($pai->get_members() as $mid2 => $member2) {
+            $pai->rate($mid2, 1, $rater->id);
+        }
+        $commenttext1 = 'test text';
+        $pai->comment($rater->id, $commenttext1);
+        $pai->save_ratings();
+        $commentcount = $DB->count_records('peerassessment_comments', [
+                'userid' => $rater->id,
+                'peerassessment' => $pai->get_instance()->id,
+                'groupid' => $group->id
+        ]);
+        $this->assertEquals(1, $commentcount);
+        
+        $group = $this->testGroups[0];	// use the 1st group
+        $pai = new \mod_peerassessment\peerassessment($instance, $group->id);
+        $rater = array_values($pai->get_members())[0];
+        foreach($pai->get_members() as $mid2 => $member2) {
+            $pai->rate($mid2, 1, $rater->id);
+        }
+        $commenttext2 = 'test text2';
+        $pai->comment($rater->id, $commenttext2);
+        $pai->save_ratings();
+        $commentcount = $DB->count_records('peerassessment_comments', [
+                'userid' => $rater->id,
+                'peerassessment' => $pai->get_instance()->id,
+                'groupid' => $group->id
+        ]);
+        $this->assertEquals(1, $commentcount);
+        
+        // Inject a second commetn for the user direclty and check that exceptions are thrown
+        $comments = $DB->get_records('peerassessment_comments', [
+            'userid' => $rater->id,
+            'peerassessment' => $pai->get_instance()->id,
+            'groupid' => $group->id
+        ]);
+        $this->assertEquals(1, count($comments));
+        $newcomment = clone(array_values($comments)[0]);
+        unset($newcomment->id);
+        $DB->insert_record('peerassessment_comments', $newcomment);
+        
+        // Should now be 2 comments for the same pa-user-group
+        $comments = $DB->get_records('peerassessment_comments', [
+                'userid' => $rater->id,
+                'peerassessment' => $pai->get_instance()->id,
+                'groupid' => $group->id
+        ]);
+        $this->assertEquals(2, count($comments));
+        // Try to update it
+        $this->expectException('\mod_peerassessment\exception\multiplecomments_exception');
+        $group = $this->testGroups[0];	// use the 1st group
+        $pai = new \mod_peerassessment\peerassessment($instance, $group->id);
+        $rater = array_values($pai->get_members())[0];
+        foreach($pai->get_members() as $mid2 => $member2) {
+            $pai->rate($mid2, 1, $rater->id);
+        }
+        $commenttext3 = 'test text3';
+        $pai->comment($rater->id, $commenttext3);// Should throw an exception
+        //$pai->save_ratings(); 
+        
+
+        
+    }
+} 

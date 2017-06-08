@@ -18,7 +18,9 @@ $string['allowsubmissionsfromdate_help'] = 'Students will only be able to submit
 $string['alreadyrated'] = 'You have already rated your peers.';
 $string['backtocourse'] = 'Back to class';
 $string['canedit'] 	= 'Allow student to change their responses.';
-$string['canedit_help'] 	= 'Students may change their responses up to the Due Date. After the due date changes are not permitted.';
+$string['canedit_help'] 	= 'Students may change their responses up to the Due Date. After the due date changes are not permitted.
+
+A Due Date *must* be set to enable this option.';
 $string['cantrate'] = 'You are not able to rate your peers. Please check with your lecturer that you are in a group.';
 $string['chooseexportfields'] = 'Choose fields to export';
 $string['chooseexportformat'] = 'Choose export format';
@@ -71,6 +73,10 @@ It is then up to you to decide what the grade represents to the student.
 $string['grade_help'] ='Select the type of grading used for this activity. If "scale" is chosen, you can then choose the scale from the "scale" dropdown. If using "point" grading, you can then enter the maximum grade available for this activity.';
 $string['notamemberofgroup'] = 'You do not belong to a group. Please contact your lecturer / tutor.';
 $string['notamemberofgroup_warning'] = '{$a->affecteduserid} is not a member of the group {$a->groupid}';
+$string['multiplecommentsfounderror'] = 'Multiple comments were found against this rating. This should not happen, please contact help@strath.ac.uk with the following information:
+
+# Comments; {$a->count}, Userid: {$a->userid}, Instanceid: {$a->instanceid}
+';
 $string['ratedallgroups'] = 'Rated all groups';
 $string['ratedanygroup'] = 'Rated any group';
 $string['ratingscale'] = 'Scale to rate peers against';

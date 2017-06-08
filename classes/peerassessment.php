@@ -3,6 +3,7 @@ namespace mod_peerassessment;
 use mod_peerassessment\exception;
 use mod_peerassessment\exception\security_exception;
 use mod_peerassessment\exception\invalid_rating_exception;
+use mod_peerassessment\exception\multiplecomments_exception;
 /**
  * Manages all of the responses and calculation of peer assessment ratings
  * for a particular group.
@@ -99,7 +100,13 @@ class peerassessment {
 		$this->ratings = $tmpratings;
 		return $this->ratings;
 	}	
-	
+	/**
+	 * Return the underlying DB record.
+	 * @return \mod_peerassessment\stdClass a Peer Assessment database record that was used to instantiate this object.
+	 */
+	public function get_instance() {
+	    return $this->instance;
+	}
 	/**
 	 * Returns array of ratings awarded by $userid, indexed by the ratee userid.
 	 * 
@@ -165,7 +172,11 @@ class peerassessment {
 			}
 		}
 		if (isset($this->dbcomment)) {
-		    if (empty($dbcomment->id)) {
+/* 		    if (debugging("Student comment is set",  DEBUG_DEVELOPER)) {
+		        var_dump($this->dbcomment);
+		        //die();
+		    }
+ */		    if (empty($this->dbcomment->id)) {
 				$this->dbcomment->id = $DB->insert_record('peerassessment_comments', $this->dbcomment);
 				$isUpdate = $isUpdate & false;
 			} else {
@@ -315,32 +326,51 @@ class peerassessment {
 
 	}
 	private $dbcomment;
-	/**
-	 * Saves a comment by userid against the PA activity
-	 * @param int $userid Moodle ID of user making the comment
-	 * @param string $commenttext Comment text entered by the user.
-	 */
-	public function comment($userid, $commenttext) {
-		global $DB;
-		// save the comment
-		if ($DB->count_records('peerassessment_comments', array(
-				'userid' => $userid,
-				'groupid' => $this->group->id,
+    /**
+     * Saves a comment by userid against the PA activity
+     * @param int $userid Moodle ID of user making the comment
+     * @param string $commenttext Comment text entered by the user.
+     */
+    public function comment($userid, $commenttext) {
+        global $DB;
+        // save the comment
+        $comments = $DB->get_records('peerassessment_comments', array(
+                'userid' => $userid,
+                'groupid' => $this->group->id,
                 'peerassessment' => $this->instance->id
-		))){
-			// Should we save a copy?
-		} else {
-			$comment = new \stdClass();
-			$comment->userid = $userid;
-			$comment->peerassessment = $this->instance->id;
-			$t = time();
-			$comment->timemodified = $t;
-			$comment->timecreated = $t;
-			$comment->groupid = $this->group->id;
-		}
-		$comment->studentcomment = $commenttext;
-		$this->dbcomment = $comment;
-	}
+        ),
+                'id ASC'
+                );
+        $commentcount =    count($comments);
+        $comment = new \stdClass();
+        
+        if ($commentcount > 1){
+            //debugging("{$commentcount} comments found for {$userid} in peer assessment activity id {$this->instance->id}", DEBUG_DEVELOPER);
+            // we have an interesting issue    of multiple previous comments
+            //print_error('multiplecommentsfounderror', 'mod_peerassessment', ['count' => $commentcount, 'userid' => $userid, 'instanceid' => $this->instance->id]);
+            throw new multiplecomments_exception(
+                    $commentcount, $userid, $this->instance->id
+                );
+        } else if ($commentcount == 1) {
+            // we have exactly 1 previous comment (lets update it)
+            $comment = array_values($comments)[0];    //
+            $t = time();
+            $comment->timemodified = $t;
+            $comment->timecreated = $t;
+            $comment->groupid = $this->group->id;
+        } else {
+            // we have no comment, create a    whole new one
+            $comment->userid = $userid;
+            $comment->peerassessment = $this->instance->id;
+            $t = time();
+            $comment->timemodified = $t;
+            $comment->timecreated = $t;
+            $comment->groupid = $this->group->id;
+        }
+        $comment->studentcomment = $commenttext;
+        $this->dbcomment = $comment;
+    }
+    
 	private $comments;
 	/**
 	 * Returns the comment made by user in the activity 
