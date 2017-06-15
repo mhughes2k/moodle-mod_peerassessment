@@ -163,8 +163,19 @@ if($delete === 'delete') {
 // Deal with broken setups really early, not using templates
 $problems = array();
 
-if ($cm->groupmode == 0) {
-    $problems[] = 'Activity requires Group mode to be set to either Separate or Visible groups';
+if(groups_get_activity_groupmode($cm) == 0) {
+    if(groups_get_course_groupmode($course) == 0) {
+        $fixurl = new \moodle_url('/course/edit.php', [ 'id' => $course->id]);
+        if ($course->groupmodeforce == 1) {
+            $problems[] = 'Course group settings are forced to "No Groups". '. $OUTPUT->action_link($fixurl, 'Fix Issue');
+        } else {
+            $problems[] = 'Course & Activity group settings are set to "No Groups". '. $OUTPUT->action_link($fixurl, 'Fix Issue');
+        }
+    } else {
+        // course is set to a group mode, but the local activity isn't
+        $fixurl = new \moodle_url('/mod/edit.php', [ 'id' => $cm->id]);
+        $problems[] = 'Activity requires Group mode to be set to either Separate or Visible groups. '. $OUTPUT->action_link($fixurl, 'Fix Issue');;
+    }
 }
 if ($pa->ratingscale == 0) {
     $problems[] = "Rating Scale Type is to None. This means there will be no options for the students to rate against.";
