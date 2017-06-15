@@ -184,10 +184,11 @@ if(count($problems) >0) {
     $PAGE->set_url('/mod/peerassessment/view.php', array('id' => $id));
     $editlink = new moodle_url('/course/modedit.php', array('update'=> $id, 'return'=>1));
     $btn = $OUTPUT->single_button($editlink, get_string('editsettings'));
-    $PAGE->set_button($btn);
+    
     echo $OUTPUT->header();
     echo $OUTPUT->heading($pa->name);
     if ($canmanage) {
+        $PAGE->set_button($btn);
         echo $OUTPUT->box_start('generalbox bg-danger');
         echo html_writer::tag('p',get_string('issues_staff', 'peerassessment'));
         echo html_writer::start_tag('ol');
