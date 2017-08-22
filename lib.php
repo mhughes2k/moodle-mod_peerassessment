@@ -70,6 +70,7 @@ function peerassessment_update_instance($data, $mform) {
  */
 function peerassessment_delete_instance($id) {
 	global $DB;
+    $cm = get_coursemodule_from_instance('peerassessment', $id);
 	if (! $data = $DB->get_record('peerassessment', array('id'=>$id))) {
 		return false;
 	}
@@ -82,9 +83,12 @@ function peerassessment_delete_instance($id) {
 	}
 
 	 if ($events = $DB->get_records_select('event', "modulename = 'peerassessment' and instance = '{$data->id}'")) {
+        $coursecontext = context_course::instance($cm->course);
 		foreach ($events as $event) {
-		    $ca = new calendar_event($event);
-		    $ca->delete();
+		    $event->context = $coursecontext;
+		    //$ca->delete();
+            $ce = calendar_event::load($event);
+            $ce->delete();
 		}
 	}
 
