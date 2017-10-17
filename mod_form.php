@@ -69,6 +69,9 @@ class mod_peerassessment_mod_form extends moodleform_mod {
         $mform->disabledIf('upperbound', 'ratingscale[pagrade_type]', 'neq', 'point');
         // Decide if we're making this a gradable activity!
         $this->standard_grading_coursemodule_elements();
+        if($mform->elementExists('grade')) {
+            $mform->removeElement('grade');
+        }
         //$mform->setDefault('grade', null);
         /*
         $mform->addHelpButton('grade', 'grade', 'peerassessment');

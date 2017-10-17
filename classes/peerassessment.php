@@ -208,6 +208,7 @@ class peerassessment {
         }
         $event->trigger();
         $this->clear_rating_queue();
+        // TODO STRATHPA-100 Update the average rating each student has received. 
 	}
 	public function clear_rating_queue() {
 		$this->dbratings = array(); // reset the items waiting for update / insert

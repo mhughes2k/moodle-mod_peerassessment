@@ -18,7 +18,7 @@ function peerassessment_supports($feature) {
 		case FEATURE_COMPLETION_TRACKS_VIEWS:
 			return false;
 		case FEATURE_GRADE_HAS_GRADE:
-			return false;	// TODO to be decided.
+			return true;	// TODO to be decided.
 		case FEATURE_COMPLETION_HAS_RULES: 
 			return true;
 		case FEATURE_GRADE_OUTCOMES:
@@ -114,13 +114,16 @@ function peerassessment_get_user_grades($peerassessment, $userid = 0) {
  * @param string $nullifnone If true and the user has no grade then a grade item with rawgrade == null will be inserted
  */
 function peerassessment_update_grades($peerassessment = null, $userid=0, $nullifnone = true) {
-    /*
     global $CFG, $DB;
     require_once($CFG->libdir.'/gradelib.php');
-    if ($peerassessment->grade == 0) {
+    if (!isset($peerassessment->cmidnumber)) {
+        $cm = get_coursemodule_from_instance("peerassessment", $peerassessment->id);
+        $peerassessment->cmidnumber = $cm->id;
+    }
+    if ($peerassessment->ratingscale == 0) {
         peerassessment_grade_item_update($peerassessment);
-    } else if () {
-        
+    } else if ($grades = peerassessment_get_user_grades($peerassessment, $userid)) {
+        peerassessment_grade_item_update($peerassessment, $grades);
     } else if ($userid and $nullifnone) {
         $grade = new stdClass();
         $grade->userid = $userid;
@@ -128,8 +131,47 @@ function peerassessment_update_grades($peerassessment = null, $userid=0, $nullif
         peerassessment_grade_item_update($peerassessment, $grade);
     } else {
         peerassessment_grade_item_update($peerassessment);
-    }*/
+    }
     return true;
+}
+
+/**
+ * Generate a "grade" for student.
+ * @param unknown $peerassessment
+ * @param unknown $userid
+ */
+function peerassessment_get_user_grades($peerassessment, $userid) {
+    if (is_null($peerassessment)) {
+        return false;
+    }
+    if ($userid == 0) {
+        // do what!?!
+        return false;
+    }
+    $cm = get_coursemodule_from_instance("peerassessment", $peerassessment->id);
+    $groups = groups_get_activity_allowed_groups($cm);
+    $total = 0;
+    $numgroups = 0;//count($groups);
+    foreach($groups as $groupid=>$group) {
+        $pa_instance = new \mod_peerassessment\peerassessment($peerassessment, $groupid);
+        $rating = $pa_instance->get_student_average_rating_received($userid);
+        if (!is_null($rating)) {
+            $total += $rating;
+            $numgroups++;
+        }
+    }
+    $avg = $total / $numgroups;
+    $grade = new stdClass();
+    $grade->userid = $userid;
+    $grade->timecreated = time();
+    if ($total > 0) {
+        $grade->feedback = "Average rating received {$avg} over {$numgroups} group ({$total}/{$numgroups})";
+    } else {
+        $grade->feedback = '';
+    }
+    $grade->feedbackformat = "";
+    $grade->rawgrade = $avg;
+    return [$userid => $grade];
 }
 
 /**
@@ -139,36 +181,37 @@ function peerassessment_update_grades($peerassessment = null, $userid=0, $nullif
  * @return int 0 if ok, error code otherwise.
  */
 function peerassessment_grade_item_update($data, $grades = null) {
-    return true;
-    /*
+    //return true;
+    
 	global $CFG;
 	if (!function_exists('grade_update')) {
 		require_once("{$CFG->libdir}/gradelib.php");
 	}	
     // based on the data module implementation..
     $params = array('itemname'=>$data->name, 'idnumber'=>$data->cmidnumber);
-    if ($data->grade == 0) {
-        // No grading
+    if ($data->ratingscale== 0) {
+        // No grading. NB. This can *never* happen!
         $params['gradetype'] = GRADE_TYPE_NONE;
         
-    } else if ($data->grade > 0) {
+    } else if ($data->ratingscale > 0) {
         // Grade Type value
         $params['gradetype'] = GRADE_TYPE_VALUE;
-        $params['grademax']  = $data->grade;
+        $params['grademax']  = $data->ratingscale;
         $params['grademin']  = 0;
         
-    } else if ($data->grade < 0) {
+    } else if ($data->ratingscale < 0) {
         // Grade type scale
         $params['gradetype'] = GRADE_TYPE_SCALE;
-        $params['scaleid']   = -$data->grade;
+        $params['scaleid']   = -$data->ratingscale;
     }
     if ($grades === 'reset') {
         $params['reset'] =  true;
         $grades = null;
     }
     
-    return grade_update('mod/peerassessment', $data->course, 'mod', 'peerassessment', $data->id, 0, $grades, $params);
-    */
+    $g_u = grade_update('mod/peerassessment', $data->course, 'mod', 'peerassessment', $data->id, 0, $grades, $params);
+    return $g_u;
+    
 }
 
 
