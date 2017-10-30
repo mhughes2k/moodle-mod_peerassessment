@@ -183,11 +183,11 @@ function peerassessment_get_user_grades($peerassessment, $userid) {
                 }
             }
         }
-        var_dump($grades);
+//        var_dump($grades);
         return $grades;
     } else {
         // return for 1 user
-        debugging("getusergrades {$userid}");
+        debugging("getusergrades {$userid}", DEBUG_DEVELOPER);
         $total = 0;
         $numgroups = 0;//count($groups);
         $groups = groups_get_activity_allowed_groups($cm);
