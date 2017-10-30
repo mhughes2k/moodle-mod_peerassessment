@@ -125,7 +125,7 @@ if ($data) {
             if ($completion->is_enabled($cm) && $pa->completionrating) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
             }
-
+            peerassessment_update_grades($pa, $USER->id);
             redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
             exit();
         } else {
@@ -157,6 +157,7 @@ if($delete === 'delete') {
     $ratedbyid = required_param('ratedby', PARAM_INT);
     $pa_instance = new \mod_peerassessment\peerassessment($pa, $groupid);
     $pa_instance->delete_ratings($ratedbyid);
+    peerassessment_update_grades($pa);
     redirect(new \moodle_url('/mod/peerassessment/view.php', array('id' => $id, 'groupid' => $groupid, 'mode'=> $mode)));
     exit();
 }

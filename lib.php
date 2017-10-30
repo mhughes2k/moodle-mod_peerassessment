@@ -121,7 +121,9 @@ function peerassessment_update_grades($peerassessment = null, $userid=0, $nullif
         $peerassessment->cmidnumber = $cm->id;
     }
     if ($peerassessment->ratingscale == 0) {
+        debugging("gradeitemupdate");
         peerassessment_grade_item_update($peerassessment);
+        
     } else if ($grades = peerassessment_get_user_grades($peerassessment, $userid)) {
         peerassessment_grade_item_update($peerassessment, $grades);
     } else if ($userid and $nullifnone) {
@@ -144,34 +146,74 @@ function peerassessment_get_user_grades($peerassessment, $userid) {
     if (is_null($peerassessment)) {
         return false;
     }
+    $cm = get_coursemodule_from_instance("peerassessment", $peerassessment->id);
+    $context = context_module::instance($cm->id);
     if ($userid == 0) {
         // do what!?!
-        return false;
-    }
-    $cm = get_coursemodule_from_instance("peerassessment", $peerassessment->id);
-    $groups = groups_get_activity_allowed_groups($cm);
-    $total = 0;
-    $numgroups = 0;//count($groups);
-    foreach($groups as $groupid=>$group) {
-        $pa_instance = new \mod_peerassessment\peerassessment($peerassessment, $groupid);
-        $rating = $pa_instance->get_student_average_rating_received($userid);
-        if (!is_null($rating)) {
-            $total += $rating;
-            $numgroups++;
+        debugging("getusergrades0");
+        $users = get_enrolled_users($context);
+        $grades = [];
+        foreach($users as $uid=>$user) {
+            debugging($uid);
+            $total = 0;
+            $numgroups = 0;//count($groups);
+            $groups = groups_get_activity_allowed_groups($cm, $uid);
+            foreach($groups as $groupid => $group) {
+                $pa_instance = new \mod_peerassessment\peerassessment($peerassessment, $groupid);
+                $rating = $pa_instance->get_student_average_rating_received($uid, true);
+                debugging("Rating $rating");
+                if (!is_null($rating)) {
+                    $total += $rating;
+                    $numgroups++;
+                }
+                debugging("Numgroups {$numgroups}");
+                if ($numgroups > 0 ) {
+                    $avg = $total / $numgroups;
+                    $grade = new stdClass();
+                    $grade->userid = $uid;
+                    $grade->timecreated = time();
+                    if ($total > 0) {
+                        $grade->feedback = "Average rating received {$avg} over {$numgroups} group ({$total}/{$numgroups})";
+                    } else {
+                        $grade->feedback = '';
+                    }
+                    $grade->feedbackformat = "";
+                    $grade->rawgrade = $avg;
+                    $grades[$uid] = $grade;
+                }
+            }
+        }
+        var_dump($grades);
+        return $grades;
+    } else {
+        // return for 1 user
+        debugging("getusergrades {$userid}");
+        $total = 0;
+        $numgroups = 0;//count($groups);
+        $groups = groups_get_activity_allowed_groups($cm);
+        foreach($groups as $groupid=>$group) {
+            $pa_instance = new \mod_peerassessment\peerassessment($peerassessment, $groupid);
+            $rating = $pa_instance->get_student_average_rating_received($userid, true);
+            if (!is_null($rating)) {
+                $total += $rating;
+                $numgroups++;
+            }
+        }
+        if ($numgroups > 0 ) {
+            $avg = $total / $numgroups;
+            $grade = new stdClass();
+            $grade->userid = $userid;
+            $grade->timecreated = time();
+            if ($total > 0) {
+                $grade->feedback = "Average rating received {$avg} over {$numgroups} group ({$total}/{$numgroups})";
+            } else {
+                $grade->feedback = '';
+            }
+            $grade->feedbackformat = "";
+            $grade->rawgrade = $avg;
+            return [$userid => $grade];
         }
     }
-    $avg = $total / $numgroups;
-    $grade = new stdClass();
-    $grade->userid = $userid;
-    $grade->timecreated = time();
-    if ($total > 0) {
-        $grade->feedback = "Average rating received {$avg} over {$numgroups} group ({$total}/{$numgroups})";
-    } else {
-        $grade->feedback = '';
-    }
-    $grade->feedbackformat = "";
-    $grade->rawgrade = $avg;
-    return [$userid => $grade];
 }
 
 /**

@@ -3,7 +3,7 @@
 require('../../config.php');
 require_once("lib.php");
 $id = required_param('id', PARAM_INT);
-$userid = 314;
+$userid = 0;
 echo '<pre>';
 $groupid = 1;
 $group = groups_get_group($groupid);
