@@ -99,8 +99,8 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
      * Configure activity with a specifed rating, and test that each
      * user receives the expected value in grade book.
      * 
-     * @param unknown $expected
-     * @param unknown $rating
+     * @param string $expected String grade value expected (moodle grades held to 5 decimal places).
+     * @param int $rating Value that each student will rate each other student.
      */
     private function gradebooktest($expectedGrade, $rating) {
         // Generate some ratings
@@ -118,26 +118,19 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
         $pai->save_ratings();
 
         // Check ratings have appeared in grade book.
-        //$grades = grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance)
         foreach($pai->get_members() as $mid => $member) {
-            //$grade_grades = grade_grade::fetch_users_grades($grade_item, $userids, true);
             $grades = grade_get_grades($this->testCourse->id,
                     'mod', 
                     'peerassessment', 
                     $instance->id,
                     $mid
             );
-            //var_dump($grades);
             $gradeitem = array_pop($grades->items);
             $this->assertEquals('peerassessment', $gradeitem->itemmodule);
             $this->assertEquals($instance->id, $gradeitem->iteminstance);
-
             $grade = array_pop($gradeitem->grades);
-
             $this->assertEquals($expectedGrade, $grade->grade, "Gradebook value does not match for user {$mid}");
         }
-        //
-        
     }
 
 
