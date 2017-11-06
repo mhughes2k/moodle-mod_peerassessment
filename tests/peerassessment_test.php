@@ -66,6 +66,80 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 		
 		$this->testPa = $this->getDataGenerator()->create_module('peerassessment', array('course' => $this->testCourse->id, 'groupmode' => SEPARATEGROUPS));
 	}
+    /**
+     * Test the pushing of grades to the grade book.
+     * 
+     * In this test 1 group is reated, with all members being rated 1.
+     * 
+     * Each student should receive a grade of 1 / 5.
+     * 
+     * @group peerassessment_gradebook
+     */
+    public function test_gradebook() {
+        $this->resetAfterTest(true);
+        $expectedGrade = "1.00000"; // Moodle grades to 5 decimal places.
+        $this->gradebooktest($expectedGrade, 1);
+    }
+    /**
+     * Test the pushing of grades to the grade book.
+     *
+     * In this test 1 group is reated, with all members being rated 5.
+     *
+     * Each student should receive a grade of 5 / 5.
+     *
+     * @group peerassessment_gradebook
+     */
+    public function test_gradebook2() {
+        $this->resetAfterTest(true);
+        $expectedGrade = "5.00000"; // Moodle grades to 5 decimal places.
+        $this->gradebooktest($expectedGrade, 5);
+    }
+    
+    /**
+     * Configure activity with a specifed rating, and test that each
+     * user receives the expected value in grade book.
+     * 
+     * @param unknown $expected
+     * @param unknown $rating
+     */
+    private function gradebooktest($expectedGrade, $rating) {
+        // Generate some ratings
+        global $DB;
+        
+        $instance = $DB->get_record('peerassessment', array('id' => $this->testPa->id));
+        $group = $this->testGroups[0];	// use the 1st group
+        $pai = new \mod_peerassessment\peerassessment($instance, $group->id);
+        // For first group everyone rates everyone "1"
+        foreach($pai->get_members() as $mid => $member1) {
+            foreach($pai->get_members() as $mid2 => $member2) {
+                $pai->rate($mid2, $rating, $mid);
+            }
+        }
+        $pai->save_ratings();
+
+        // Check ratings have appeared in grade book.
+        //$grades = grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance)
+        foreach($pai->get_members() as $mid => $member) {
+            //$grade_grades = grade_grade::fetch_users_grades($grade_item, $userids, true);
+            $grades = grade_get_grades($this->testCourse->id,
+                    'mod', 
+                    'peerassessment', 
+                    $instance->id,
+                    $mid
+            );
+            //var_dump($grades);
+            $gradeitem = array_pop($grades->items);
+            $this->assertEquals('peerassessment', $gradeitem->itemmodule);
+            $this->assertEquals($instance->id, $gradeitem->iteminstance);
+
+            $grade = array_pop($gradeitem->grades);
+
+            $this->assertEquals($expectedGrade, $grade->grade, "Gradebook value does not match for user {$mid}");
+        }
+        //
+        
+    }
+
 
 	/**
 	 * Test the rate() and average function.

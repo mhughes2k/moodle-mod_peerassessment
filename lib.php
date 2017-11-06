@@ -150,23 +150,23 @@ function peerassessment_get_user_grades($peerassessment, $userid) {
     $context = context_module::instance($cm->id);
     if ($userid == 0) {
         // do what!?!
-        debugging("getusergrades0");
+        //debugging("getusergrades0");
         $users = get_enrolled_users($context);
         $grades = [];
         foreach($users as $uid=>$user) {
-            debugging($uid);
+            // debugging($uid, D);
             $total = 0;
             $numgroups = 0;//count($groups);
             $groups = groups_get_activity_allowed_groups($cm, $uid);
             foreach($groups as $groupid => $group) {
                 $pa_instance = new \mod_peerassessment\peerassessment($peerassessment, $groupid);
                 $rating = $pa_instance->get_student_average_rating_received($uid, true);
-                debugging("Rating $rating");
+                //debugging("Rating $rating");
                 if (!is_null($rating)) {
                     $total += $rating;
                     $numgroups++;
                 }
-                debugging("Numgroups {$numgroups}");
+                //debugging("Numgroups {$numgroups}");
                 if ($numgroups > 0 ) {
                     $avg = $total / $numgroups;
                     $grade = new stdClass();
@@ -187,7 +187,7 @@ function peerassessment_get_user_grades($peerassessment, $userid) {
         return $grades;
     } else {
         // return for 1 user
-        debugging("getusergrades {$userid}", DEBUG_DEVELOPER);
+        //debugging("getusergrades {$userid}", DEBUG_DEVELOPER);
         $total = 0;
         $numgroups = 0;//count($groups);
         $groups = groups_get_activity_allowed_groups($cm);
