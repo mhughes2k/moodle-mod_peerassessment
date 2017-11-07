@@ -208,6 +208,9 @@ class peerassessment {
         }
         $event->trigger();
         $this->clear_rating_queue();
+        // TODO STRATHPA-100 Update the average rating each student has received. 
+        //assign_update_grades($assign, $userid);
+        peerassessment_update_grades($this->instance);
 	}
 	public function clear_rating_queue() {
 		$this->dbratings = array(); // reset the items waiting for update / insert
@@ -416,7 +419,7 @@ class peerassessment {
 	}
 	/**
 	 * Get the average rating for a given student.
-	 * @param bool $includeself Include ratings use has made of themself.
+	 * @param bool $includeself Include ratings user has made of themself.
 	 */
 	public function get_student_average_rating_received($userid, $includeself = false) {
 		global $DB;
