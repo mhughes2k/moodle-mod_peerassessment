@@ -330,7 +330,7 @@ if ($group) {
                 )),
                 'groupid', 
                 $groupoptions,
-                $formid = null, 
+                $groupid,
                 $attributes = array('label' => get_string('switchgroups', 'peerassessment'))
                 );
     }
