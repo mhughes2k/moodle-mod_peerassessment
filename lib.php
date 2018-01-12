@@ -411,11 +411,12 @@ function peerassessment_get_completion_state($course, $cm, $userid, $type) {
 	if (!($pa = $DB->get_record('peerassessment', array('id' => $cm->instance)))) {
 		throw new \moodle_exception("Can't find peer assessment {$cm->instance}");
 	}
+
 	if($pa->completionrating) {
 		$usergroups = groups_get_activity_allowed_groups($cm, $userid);
 
 		if (empty($usergroups)) {
-		    return $type;
+		    return false;
         }
 
 		$usergroupids = array_keys($usergroups);
