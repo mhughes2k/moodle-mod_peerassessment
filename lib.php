@@ -413,16 +413,21 @@ function peerassessment_get_completion_state($course, $cm, $userid, $type) {
 	}
 	if($pa->completionrating) {
 		$usergroups = groups_get_activity_allowed_groups($cm, $userid);
+
 		if (empty($usergroups)) {
 		    return $type;
         }
+
 		$usergroupids = array_keys($usergroups);
-		list($ugsql, $ugparams) = $DB->get_in_or_equal($usergroupids);
+		list($ugsql, $params) = $DB->get_in_or_equal($usergroupids);
 		$completionssql = "SELECT count(distinct groupid) 
 				FROM {peerassessment_ratings} 
-				WHERE userid = ?";
-		//$completions = $DB->get_records_sql($completionssql, array($userid));
-		$completions = $DB->count_records_sql($completionssql, array($userid));
+				WHERE groupid $ugsql
+				AND ratedby = ?
+				AND peerassessment = ?";
+		$params[] = $userid;
+		$params[] = $cm->instance;
+		$completions = $DB->count_records_sql($completionssql, $params);
 		
 		if ($pa->completionrating == peerassessment::RATE_ALL_GROUPS) {
 			$expected = count($usergroupids);
@@ -439,5 +444,6 @@ function peerassessment_get_completion_state($course, $cm, $userid, $type) {
 			}
 		}
 	}
+
 	return $type;
 }
