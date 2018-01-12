@@ -413,6 +413,9 @@ function peerassessment_get_completion_state($course, $cm, $userid, $type) {
 	}
 	if($pa->completionrating) {
 		$usergroups = groups_get_activity_allowed_groups($cm, $userid);
+		if (empty($usergroups)) {
+		    return $type;
+        }
 		$usergroupids = array_keys($usergroups);
 		list($ugsql, $ugparams) = $DB->get_in_or_equal($usergroupids);
 		$completionssql = "SELECT count(distinct groupid) 
