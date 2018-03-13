@@ -114,3 +114,16 @@ $string['peerassessment:deleteratings'] = 'Delete Peer Assessment Ratings';
 $string['peerassessment:usepeerassessment'] = 'Use Peer Assessment';
 $string['peerassessment:viewreport'] = 'View Report';
 $string['peerassessment:recordrating'] = 'Record a peer assessment rating';
+
+/* Privacy Strings */
+$string['privacy:metadata:peerassessment_ratings'] = 'Information about the peer ratings assigned to a student by another student.';
+$string['privacy:metadata:peerassessment_ratings:userid'] = 'The ID of the user being rated.';
+$string['privacy:metadata:peerassessment_ratings:rating'] = 'The rating value that was recorded against the user';
+$string['privacy:metadata:peerassessment_ratings:ratedby'] = 'The ID of the user that performed the rating.';
+$string['privacy:metadata:peerassessment_comments:studentcomment'] = 'The text entered by a user about the ratings being recorded against other users.';
+
+/* Shared / consistently defined attributes */
+$string['privacy:metadata:peerassessment'] = 'The ID of the Peer Assessment activity.';
+$string['privacy:metadata:timecreated'] = 'The time that the rating was created.';
+$string['privacy:metadata:timemodified'] = 'The time that the rating was last changed.';
+$string['privacy:metadata:groupid'] = 'The ID of the group within the activity associated with the rating value.';
