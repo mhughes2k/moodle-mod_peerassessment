@@ -105,8 +105,6 @@ function peerassessment_get_user_grades($peerassessment, $userid = 0) {
 }*/
 /**
  * Update activity grades
- * This is not implemented as we don't record grades in the activity, it has to be done in the
- * grade book at the moment.
  * @category grade
  * 
  * @param stdClass $peerassessment Null means all peerassessments (with extra cmidnumber property)
