@@ -4,8 +4,11 @@ namespace mod_peerassessment\privacy;
 
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\context;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\deletion_criteria;
+use core_privacy\local\request\helper;
+use core_privacy\local\request\writer;
 
 class provider implements
     \core_privacy\local\metadata\provider,
@@ -87,6 +90,7 @@ class provider implements
         ];
 
         $contextlist->add_from_sql($sql, $params);
+        debugging(print_r($contextlist, true), DEBUG_DEVELOPER);
 
         /* Working below has been combined in to the above single DB query.
          * Some one to validate this !
@@ -137,18 +141,164 @@ class provider implements
         return $contextlist;
     }
 
+    /**
+     * Export the supplied personal data for a single peer assessment activity,
+     * along with any generatic data or area files.
+     * @see \mod_choice\privacy\provider::export_choice_data_for_user()  Basis of this code.
+     * @param array $ratingdata
+     * @param \context_module $context
+     * @param \stdClass $user
+     */
+    protected static function export_pa_data_for_user(array $padata, \context_module $context, \stdClass $user, $subcontext=[]) {
+        // Fetch generic module data.
+        $contextdata = helper::get_context_data($context, $user);
+
+        // Merge with peer assessment rating data.
+        $contextdata = (object) array_merge((array)$contextdata, $padata);
+        writer::with_context($context)->export_data($subcontext, $contextdata);
+
+        // Write generic module intro files.
+        helper::export_context_files($context, $user);
+    }
+    /**
+     * Export User data
+     *
+     * We need to export :
+     * 1. the ratings made *against* this user (where they are the ratee)
+     * 2. the comments made *by* this user (where they are the rater)
+     * @param approved_contextlist $contextlist
+     * @return mixed
+     */
     public static function export_user_data(approved_contextlist $contextlist)
     {
-        // TODO: Implement export_user_data() method.
+        if (empty($contextlist->count())) {
+            debugging("No Contexts", DEBUG_DEVELOPER);
+            return;
+        }
+
+        $user = $contextlist->get_user();
+        self::export_ratings($contextlist, $user);
+        self::export_comments($contextlist, $user);
+
     }
 
-    public static function delete_for_context(deletion_criteria $criteria)
-    {
-        // TODO: Implement delete_for_context() method.
+    /**
+     * Export ratings.
+     * @param approved_contextlist $contextlist
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    protected static function export_ratings(approved_contextlist $contextlist, $user) {
+        global $DB;
+
+        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+
+        $sql = "SELECT cm.id AS cmid,
+                      par.rating AS rating,
+                      par.timemodified AS timemodified
+                 FROM {context} c
+           INNER JOIN {course_modules} cm ON cm.id = c.instanceid 
+           INNER JOIN {peerassessment_ratings} par ON par.peerassessment = cm.instance
+                WHERE c.id {$contextsql}
+                      AND par.userid = :userid
+             ORDER BY cm.id";
+
+        $params = ['userid' => $user->id]+$contextparams;
+
+        $lastcmid = null;
+
+        $ratings = $DB->get_recordset_sql($sql, $params);
+        // Loop through each of the ratings given to this user
+        foreach($ratings as $rating) {
+            if(debugging(null, DEBUG_DEVELOPER)) {
+                var_dump($rating);
+            }
+            if ($lastcmid != $rating->cmid) {
+                if (!empty($ratingdata)) {
+                    $context = \context_module::instance($lastcmid);
+                    self::export_pa_data_for_user($ratingdata, $context, $user, ['ratings']);
+                }
+                $ratingdata = [
+                    'rating' => [],
+                    'timemodified' => \core_privacy\local\request\transform::datetime($rating->timemodified)
+                ];
+            }
+            $ratingdata['rating'] = $rating->rating;
+            $lastcmid= $rating->cmid;
+        }
+        $ratings->close();
+
+        if (!empty($ratingdata)) {
+            $context = \context_module::instance($lastcmid);
+            self::export_pa_data_for_user($ratingdata, $context, $user, ['ratings']);
+        }
     }
 
-    public static function delete_user_data(approved_contextlist $contextlist)
+    /**
+     * Export peer assessment comments made *by* the user
+     * @param approved_contextlist $contextlist
+     * @param stdClass $user
+     */
+    protected static function export_comments(approved_contextlist $contextlist, $user) {
+        global $DB;
+        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+
+        $sql = "SELECT cm.id AS cmid,
+                      pac.studentcomment AS comment,
+                      pac.timecreated AS timecreated,
+                      pac.timemodified AS timemodified
+                 FROM {context} c
+           INNER JOIN {course_modules} cm ON cm.id = c.instanceid 
+           INNER JOIN {peerassessment_comments} pac ON pac.peerassessment = cm.instance
+                WHERE c.id {$contextsql}
+                      AND pac.userid = :userid
+             ORDER BY cm.id";
+
+        $params = ['userid' => $user->id]+$contextparams;
+
+        $lastcmid = null;
+
+        $comments = $DB->get_recordset_sql($sql, $params);
+        foreach($comments as $comment) {
+            if ($lastcmid != $comment->cmid) {
+                if (!empty($commentdata)) {
+                    $context = \context_module::instance($lastcmid);
+                    self::export_pa_data_for_user($commentdata, $context, $user, ['commments']);
+                }
+                $commentdata = [
+                    'comment' => [],
+                    'timecreated' => \core_privacy\local\request\transform::datetime($comment->timecreated),
+                    'timemodified' => \core_privacy\local\request\transform::datetime($comment->timemodified)
+
+                ];
+            }
+            $commentdata['comment'] = $comment->comment;
+            $lastcmid= $comment->cmid;
+        }
+        $comments->close();
+
+        if (!empty($commentdata)) {
+            $context = \context_module::instance($lastcmid);
+            self::export_pa_data_for_user($commentdata, $context, $user, ['commments']);
+        }
+    }
+    /**
+     * @param \context|context $context
+     * @return mixed
+     */
+    public static function delete_data_for_all_users_in_context(\context $context)
     {
-        // TODO: Implement delete_user_data() method.
+        var_dump($context);
+        // TODO: Implement delete_data_for_all_users_in_context() method.
+    }
+
+    /**
+     * @param approved_contextlist $contextlist
+     * @return mixed
+     */
+    public static function delete_data_for_user(approved_contextlist $contextlist)
+    {
+        var_dump($contextlist);
+        // TODO: Implement delete_data_for_user() method.
     }
 }
