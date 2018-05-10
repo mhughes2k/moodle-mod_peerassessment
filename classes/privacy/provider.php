@@ -40,7 +40,7 @@ class provider implements
               'groupid' => 'privacy:metadata:groupid',
           ]
         );
-        
+
         return $collection;
     }
 
@@ -167,19 +167,16 @@ class provider implements
      * 1. the ratings made *against* this user (where they are the ratee)
      * 2. the comments made *by* this user (where they are the rater)
      * @param approved_contextlist $contextlist
-     * @return mixed
      */
     public static function export_user_data(approved_contextlist $contextlist)
     {
         if (empty($contextlist->count())) {
-            debugging("No Contexts", DEBUG_DEVELOPER);
             return;
         }
 
         $user = $contextlist->get_user();
         self::export_ratings($contextlist, $user);
         self::export_comments($contextlist, $user);
-
     }
 
     /**
@@ -210,9 +207,6 @@ class provider implements
         $ratings = $DB->get_recordset_sql($sql, $params);
         // Loop through each of the ratings given to this user
         foreach($ratings as $rating) {
-            if(debugging(null, DEBUG_DEVELOPER)) {
-                var_dump($rating);
-            }
             if ($lastcmid != $rating->cmid) {
                 if (!empty($ratingdata)) {
                     $context = \context_module::instance($lastcmid);
@@ -241,6 +235,10 @@ class provider implements
      */
     protected static function export_comments(approved_contextlist $contextlist, $user) {
         global $DB;
+        if (empty($contextlist->get_contextids())) {
+            // This will also prevent an empty array being passed to get_in_or_equal().
+            return;
+        }
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT cm.id AS cmid,
@@ -284,21 +282,51 @@ class provider implements
     }
     /**
      * @param \context|context $context
-     * @return mixed
      */
     public static function delete_data_for_all_users_in_context(\context $context)
     {
-        var_dump($context);
-        // TODO: Implement delete_data_for_all_users_in_context() method.
+        global $DB;
+
+        if ($context->contextlevel != CONTEXT_MODULE) {
+            return;
+        }
+
+        // get the instance id of the peer assessment.
+        $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
+        $tx = $DB->start_delegated_transaction();
+        $DB->delete_records('peerassessment_ratings', [
+            'peerassessment' => $instanceid
+        ]);
+
+        $DB->delete_records('peerassessment_comments', [
+            'peerassessment' => $instanceid
+        ]);
+        $tx->allow_commit();
+
     }
 
     /**
      * @param approved_contextlist $contextlist
-     * @return mixed
      */
     public static function delete_data_for_user(approved_contextlist $contextlist)
     {
-        var_dump($contextlist);
-        // TODO: Implement delete_data_for_user() method.
+        global $DB;
+        if (empty($contextlist->count())) {
+            return;
+        }
+        $tx = $DB->start_delegated_transaction();
+        $userid = $contextlist->get_user()->id;
+        foreach($contextlist->get_contexts() as $context) {
+            $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
+            $DB->delete_records('peerassessment_ratings', [
+                'peerassessment' => $instanceid,
+                'ratedby' => $userid
+            ]);
+            $DB->delete_records('peerassessment_comments', [
+                'peerassessment' => $instanceid,
+                'userid' => $userid
+            ]);
+        }
+        $tx->allow_commit();
     }
 }
