@@ -290,9 +290,11 @@ class provider implements
         if ($context->contextlevel != CONTEXT_MODULE) {
             return;
         }
+        if (!$cm = get_coursemodule_from_id('peerassessment', $context->instanceid)) {
+            return;
+        }
+        $instanceid = $cm->instanceid;
 
-        // get the instance id of the peer assessment.
-        $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
         $tx = $DB->start_delegated_transaction();
         $DB->delete_records('peerassessment_ratings', [
             'peerassessment' => $instanceid
@@ -317,7 +319,12 @@ class provider implements
         $tx = $DB->start_delegated_transaction();
         $userid = $contextlist->get_user()->id;
         foreach($contextlist->get_contexts() as $context) {
-            $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
+            // Sanity check that the context is a peerassessment context.
+            if (!$cm = get_coursemodule_from_id('peerassessment', $context->instanceid)) {
+                continue;
+            }
+            $instanceid = $cm->instanceid;
+
             $DB->delete_records('peerassessment_ratings', [
                 'peerassessment' => $instanceid,
                 'ratedby' => $userid
