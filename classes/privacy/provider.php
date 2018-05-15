@@ -54,7 +54,6 @@ class provider implements
      */
     public static function get_contexts_for_userid(int $userid): contextlist
     {
-        // TODO: Implement get_contexts_for_userid() method.
         /*
          * Peer assessment context should only be in the activity
          */
@@ -90,7 +89,6 @@ class provider implements
         ];
 
         $contextlist->add_from_sql($sql, $params);
-        debugging(print_r($contextlist, true), DEBUG_DEVELOPER);
 
         /* Working below has been combined in to the above single DB query.
          * Some one to validate this !
