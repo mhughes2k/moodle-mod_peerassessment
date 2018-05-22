@@ -109,7 +109,7 @@ function peerassessment_get_user_grades($peerassessment, $userid = 0) {
  * 
  * @param stdClass $peerassessment Null means all peerassessments (with extra cmidnumber property)
  * @param number $userid specific user only, 0 means all
- * @param string $nullifnone If true and the user has no grade then a grade item with rawgrade == null will be inserted
+ * @param boolean $nullifnone If true and the user has no grade then a grade item with rawgrade == null will be inserted
  */
 function peerassessment_update_grades($peerassessment = null, $userid=0, $nullifnone = true) {
     global $CFG, $DB;

@@ -200,8 +200,10 @@ class peerassessment {
             $event = \mod_peerassessment\event\rating_created::create($eventdata);
             
         }
-        foreach($this->dbratings as $dbrating) {
-            $event->add_record_snapshot('peerassessment_ratings', $dbrating);
+        if (!empty($this->dbratings)) {
+            foreach ($this->dbratings as $dbrating) {
+                $event->add_record_snapshot('peerassessment_ratings', $dbrating);
+            }
         }
         if (isset($this->dbcomment)) {
             $event->add_record_snapshot('peerassessment_comments', $this->dbcomment);
@@ -424,6 +426,9 @@ class peerassessment {
 	public function get_student_average_rating_received($userid, $includeself = false) {
 		global $DB;
 		$memberids = array_keys($this->get_members());
+		if (empty($memberids)) {
+		    return null;
+        }
 		list($uselect, $uparams) = $DB->get_in_or_equal($memberids);
 		$sql = "SELECT AVG(rating) AS average
 			FROM {peerassessment_ratings} pa

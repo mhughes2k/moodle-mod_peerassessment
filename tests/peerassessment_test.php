@@ -10,6 +10,7 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 	protected $testCourse;
 	protected $testUsers;
 	protected $testGroups;
+	protected $emptyGroup;
 	protected $testPa;
 	/**
 	 * SetUp test baseline
@@ -63,13 +64,17 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 			$gms = groups_get_members($g->id);
 			$this->assertEquals(5, count($gms), 'There should be 5 members in each group:' .$g->id. $g->name);
 		}
-		
+
+        $this->emptyGroup = $this->getDataGenerator()->create_group(array('courseid' => $this->testCourse->id));
+		$this->testGroups[] = $this->emptyGroup;
+        $this->assertEquals(3, count($this->testGroups), 'There should be 3 test groups (1 with no members).');
+
 		$this->testPa = $this->getDataGenerator()->create_module('peerassessment', array('course' => $this->testCourse->id, 'groupmode' => SEPARATEGROUPS));
 	}
     /**
      * Test the pushing of grades to the grade book.
      * 
-     * In this test 1 group is reated, with all members being rated 1.
+     * In this test 1 group is rated, with all members being rated 1.
      * 
      * Each student should receive a grade of 1 / 5.
      * 
@@ -133,6 +138,39 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
         }
     }
 
+    /**
+     * Test that having an empty group doesn't break updating
+     * the grade book.
+     * This tests STRATHPA-118.
+     * @param $expectedGrade
+     * @param $rating
+     * @throws moodle_exception
+     * @group emptygroup
+     */
+    public function test_emptygroup() {
+        global $DB;
+        $this->resetAfterTest(true);
+        $groups = [$this->testGroups[0], $this->emptyGroup];
+        $this->assertCount(5, groups_get_members($this->testGroups[0]->id));
+        $this->assertCount(0, groups_get_members($this->emptyGroup->id));
+        $instance = $DB->get_record('peerassessment', array('id' => $this->testPa->id));
+        foreach($groups as $group) {
+            $pai = new mod_peerassessment\peerassessment($instance, $group->id);
+            foreach($pai->get_members() as $mid=>$member1) {
+                foreach($pai->get_members() as $mid2 => $member2) {
+                    $pai->rate($mid2, 5, $mid);
+                }
+            }
+            $pai->save_ratings();
+        }
+
+        // Check ratings have appeared in grade book.
+        $students = get_enrolled_users(context_course::instance($this->testCourse->id));
+
+        foreach($students as $sid => $student) {
+            peerassessment_get_user_grades($instance, $sid);
+        }
+    }
 
 	/**
 	 * Test the rate() and average function.
