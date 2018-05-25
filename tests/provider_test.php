@@ -15,7 +15,7 @@ use core_privacy\local\request\writer;
 /**
  * Class mod_peerassessment_provider_testcase
  */
-class mod_peerassessment_provider_testcase extends advanced_testcase {
+class mod_peerassessment_provider_testcase extends provider_testcase {
 
     protected $testCourse;
     protected $testUsers;
