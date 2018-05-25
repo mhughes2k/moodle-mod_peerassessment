@@ -259,7 +259,7 @@ class provider implements
             if ($lastcmid != $comment->cmid) {
                 if (!empty($commentdata)) {
                     $context = \context_module::instance($lastcmid);
-                    self::export_pa_data_for_user($commentdata, $context, $user, ['commments']);
+                    self::export_pa_data_for_user($commentdata, $context, $user, ['comments']);
                 }
                 $commentdata = [
                     'comment' => [],
@@ -275,7 +275,7 @@ class provider implements
 
         if (!empty($commentdata)) {
             $context = \context_module::instance($lastcmid);
-            self::export_pa_data_for_user($commentdata, $context, $user, ['commments']);
+            self::export_pa_data_for_user($commentdata, $context, $user, ['comments']);
         }
     }
     /**
@@ -291,7 +291,8 @@ class provider implements
         if (!$cm = get_coursemodule_from_id('peerassessment', $context->instanceid)) {
             return;
         }
-        $instanceid = $cm->instanceid;
+
+        $instanceid = $cm->instance;
 
         $tx = $DB->start_delegated_transaction();
         $DB->delete_records('peerassessment_ratings', [
@@ -321,7 +322,7 @@ class provider implements
             if (!$cm = get_coursemodule_from_id('peerassessment', $context->instanceid)) {
                 continue;
             }
-            $instanceid = $cm->instanceid;
+            $instanceid = $cm->instance;
 
             $DB->delete_records('peerassessment_ratings', [
                 'peerassessment' => $instanceid,

@@ -1,25 +1,26 @@
 <?php
-//namespace \mod_peerassessment\tests;
+namespace mod_peerassessment\tests;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-abstract class mod_peerassessment_testcase extends advanced_testcase{
+abstract class mod_peerassessment_testcase extends \advanced_testcase{
 
     const TESTTITLE = 'A Peer Assessment Title';
     const TESTRATING = 3;
     const TESTCOMMENT = 'This is a test comment by a user.';
 
-    private $course = null;
-    private $numstudents = 40;
-    private $numgroups = 10;
-    private $numstudentspergroup = 4;
-    private $students = [];
-    private $groups = [];
+    protected $course = null;
+    protected $numstudents = 40;
+    protected $numgroups = 10;
+    protected $numstudentspergroup = 4;
+    protected $students = [];
+    protected $groups = [];
 
     public function setUp() {
         $this->resetAfterTest();
         $this->setAdminUser();
+        $this->setupTestActivity();
     }
 
     protected function setupTestActivity() {
@@ -57,7 +58,7 @@ abstract class mod_peerassessment_testcase extends advanced_testcase{
      * Generate a user rating.
      *
      * All members will be rated 3.
-     * @throws \peer_assessment\exception\invalid_rating_exception
+     * @throws \mod_peerassessment\exception\invalid_rating_exception
      * @throws moodle_exception
      */
     protected function generateTestRatings() {
@@ -83,11 +84,12 @@ abstract class mod_peerassessment_testcase extends advanced_testcase{
      * Function to test that the test cases have been done correctly.
      */
     function test_setup() {
+        $this->resetAfterTest();
         $student = $this->students[0];
         $studentgroup = $this->groups[0];
         $pa = new \mod_peerassessment\peerassessment($this->instance, $studentgroup->id);
 
-        $this->assert(true, $pa->has_rated($student->id);
+        $this->assertTrue($pa->has_rated($student->id));
 
     }
 }
