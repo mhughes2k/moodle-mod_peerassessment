@@ -1,5 +1,5 @@
 <?php
-class mod_book_external extends external_api {
+class mod_peerassessment_external extends external_api {
     public static function get_peerassessment_by_courses_parameters() {
         return new external_function_parameters (
             array(
