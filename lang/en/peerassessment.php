@@ -121,6 +121,7 @@ $string['privacy:metadata:peerassessment_ratings:userid'] = 'The ID of the user 
 $string['privacy:metadata:peerassessment_ratings:rating'] = 'The rating value that was recorded against the user';
 $string['privacy:metadata:peerassessment_ratings:ratedby'] = 'The ID of the user that performed the rating.';
 $string['privacy:metadata:peerassessment_comments:studentcomment'] = 'The text entered by a user about the ratings being recorded against other users.';
+$string['privacy:metadata:peerassessment_ratings:peerassessment']  = 'The ID of the peer assessment activity';
 
 /* Shared / consistently defined attributes */
 $string['privacy:metadata:peerassessment'] = 'The ID of the Peer Assessment activity.';

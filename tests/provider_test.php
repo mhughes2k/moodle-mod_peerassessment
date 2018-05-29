@@ -11,7 +11,7 @@ use \mod_peerassessment\privacy\provider as provider;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\helper;
 use core_privacy\local\request\writer;
-
+use core_privacy\tests\provider_testcase;
 /**
  * Class mod_peerassessment_provider_testcase
  */
@@ -128,7 +128,11 @@ class mod_peerassessment_provider_testcase extends provider_testcase {
         $contextlist = new approved_contextlist($testUser, 'mod_peerassessment',
             array_keys($contexts)
         );
-        provider::export_user_data($contextlist);
+        //provider::export_user_data($contextlist);
+
+        //This calls the provider::export_user_data() function.
+        $this->export_all_data_for_user($testUser->id, 'mod_peerassessment');
+
         $writer = writer::with_context(\context_system::instance());
         $this->assertTrue($writer->has_any_data_in_any_context());
 
