@@ -13,7 +13,7 @@ class mod_book_external extends external_api {
             $returnedpas = [];
             $warnings = [];
 
-            $params = self:;self::validate_parameters(
+            $params = self::self::validate_parameters(
                 self::get_peerassessment_by_courses_parameters(),
                 ['courseids' => $courseids]
             );
