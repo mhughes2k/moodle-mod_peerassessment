@@ -38,7 +38,8 @@ class provider implements
               'timemodified' => 'privacy:metadata:timemodified',
               'studentcomment' => 'privacy:metadata:peerassessment_comments:studentcomment',
               'groupid' => 'privacy:metadata:groupid',
-          ]
+          ],
+          'privacy:metadata:peerassessment_comments'
         );
 
         return $collection;
