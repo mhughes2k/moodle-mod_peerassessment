@@ -105,7 +105,14 @@ class mod_peerassessment_provider_testcase extends provider_testcase {
         $testUser = $this->testUsers[0];
         $contextdata = provider::get_contexts_for_userid($testUser->id);
         $this->assertEquals(2, $contextdata->count());
-        $this->assertSame($activitycontext, $contextdata->current());
+        $foundMatching = false;
+        foreach($contextdata as $ctx) {
+            if ($ctx->id == $activitycontext->id) {
+                $foundMatching = true;
+                continue;
+            }
+        }
+        $this->assertTrue($foundMatching);
     }
 
     /**
