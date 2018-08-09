@@ -42,6 +42,7 @@ class backup_peerassessment_activity_structure_step extends backup_activity_stru
 		
 		// Define sources
 		$pa->set_source_table('peerassessment', array('id' => backup::VAR_ACTIVITYID));
+		//$pa->annotate_ids('scale', 'pagrade');
 		if ($userinfo) { 
 			$rating->set_source_table('peerassessment_ratings', array('peerassessment' => backup::VAR_PARENTID));
 			$comments->set_source_table('peerassessment_comments', array('peerassessment' => backup::VAR_PARENTID));
@@ -49,9 +50,12 @@ class backup_peerassessment_activity_structure_step extends backup_activity_stru
 		// Define id annotations
 		$rating->annotate_ids('user', 'userid');
 		$rating->annotate_ids('user', 'ratedby');
+		$rating->annotate_ids('group', 'groupid');
 		
 		$comment->annotate_ids('user', 'userid');
+
 		// Define file annotations
+
 		
 		// Return the root element (choice), wrapped into standard activity structure
 		return $this->prepare_activity_structure($pa);
