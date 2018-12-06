@@ -62,7 +62,7 @@ class provider implements
 
         // Fetch all the contexts where the subject has been rated by another user.
         // Fetch all the contexts where the subject has made a comment
-        $sql = "SELECT distinct(c.id)
+        $sql = "SELECT DISTINCT c.id
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
             INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
