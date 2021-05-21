@@ -23,7 +23,7 @@ class mod_peerassessment_peerassessment_testcase extends advanced_testcase {
 	 * {@inheritDoc}
 	 * @see PHPUnit_Framework_TestCase::setUp()
 	 */
-	public function setUp() {
+    protected function setUp(): void {
 		$this->testCourse =  $this->getDataGenerator()->create_course();
 		$this->testGroups = array();
 		for($i = 0; $i < 2; $i++ ) {
