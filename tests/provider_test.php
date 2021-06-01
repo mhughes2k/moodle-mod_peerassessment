@@ -5,8 +5,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/peerassessment/lib.php');
-require_once($CFG->dirroot . '/mod/peerassessment/classes/tests/mod_peerassessment_testcase.php');
-use \mod_peerassessment\tests\mod_peerassessment_testcase;
 use \mod_peerassessment\privacy\provider as provider;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\helper;
