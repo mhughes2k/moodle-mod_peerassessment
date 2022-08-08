@@ -30,10 +30,12 @@ $string['completionratinggroup'] = 'Require peer rating';
 $string['completionrating'] = 'Students must have rated their peers.';
 $string['confirmdelete'] = 'Are you sure you want to delete this user\'s ratings';
 $string['csvwithseleteddelimiter'] = 'CSV with Selected Delimiter';
+$string['defaultdownloadname'] = 'peerassessment';
 $string['duedate'] = 'Due date';
 $string['duedate_help']= 'Ratings *must* be completed by this date.
 
 If a due date is set you may allow student to change their responses up to the due date.';
+$string['export'] = 'Export';
 $string['eventreportviewed'] = 'Report viewed';
 $string['eventratingcreated'] = 'Rating Created';
 $string['eventratingdeleted'] = 'Rating Deleted';
@@ -89,7 +91,7 @@ $string['resetpeerassessmentall'] = 'Delete All Peer Ratings';
 $string['switchgroups'] = 'Switch Group';
 $string['toolate'] = 'You are too late to complete this activity.';
 $string['viewreport'] = 'View Report';
-
+$string['unknownformat'] = 'Unknown export format';
 /* Strings from pagrade form element */
 
 $string['pagradeerrorbadpoint'] = 'Invalid Grade Value. This must be an integer between 1 and {$a}';
