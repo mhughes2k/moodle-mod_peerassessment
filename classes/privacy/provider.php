@@ -53,15 +53,14 @@ class provider implements
      * @param int $userid
      * @return contextlist
      */
-    public static function get_contexts_for_userid(int $userid): contextlist
-    {
+    public static function get_contexts_for_userid(int $userid): contextlist {
         /*
          * Peer assessment context should only be in the activity
          */
         $contextlist = new \core_privacy\local\request\contextlist();
 
         // Fetch all the contexts where the subject has been rated by another user.
-        // Fetch all the contexts where the subject has made a comment
+        // Fetch all the contexts where the subject has made a comment.
         $sql = "SELECT DISTINCT c.id
                   FROM {context} c
             INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
@@ -72,9 +71,9 @@ class provider implements
                  WHERE (
                   par.userid = :userid1
                  )
-                 OR ( 
+                 OR (
                   pac.userid = :userid2
-                  AND 
+                  AND
                   pac.studentcomment != ''
                 )
         ";
@@ -167,8 +166,7 @@ class provider implements
      * 2. the comments made *by* this user (where they are the rater)
      * @param approved_contextlist $contextlist
      */
-    public static function export_user_data(approved_contextlist $contextlist)
-    {
+    public static function export_user_data(approved_contextlist $contextlist) {
         if (empty($contextlist->count())) {
             return;
         }
@@ -193,19 +191,19 @@ class provider implements
                       par.rating AS rating,
                       par.timemodified AS timemodified
                  FROM {context} c
-           INNER JOIN {course_modules} cm ON cm.id = c.instanceid 
+           INNER JOIN {course_modules} cm ON cm.id = c.instanceid
            INNER JOIN {peerassessment_ratings} par ON par.peerassessment = cm.instance
                 WHERE c.id {$contextsql}
                       AND par.userid = :userid
              ORDER BY cm.id";
 
-        $params = ['userid' => $user->id]+$contextparams;
+        $params = ['userid' => $user->id] + $contextparams;
 
         $lastcmid = null;
 
         $ratings = $DB->get_recordset_sql($sql, $params);
-        // Loop through each of the ratings given to this user
-        foreach($ratings as $rating) {
+        // Loop through each of the ratings given to this user.
+        foreach ($ratings as $rating) {
             if ($lastcmid != $rating->cmid) {
                 if (!empty($ratingdata)) {
                     $context = \context_module::instance($lastcmid);
@@ -217,7 +215,7 @@ class provider implements
                 ];
             }
             $ratingdata['rating'] = $rating->rating;
-            $lastcmid= $rating->cmid;
+            $lastcmid = $rating->cmid;
         }
         $ratings->close();
 
@@ -245,18 +243,18 @@ class provider implements
                       pac.timecreated AS timecreated,
                       pac.timemodified AS timemodified
                  FROM {context} c
-           INNER JOIN {course_modules} cm ON cm.id = c.instanceid 
+           INNER JOIN {course_modules} cm ON cm.id = c.instanceid
            INNER JOIN {peerassessment_comments} pac ON pac.peerassessment = cm.instance
                 WHERE c.id {$contextsql}
                       AND pac.userid = :userid
              ORDER BY cm.id";
 
-        $params = ['userid' => $user->id]+$contextparams;
+        $params = ['userid' => $user->id] + $contextparams;
 
         $lastcmid = null;
 
         $comments = $DB->get_recordset_sql($sql, $params);
-        foreach($comments as $comment) {
+        foreach ($comments as $comment) {
             if ($lastcmid != $comment->cmid) {
                 if (!empty($commentdata)) {
                     $context = \context_module::instance($lastcmid);
@@ -270,7 +268,7 @@ class provider implements
                 ];
             }
             $commentdata['comment'] = $comment->comment;
-            $lastcmid= $comment->cmid;
+            $lastcmid = $comment->cmid;
         }
         $comments->close();
 
@@ -282,8 +280,7 @@ class provider implements
     /**
      * @param \context|context $context
      */
-    public static function delete_data_for_all_users_in_context(\context $context)
-    {
+    public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
 
         if ($context->contextlevel != CONTEXT_MODULE) {
@@ -310,15 +307,14 @@ class provider implements
     /**
      * @param approved_contextlist $contextlist
      */
-    public static function delete_data_for_user(approved_contextlist $contextlist)
-    {
+    public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
         if (empty($contextlist->count())) {
             return;
         }
         $tx = $DB->start_delegated_transaction();
         $userid = $contextlist->get_user()->id;
-        foreach($contextlist->get_contexts() as $context) {
+        foreach ($contextlist->get_contexts() as $context) {
             // Sanity check that the context is a peerassessment context.
             if (!$cm = get_coursemodule_from_id('peerassessment', $context->instanceid)) {
                 continue;

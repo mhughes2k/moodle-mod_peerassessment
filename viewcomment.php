@@ -106,7 +106,7 @@ echo $OUTPUT->heading(get_string('heading_viewcomment', 'peerassessment', [
         'activity' => $pa->name,
         'groupname' => $group->name,
         'username' => fullname($user)
-])); 
+]));
         //[$pa->name .'-'. fullname($user));
 echo $OUTPUT->render_from_template("mod_peerassessment/userratings", $tdata);
 echo $OUTPUT->footer();

@@ -55,11 +55,11 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
      * All of the subsequent updates can be rolled in to a single update later.
      */
     if ($oldversion < 2016092305) {
-    
+
         // Define field groupid to be added to peerassessment_ratings.
         $table = new xmldb_table('peerassessment_ratings');
         $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, 0, 'ratedby');
-    
+
         // Conditionally launch add field groupid.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -75,7 +75,7 @@ function xmldb_peerassessment_upgrade($oldversion=0) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-   
+
         // Define field groupid to be added to peerassessment_ratings.
         $table = new xmldb_table('peerassessment_comments');
         $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, 0, 'studentcomment');
