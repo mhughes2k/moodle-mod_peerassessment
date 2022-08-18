@@ -15,7 +15,6 @@ namespace mod_peerassessment\output;
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Drop down form element to select the grade (that allows None to be disabled!)
 *

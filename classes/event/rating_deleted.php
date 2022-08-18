@@ -20,9 +20,8 @@ class rating_deleted extends \core\event\assessable_submitted {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        //$this->data['objecttable'] = 'peerassessment_ratings';
     }
-    
+
     public function get_description() {
         return "The user with id '$this->userid' deleted user '$this->relateduserid's rating for group id '{$this->other['groupid']}' in peer assessment module id '$this->contextinstanceid'.";
     }
