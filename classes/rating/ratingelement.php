@@ -24,7 +24,7 @@ class ratingelement {
 
     /**
      * ID of the user making the rating
-     * @var int 
+     * @var int
      */
     public $rater;
 

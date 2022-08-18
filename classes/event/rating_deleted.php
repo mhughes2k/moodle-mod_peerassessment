@@ -20,7 +20,6 @@ class rating_deleted extends \core\event\assessable_submitted {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        //$this->data['objecttable'] = 'peerassessment_ratings';
     }
 
     public function get_description() {

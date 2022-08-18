@@ -27,7 +27,7 @@ class peerassessment {
 
     /**
      * Array of group members indexed by user id.
-     * @var array[int] 
+     * @var array[int]
      */
     private $members;
     /**
@@ -44,7 +44,7 @@ class peerassessment {
         global $DB;
         $this->instance = $instance;
         if (!$group = groups_get_group($groupid)) {
-            throw new \moodle_exception('unabletoloadgroups','peerassessment');
+            throw new \moodle_exception('unabletoloadgroups', 'peerassessment');
         }
         $this->group = $group;
     }
@@ -82,7 +82,7 @@ class peerassessment {
         $dbratings = $DB->get_records_select('peerassessment_ratings', $select, $params);
 
         $tmpratings = array();
-        foreach ($dbratings as $r){
+        foreach ($dbratings as $r) {
             $key = "{$r->userid}:{$r->ratedby}";
             if (!isset($tmpratings[$key])) {
                 $tmpratings[$key] = $r;
@@ -198,7 +198,7 @@ class peerassessment {
             $event = \mod_peerassessment\event\rating_updated::create($eventdata);
         } else {
             $event = \mod_peerassessment\event\rating_created::create($eventdata);
-    
+
         }
         if (!empty($this->dbratings)) {
             foreach ($this->dbratings as $dbrating) {
@@ -211,7 +211,7 @@ class peerassessment {
         $event->trigger();
         $this->clear_rating_queue();
         // TODO STRATHPA-100 Update the average rating each student has received.
-        //assign_update_grades($assign, $userid);
+
         peerassessment_update_grades($this->instance);
     }
     public function clear_rating_queue() {
@@ -534,7 +534,7 @@ class peerassessment {
      * @return \mod_peerassessment\rating\ratingelement|NULL
      */
     static function extract_rating_values($key) {
-        if (substr(strtolower($key),0,7) == 'rating_') {
+        if (substr(strtolower($key), 0, 7) == 'rating_') {
             $target = substr(strtolower($key),7);
             list ($rater, $ratee) = explode("|",$target);
             $r = new \mod_peerassessment\rating\ratingelement();
