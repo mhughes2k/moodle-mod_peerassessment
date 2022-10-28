@@ -24,19 +24,14 @@ $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST)
 $pa = $DB->get_record('peerassessment', array('id' => $cm->instance), '*', MUST_EXIST);
 require_login($course, false, $cm);
 
-const MOD_PEERASSESSMENT_MODE_VIEW = 0;
-const MOD_PEERASSESSMENT_MODE_REPORT = 1;
-$mode = optional_param('mode', MOD_PEERASSESSMENT_MODE_VIEW, PARAM_INT);
+$context = context_module::instance($cm->id);
+require_capability('mod/peerassessment:viewreport', $context, $USER);
 
 /** @var array $tdata */
 $tdata = array();
 
 $PAGE->set_title($pa->name);
 $PAGE->set_heading($course->fullname);
-
-$context = context_module::instance($cm->id);
-$canmanage = has_capability('mod/peerassessment:viewreport', $context, $USER);
-$canrate = has_capability('mod/peerassessment:recordrating', $context, $USER, false);
 
 $groups = groups_get_activity_allowed_groups($cm);
 
