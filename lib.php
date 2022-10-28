@@ -410,23 +410,25 @@ function peerassessment_trace($message, $level = DEBUG_DEVELOPER) {
  * @return void
  */
 function peerassessment_extend_settings_navigation(settings_navigation $settings, navigation_node $navref) {
-    global $PAGE;
-    $strexport = get_string('export', 'mod_peerassessment');
-    $exportaction = new moodle_url(
-        '/mod/peerassessment/export.php',
-        [
-            'id' => $PAGE->cm->id
-        ]
-    );
-    $node = navigation_node::create(
-        $strexport,
-        $exportaction,
-        navigation_node::NODETYPE_LEAF,
-        null,
-        'mod_peerassessment_export',
-        new pix_icon('i/report', $strexport)
-    );
-    $navref->add_node($node);
+    global $PAGE, $USER;
+    if (has_capability('mod/peerassessment:viewreport', $PAGE->context, $USER)) {
+        $strexport = get_string('export', 'mod_peerassessment');
+        $exportaction = new moodle_url(
+            '/mod/peerassessment/export.php',
+            [
+                'id' => $PAGE->cm->id
+            ]
+        );
+        $node = navigation_node::create(
+            $strexport,
+            $exportaction,
+            navigation_node::NODETYPE_LEAF,
+            null,
+            'mod_peerassessment_export',
+            new pix_icon('i/report', $strexport)
+        );
+        $navref->add_node($node);
+    }
 }
 
 
