@@ -62,7 +62,7 @@ class exporter {
             $pa = new peerassessment($this->pa, $group);
             try {
                 $g = self::get_group($group);
-                
+
                 $members = $pa->get_members();
 
                 foreach ($members as $member) {

@@ -21,11 +21,11 @@ class course_module_viewed extends \core\event\course_module_viewed {
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'peerassessment_ratings';
     }
-    
+
     public function get_description() {
         return "The user with id '$this->userid' viewed the peer assessment for group id '{$this->other['groupid']}' in peer assessment module id '$this->contextinstanceid'.";
     }
-    
+
     /*public static function get_name() {
         return get_string('eventreportviewed', 'peerassessment');
     }*/

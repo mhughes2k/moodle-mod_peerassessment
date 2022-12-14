@@ -19,14 +19,14 @@ $pa = new \mod_peerassessment\peerassessment($instance, $groupid);
 peerassessment_update_grades($instance, $userid);
 /*
 foreach($members as $m) {
-	foreach($members as $m2) {
-		$pa->rate($m->id, 5, $m2->id);
-	}
+    foreach($members as $m2) {
+        $pa->rate($m->id, 5, $m2->id);
+    }
 }
 
 var_dump($pa->ratings);
 foreach($members as $m) {
-	var_dump($pa->get_student_average_rating($m->id));
+    var_dump($pa->get_student_average_rating($m->id));
 }
 */
 echo '</pre>';

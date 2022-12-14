@@ -6,7 +6,7 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Represents a user recording a Peer Assessment Rating.
- * 
+ *
  * @package mod_peerassessment
  * @since Moodle 3.2
  * @copyright University of Strathclyde
