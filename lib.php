@@ -8,6 +8,11 @@ use mod_peerassessment\peerassessment;
  * @return boolean|NULL
  */
 function peerassessment_supports($feature) {
+    // Support the new Moodle 4 icons and make sure it still works on 3.11
+    if (defined('FEATURE_MOD_PURPOSE') && $feature === FEATURE_MOD_PURPOSE) {
+        return MOD_PURPOSE_ASSESSMENT;
+    }
+
     switch($feature) {
         case FEATURE_GROUPS:
             return true;
